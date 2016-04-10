@@ -6,6 +6,10 @@ import sys
 
 # Import game objects (perhaps this can go into a "game manager" of some sort?)
 from ball import Ball
+from row import Row
+from row_manager import RowManager
+
+# TODO: For scorekeeping, keep track of ball's last contact? e.g., with_row, with_boundary, something like that? That way, we can know when the ball fall through a hole, and give points. Give bonuses for touching the bottom of the screen
 
 def drawGrid(screen, cell_size, screen_size):
     for i in range(0, 63):
@@ -29,6 +33,16 @@ def main():
     a.setPosition(10, 10) # Position is given in coordinates on the 64x64 grid. Actual screen coordinates are calculated from grid coordinates
     a.setSpeed(0,1)
     a.setMaxSpeed(1,1)
+
+    #TODO delete references to individual row.
+    #r = Row()
+    #r.setPosition(0, 32)
+    #r._gap = 5
+
+    rm = RowManager()
+    rm.createRowAndAddToRowList(yPosition=20)
+    rm.createRowAndAddToRowList(yPosition=30)
+    rm.createRowAndAddToRowList(yPosition=40)
 
     prev_time = pygame.time.get_ticks()
     while True:
@@ -74,6 +88,8 @@ def main():
 
         drawGrid(screen, cell_size, screen_size)
         a.draw(screen, cell_size)
+        #r.draw(screen, cell_size) #TODO delete references to individual row.
+        rm.draw(screen, cell_size)
 
         # post-render (e.g. score/overlays)
 

@@ -39,24 +39,13 @@ class Ball(GameObj):
         self._objState = 'falling'
         # TODO: set speed based on state. e.g. When falling, vertical speed is ALWAYS 1 grid slot down the screen per update
 
-        #self._update_delay_dict = { 'on_row' : 
-        #                            { 0 : {'init': 0.01, 'inc': 0, 'max': 0.01, 'dec': 0, 'floor': 0.01}
-        #                            , 1 : {'init': 0, 'inc': 0, 'max': 0, 'dec': 0, 'floor': 0 }
-        #                            }
-        #                          , 'falling' :
-        #                            { 0 : {'init': 0.01, 'inc': 0, 'max': 0.01, 'dec': 0, 'floor': 0.01 }
-        #                            , 1 : {'init': 0.2, 'inc': 0.2, 'max': 0.2, 'dec': 0.001, 'floor': 0.010 }
-        #                            }
-        #                          }
-
-        # NOTE: The dict below is test crap. Delete it once the bugs are worked out
         self._update_delay_dict = { 'on_row' : 
                                     { 0 : {'init': 0.01, 'inc': 0, 'max': 0.01, 'dec': 0, 'floor': 0.01}
                                     , 1 : {'init': 0, 'inc': 0, 'max': 0, 'dec': 0, 'floor': 0 }
                                     }
                                   , 'falling' :
-                                    { 0 : {'init': 0.01, 'inc': 0, 'max': 0.01, 'dec': 0, 'floor': 0.01 }
-                                    , 1 : {'init': 0.25, 'inc': 0, 'max': 0.25, 'dec': 0, 'floor': 0.25 }
+                                    { 0 : {'init': 0.1, 'inc': 0, 'max': 0.1, 'dec': 0, 'floor': 0.1 }
+                                    , 1 : {'init': 0.1, 'inc': 0.0, 'max': 0.1, 'dec': 0.005, 'floor': 0.050 }
                                     }
                                   }
 
@@ -133,6 +122,6 @@ class Ball(GameObj):
 
                 # Recompute the update delay in this direction, using _update_delay_dict
                 # TODO Add test: if we're decreasing the update delay, then test against floor; if increasing, then test against max
-                self._update_delay[i] -= self._update_delay_dict[ self._objState ][i]['inc']
+                self._update_delay[i] -= self._update_delay_dict[ self._objState ][i]['dec']
                 if self._update_delay[i] < self._update_delay_dict[ self._objState ][i]['floor']:
                     self._update_delay[i] = self._update_delay_dict[ self._objState ][i]['floor']
