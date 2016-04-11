@@ -1,5 +1,6 @@
 from gameobj import GameObj
 import pygame
+from collision_aabb import CollisionAABB
 
 class BallControlState:
     def __init__(self):
@@ -55,6 +56,8 @@ class Ball(GameObj):
         # Ball Control State
         self.controlState = BallControlState()
 
+        self._collGeoms = [ CollisionAABB() ]  # A list with 1 elements; we use a list here because it's what our algorithms want
+
     def draw(self, screen, cell_size):
         color = 0,0,255
         
@@ -64,6 +67,9 @@ class Ball(GameObj):
         
         pygame.draw.rect(screen, color, my_rect)
 
+        # DEBUG Draw the collision geometry
+        for geom in self._collGeoms:
+            geom.draw(screen, cell_size)
 
 
     ##def respondToControllerInput(self):
@@ -125,3 +131,14 @@ class Ball(GameObj):
                 self._update_delay[i] -= self._update_delay_dict[ self._objState ][i]['dec']
                 if self._update_delay[i] < self._update_delay_dict[ self._objState ][i]['floor']:
                     self._update_delay[i] = self._update_delay_dict[ self._objState ][i]['floor']
+
+        self._computeCollisionGeometry(cell_size)
+
+    def _computeCollisionGeometry(self, cell_size):
+
+        my_rect = (self._position[0] * cell_size[0], self._position[1] * cell_size[1], self._size[0] * cell_size[0], self._size[1] * cell_size[1])
+
+        self._collGeoms[0]._minPt = [ self._position[0] * cell_size[0], self._position[1] * cell_size[1]]
+        self._collGeoms[0]._maxPt = [ self._collGeoms[0]._minPt[0] + self._size[0] * cell_size[0], self._collGeoms[0]._minPt[1] + self._size[1] * cell_size[1] ]
+
+

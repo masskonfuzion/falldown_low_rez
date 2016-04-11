@@ -30,6 +30,7 @@ class Row(GameObj):
             if rect:
                 pygame.draw.rect(screen, (128, 128, 128), rect)
 
+        # DEBUG draw the collision geometry
         for geom in self._collGeoms:
             if geom:
                 geom.draw(screen, cell_size)
@@ -48,7 +49,10 @@ class Row(GameObj):
 
 
     def update(self, dt_s, cell_size):
+        # TODO: Uhm, actually move the rows
+
         # Upon movement, recompute render and collision geometry
+        # TODO: Fix - you're creating a totally new collision geom on every update.. That's wasteful. Instead, create the collision geom at the same time as the row is created
         self._computeRenderGeometry(cell_size)
         self._computeCollisionGeometry(cell_size)
 
