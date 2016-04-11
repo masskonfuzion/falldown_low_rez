@@ -82,14 +82,11 @@ class Row(GameObj):
 
     def _computeCollisionGeometry(self, cell_size):
         # NOTE: In this game, the AABB geometry is the same as the rendering geometry
+
+        # TODO: Fix calculation of position. Y is good, but X is meaningless at the moment..
         if self._gap == 0 or self._gap == self._numBlocks - 1:
             self._collGeoms[0] = CollisionAABB()
-            # Remember, in the row object, size is given in terms of 1 block (i.e., actual screen real estate is determined by block size, # of blocks, and gap position)
-            # However, the AABB size is given in terms of screen coordinates. i.e., the AABB is the same as the render geometry
-
-            #self._collGeoms[0]._minPt = [ self._collGeoms._position[0], self._collGeoms._position[1] ]
-            #self._collGeoms[0]._maxPt = [ self._collGeoms._position[0] + self._collGeoms._size[0] * cell_size[0], self._collGeoms._position[1] + self._collGeoms._size[1] * cell_size[1] ]
-
+            self._collGeoms[0].setPosition(self._position[0], self._position[1])
 
             # NOTE: Here, we're totally cheating and computing the AABB based on the render geometry.
             # Note rect[0] = left; rect[1] = top; rect[2] = width; rect[3] = height
@@ -101,8 +98,10 @@ class Row(GameObj):
             self._collGeoms[0] = CollisionAABB()
             self._collGeoms[1] = CollisionAABB()
 
+            self._collGeoms[0].setPosition(self._position[0], self._position[1])
             self._collGeoms[0]._minPt = [ self._drawRects[0][0], self._drawRects[0][1] ]
             self._collGeoms[0]._maxPt = [ self._drawRects[0][0] + self._drawRects[0][2], self._drawRects[0][1] + self._drawRects[0][3] ]
 
+            self._collGeoms[1].setPosition(self._position[0], self._position[1])
             self._collGeoms[1]._minPt = [ self._drawRects[1][0], self._drawRects[1][1] ]
             self._collGeoms[1]._maxPt = [ self._drawRects[1][0] + self._drawRects[1][2], self._drawRects[1][1] + self._drawRects[1][3] ]

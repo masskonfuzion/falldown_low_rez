@@ -51,7 +51,7 @@ def main():
         #print "Curr {}, prev {}, dt {}".format(curr_time, prev_time, dt_s)
         prev_time = curr_time
 
-        # Process events
+        # ----- Process events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -71,20 +71,32 @@ def main():
                 elif (event.key == pygame.K_RIGHT or event.key == pygame.K_l):
                     ballRef.controlState.setRightKeyPressedFalse()
 
-        # Update stuff
+        # ----- Update stuff
         a.update(dt_s, cell_size)
         rm.update(dt_s, cell_size)
 
-        # pre-render (e.g. constrain ball to screen space)
+        # ----- pre-render 
         # TODO make accessor functions for every _xyz member? e.g., instead of a._position, make a.getPosition()?
+
+        # Get collisions (note - here, we're using specialized logic. For a more generic game engine, we would need to do more work here. But, we're purpose-building the "engine" for this game, sooo whatever :-D
+        # There can only ever be 1 collision/contact in this game..
+        # O(n^2)... terrible
+        for row in rm._rows:
+            for geom in row._collGeoms:
+                if geom:
+                    if geom.isColliding(a._collGeoms[0], cell_size):
+                        # TODO make positioning more robust. If ball is falling through blocks, and touches side of blocks, e.g., then 'clamp' it to the side of the blocks, and not the top
+                        a.setPosition(a._position[0], geom._position[1] - a._size[1])
+
+        # (e.g. constrain ball to screen space)
         # TODO put constraints into function?
         for i in range(0, 2):
             if a._position[i] < 0:
                 a._position[i] = 0
             if a._position[i] + a._size[i] > 64:
-                a._position[i] = 64 - a._size[i] # NOTE: Here, we're calculating against 63, not 64, because we're zero-based
+                a._position[i] = 64 - a._size[i]
 
-        # Draw stuff
+        # ----- Draw stuff
         screen.fill(bg_col)
 
         drawGrid(screen, cell_size, screen_size)
@@ -92,7 +104,7 @@ def main():
         #r.draw(screen, cell_size) #TODO delete references to individual row.
         rm.draw(screen, cell_size)
 
-        # post-render (e.g. score/overlays)
+        # ----- post-render (e.g. score/overlays)
 
         
         pygame.display.flip()
