@@ -5,7 +5,7 @@ class GameObj(object):
     ''' Game Object Class purpose-built for Low Rez Jam 2016. The game must take place in a 64x64 grid
     '''
     def __init__(self):
-        self._position = [0, 0]
+        self._position = [0, 0] # Position is given in terms of "top-left". i.e., (0,0) is the top-left corner of the rect at position (0,0)
         self._size = [2, 2]     # default size is 2 "pixels" by 2 pixels (1 "pixel" is a square on the 64x64 grid
         self._speed = [0, 0]    # "speed" is NOT velocity! It is given in terms of the # of pixels the obj can move per update delay
         self._maxSpeed = [0, 0] # Max speeds in the x/y directions

@@ -73,6 +73,7 @@ def main():
 
         # Update stuff
         a.update(dt_s, cell_size)
+        rm.update(dt_s, cell_size)
 
         # pre-render (e.g. constrain ball to screen space)
         # TODO make accessor functions for every _xyz member? e.g., instead of a._position, make a.getPosition()?

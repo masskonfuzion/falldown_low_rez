@@ -23,8 +23,9 @@ class RowManager(GameObj):
         pass
 
     
-    def update(self):
-        pass
+    def update(self, dt_s, cell_size):
+        for row in self._rows:
+            row.update(dt_s, cell_size)
 
 
     def draw(self, screen, cell_size):
