@@ -132,6 +132,7 @@ def main():
 
                         a.setPosition( a._position[0] + correctionVector[0], a._position[1] + correctionVector[1] )
                         a._computeCollisionGeometry(cell_size) # NOTE: the ball should recompute its geometry on a setPosition() call. Perhaps a fn override is needed (right now, setPosition is part of base class)
+                        a.resetUpdateDelay()
 
                         # TODO make positioning more robust. If ball is falling through blocks, and touches side of blocks, e.g., then 'clamp' it to the side of the blocks, and not the top
                         #a.setPosition(a._position[0], geom._position[1] - a._size[1])

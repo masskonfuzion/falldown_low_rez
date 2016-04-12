@@ -45,13 +45,13 @@ class Ball(GameObj):
                                     , 1 : {'init': 0, 'inc': 0, 'max': 0, 'dec': 0, 'floor': 0 }
                                     }
                                   , 'falling' :
-                                    { 0 : {'init': 0.1, 'inc': 0, 'max': 0.1, 'dec': 0, 'floor': 0.1 }
-                                    , 1 : {'init': 0.1, 'inc': 0.0, 'max': 0.1, 'dec': 0.005, 'floor': 0.050 }
+                                    { 0 : {'init': 0.06, 'inc': 0.0, 'max': 0.06, 'dec': 0.00, 'floor': 0.06 }
+                                    , 1 : {'init': 0.03, 'inc': 0.0, 'max': 0.03, 'dec': 0.01, 'floor': 0.01 }
                                     }
                                   }
 
 
-        self._update_delay = [ self._update_delay_dict[self._objState][0]['init'], self._update_delay_dict[self._objState][1]['init'] ]
+        self.resetUpdateDelay()
 
         # Ball Control State
         self.controlState = BallControlState()
@@ -70,6 +70,10 @@ class Ball(GameObj):
         # DEBUG Draw the collision geometry
         for geom in self._collGeoms:
             geom.draw(screen, cell_size)
+
+    def resetUpdateDelay(self):
+        self._update_delay = [ self._update_delay_dict[self._objState][0]['init'], self._update_delay_dict[self._objState][1]['init'] ]
+        pass
 
 
     ##def respondToControllerInput(self):
