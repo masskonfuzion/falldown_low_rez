@@ -2,6 +2,7 @@
 
 import pygame
 import sys
+import math
 
 
 # Import game objects (perhaps this can go into a "game manager" of some sort?)
@@ -84,9 +85,62 @@ def main():
         for row in rm._rows:
             for geom in row._collGeoms:
                 if geom:
+                    # TODO: Rename the ball. It shouldn't be called "a"
                     if geom.isColliding(a._collGeoms[0], cell_size):
+                        # Compute the collision normal (from the center of one AABB to the center of the other. Note: this is what a true contract resolution system should be doing)
+                        # NOTE: Here, we're going to use the RENDER geometry to calculate a higher-resolution normal than would be posslble with just the pure grid positions of each object
+                        
+                        # This is the ball render rect: my_rect = (self._position[0] * cell_size[0], self._position[1] * cell_size[1], self._size[0] * cell_size[0], self._size[1] * cell_size[1])
+                        # Compute the center point
+                        ##ballCenter = [ int(self._position[0] * cell_size[0] + (self._size[0] * cell_size[0] / 2)), int(self._position[1] * cell_size[1] + (self._size[1] * cell_size[1]) / 2) ]
+                        ##geomCenter = [ geom._minPt[0] + (geom._maxPt[0] - geom._minPt[0]) / 2, geom._minPt[1] + (geom._maxPt[1] - geom._minPt[1]) / 2 ]
+
+                        ####### TODO TODO TODO TODO TODO! Calculate the collision normal using the collision geoms' position. This means we have to make the collision geoms' positioning more robust
+                        # NOTE: Geom position is now computed in terms of 64x64 grid. Now we have positions of the ball and the geoms the grid. Now we need to compute the contact normal using those positions
+                        # TODO: Fix this computation. Don't calculate in terms of screen coordinates.
+
+
+
+
+
+                        # TODO - fix normal calculation (i.e., AABB sizes, positions, ball size/position, etc.. Something is off; it's not properly computing the center points)
+
+
+
+                        # Multiply by 0.5 to force Python to convert the numbers from int to float
+                        ballCenter = [ a._position[0] + a._size[0] * 0.5, a._position[1] + a._size[1] * 0.5 ]
+                        geomCenter = [ geom._position[0] + geom._size[0] * 0.5, geom._position[1] + geom._size[1] * 0.5 ]
+
+                        # This is a straight-up vector subtraction. No vector class needed :-) We're taking madd shortcuts
+                        contactNormal = [ ballCenter[0] - geomCenter[0], ballCenter[1] - geomCenter[1] ]
+
+                        #cnLen = math.sqrt(contactNormal[0] * contactNormal[0] + contactNormal[1] * contactNormal[1])
+                        #cnNormalized = [ contactNormal[0] / cnLen, contactNormal[1] / cnLen ]
+
+                        #print "Contact normal:{} cnNormalized:{} ballCenter:{} geomCenter:{}".format(contactNormal, cnNormalized, ballCenter, geomCenter)
+                        print "Contact normal:{} ballCenter:{} geomCenter:{}".format(contactNormal, ballCenter, geomCenter)
+
+                        # At this point, we know we're colliding already, so we can calculate the penetration depths along each AABB axis
+                        penDepth = [ a._collGeoms[0]._maxPt[0] - geom._minPt[0], a._collGeoms[0]._maxPt[1] - geom._minPt[1] ] 
+
+                        correctionVector = [0, 0]
+
+                        if abs(penDepth[0]) < abs(penDepth[1]):
+                            correctionVector[0] = -penDepth[0] / cell_size[0]
+                        else:
+                            correctionVector[1] = -penDepth[1] / cell_size[1]
+
+                        a.setPosition( a._position[0] + correctionVector[0], a._position[1] + correctionVector[1] )
+                        a._computeCollisionGeometry(cell_size) # NOTE: the ball should recompute its geometry on a setPosition() call. Perhaps a fn override is needed (right now, setPosition is part of base class)
+
                         # TODO make positioning more robust. If ball is falling through blocks, and touches side of blocks, e.g., then 'clamp' it to the side of the blocks, and not the top
-                        a.setPosition(a._position[0], geom._position[1] - a._size[1])
+                        #a.setPosition(a._position[0], geom._position[1] - a._size[1])
+                        # Now that we have a contact normal, we need to push the ball back out so it is not penetrating the row AABB, but clamp that movement to the grid
+
+                        # Note: The following draw statements will be invisible unless you also disable screen filling in the draw() fn. But then, the screen won't clear, and you'll have a trail
+                        #pygame.draw.circle(screen, (128,0,0), (int(ballCenter[0] * cell_size[0]), int(ballCenter[1] * cell_size[1])), 16, 2)
+                        #pygame.draw.circle(screen, (128,0,128), (int(geomCenter[0] * cell_size[0]), int(geomCenter[1] * cell_size[1])), 16, 2)
+
 
         # (e.g. constrain ball to screen space)
         # TODO put constraints into function?

@@ -86,22 +86,29 @@ class Row(GameObj):
         # TODO: Fix calculation of position. Y is good, but X is meaningless at the moment..
         if self._gap == 0 or self._gap == self._numBlocks - 1:
             self._collGeoms[0] = CollisionAABB()
-            self._collGeoms[0].setPosition(self._position[0], self._position[1])
+            #self._collGeoms[0].setPosition(self._position[0], self._position[1])
 
             # NOTE: Here, we're totally cheating and computing the AABB based on the render geometry.
             # Note rect[0] = left; rect[1] = top; rect[2] = width; rect[3] = height
             self._collGeoms[0]._minPt = [ self._drawRects[0][0], self._drawRects[0][1] ]
             self._collGeoms[0]._maxPt = [ self._drawRects[0][0] + self._drawRects[0][2], self._drawRects[0][1] + self._drawRects[0][3] ]
+            self._collGeoms[0].setPosition(self._getGridCoordFromScreenCoord(self._collGeoms[0]._minPt[0], cell_size), self._position[1])
+            self._collGeoms[0].setSize(self._drawRects[0][2] / cell_size[0], self._size[1])
 
         else:
             # Note: You ALWAYS will have at least 1 collision geom, so the if/else conditions could be different. But whatever.. :-D
             self._collGeoms[0] = CollisionAABB()
             self._collGeoms[1] = CollisionAABB()
 
-            self._collGeoms[0].setPosition(self._position[0], self._position[1])
             self._collGeoms[0]._minPt = [ self._drawRects[0][0], self._drawRects[0][1] ]
             self._collGeoms[0]._maxPt = [ self._drawRects[0][0] + self._drawRects[0][2], self._drawRects[0][1] + self._drawRects[0][3] ]
+            self._collGeoms[0].setPosition(self._getGridCoordFromScreenCoord(self._collGeoms[0]._minPt[0], cell_size), self._position[1])
+            self._collGeoms[0].setSize(self._drawRects[0][2] / cell_size[0], self._size[1])
 
-            self._collGeoms[1].setPosition(self._position[0], self._position[1])
             self._collGeoms[1]._minPt = [ self._drawRects[1][0], self._drawRects[1][1] ]
             self._collGeoms[1]._maxPt = [ self._drawRects[1][0] + self._drawRects[1][2], self._drawRects[1][1] + self._drawRects[1][3] ]
+            self._collGeoms[1].setPosition(self._getGridCoordFromScreenCoord(self._collGeoms[1]._minPt[0], cell_size), self._position[1])
+            self._collGeoms[1].setSize(self._drawRects[1][2] / cell_size[0], self._size[1])
+
+    def _getGridCoordFromScreenCoord(self, coord, cell_size):
+        return coord / cell_size[0] # Cells are square, so it doesn't matter which cell_size coordinate we use
