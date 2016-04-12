@@ -10,7 +10,7 @@ class Row(GameObj):
     ''' A row of blocks.
     '''
 
-    def __init__(self, numBlocks = 16, yPosition = 32, gap = -1):
+    def __init__(self, numBlocks = 16, yPosition = 32, gap = -1, updateDelay = 1):
         super(Row, self).__init__()
 
         self._numBlocks = numBlocks # Prefer this number to be a factor of 64
@@ -21,6 +21,9 @@ class Row(GameObj):
         self._blockHeight = 2
 
         self.setGap(gap)
+
+        self._updateDelay = 0.0
+        self.setUpdateDelay(updateDelay) # Update delay in seconds
 
         self.setSize(64 / self._numBlocks, 2) # NOTE: Size here is PER BLOCK, in terms of grid cells. (TODO: You can probably delete blockWidth and blockHeight
 
@@ -47,9 +50,17 @@ class Row(GameObj):
     def getGap(self):
         return self._gap
 
+    def setUpdateDelay(self, delay_s):
+        self._updateDelay = delay_s
+
 
     def update(self, dt_s, cell_size):
         # TODO: Uhm, actually move the rows
+        self._accumulator_s[1] += dt_s # NOTE _accumulator_s is part of the gameObj class.. Perhaps break it out to the ball? Because the ball needs a [x,y] accumulator; the rows only need a single value
+
+        if self._accumulator_s[1] >= self._updateDelay:
+            self._accumulator_s[1] -= self._updateDelay
+            self._position[1] -= 1
 
         # Upon movement, recompute render and collision geometry
         # TODO: Fix - you're creating a totally new collision geom on every update.. That's wasteful. Instead, create the collision geom at the same time as the row is created

@@ -72,6 +72,7 @@ class Ball(GameObj):
             geom.draw(screen, cell_size)
 
     def resetUpdateDelay(self):
+        # NOTE self._updateDelay_s is a member of gameObj.. But we're not using it here. Thoughts?
         self._update_delay = [ self._update_delay_dict[self._objState][0]['init'], self._update_delay_dict[self._objState][1]['init'] ]
         pass
 
@@ -119,7 +120,7 @@ class Ball(GameObj):
         # Move the ball (if necessary)
 
         for i in xrange(0, len(self._accumulator_s)):
-            self._accumulator_s[i] += dt_s
+            self._accumulator_s[i] += dt_s # NOTE _accumulator_s is part of the gameObj class.. Perhaps break it out to the ball? Because the ball needs a [x,y] accumulator; the rows only need a single value
 
             if self._accumulator_s[i] > self._update_delay[i]:
                 # Reduce the accumulator in this direction
