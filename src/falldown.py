@@ -118,7 +118,7 @@ def main():
                         #cnNormalized = [ contactNormal[0] / cnLen, contactNormal[1] / cnLen ]
 
                         #print "Contact normal:{} cnNormalized:{} ballCenter:{} geomCenter:{}".format(contactNormal, cnNormalized, ballCenter, geomCenter)
-                        print "Contact normal:{} ballCenter:{} geomCenter:{}".format(contactNormal, ballCenter, geomCenter)
+                        #print "Contact normal:{} ballCenter:{} geomCenter:{}".format(contactNormal, ballCenter, geomCenter)
 
                         # At this point, we know we're colliding already, so we can calculate the penetration depths along each AABB axis
                         penDepth = [ a._collGeoms[0]._maxPt[0] - geom._minPt[0], a._collGeoms[0]._maxPt[1] - geom._minPt[1] ] 
