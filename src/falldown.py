@@ -36,11 +36,13 @@ def main():
     ball.setMaxSpeed(1,1)
 
     rm = RowManager()
-    rm.createRowAndAddToRowList(yPosition=16)
-    rm.createRowAndAddToRowList(yPosition=32)
-    rm.createRowAndAddToRowList(yPosition=48)
-    rm.createRowAndAddToRowList(yPosition=64)
-    #rm.createRowAndAddToRowList(yPosition=60)
+    rm.createRowAndAddToRowList(yPosition=10, updateDelay=0.5)
+    rm.createRowAndAddToRowList(yPosition=20, updateDelay=0.5)
+    rm.createRowAndAddToRowList(yPosition=30, updateDelay=0.5)
+    rm.createRowAndAddToRowList(yPosition=40, updateDelay=0.5)
+    rm.createRowAndAddToRowList(yPosition=50, updateDelay=0.5)
+    rm.createRowAndAddToRowList(yPosition=60, updateDelay=0.5)
+    rm.createRowAndAddToRowList(yPosition=70, updateDelay=0.5)
 
     prev_time = pygame.time.get_ticks()
     while True:
@@ -82,7 +84,8 @@ def main():
         for row in rm._rows:
             # Test rows going off the screen
             if row._position[1] + row._size[1] / 2 == 0:
-                row.reInit(64 - row._size[1] / 2, -1)  # TODO Consider not hardcoding to -1; Allow "levels" with pre-determined gap sequences
+                #row.reInit(64 - row._size[1] / 2, -1)  # TODO Consider not hardcoding to -1; Allow "levels" with pre-determined gap sequences
+                row.reInit(70 - row._size[1] / 2, -1)  # NOTE decide what to do with new rows.. starting at 70 works if we're starting new rows every 10 grid cells
                 # NOTE render geom and collision geom are not recomputed until the next update(). But it's ok; at this point in time, the row is off the screen
             # Test collisions
             for geom in row._collGeoms:
