@@ -1,7 +1,9 @@
 from gameobj import GameObj
 import pygame
 from collision_aabb import CollisionAABB
+from ball_game_state import BallGameState
 
+# TODO Consider putting BallControlState into its own class?
 class BallControlState:
     def __init__(self):
         self.leftKeyPressed = False
@@ -23,25 +25,17 @@ class BallControlState:
         self.leftKeyPressed = False
         self.rightKeyPressed = False
 
-
 class Ball(GameObj):
     def __init__(self):
         super(Ball, self).__init__()
 
         self.setSize(2,2)
 
-        # HMM observation.. We don't need any 'on_row' or 'falling' states.. The ball falling or being on the row is taken care of by collision detection
-        # TODO: Get rid of objState
-        self._objState = 'falling'
-        self._update_delay_dict = { 'on_row' : 
-                                    { 0 : {'init': 0.01, 'inc': 0, 'max': 0.01, 'dec': 0, 'floor': 0.01}
-                                    , 1 : {'init': 0, 'inc': 0, 'max': 0, 'dec': 0, 'floor': 0 }
-                                    }
-                                  , 'falling' :
-                                    { 0 : {'init': 0.06, 'inc': 0.0, 'max': 0.06, 'dec': 0.00, 'floor': 0.06 }
-                                    , 1 : {'init': 0.03, 'inc': 0.0, 'max': 0.03, 'dec': 0.01, 'floor': 0.01 }
-                                    }
-                                  }
+        self._objState = BallGameState.UNINITIALIZED
+        
+        self._update_delay_dict = [ {'init': 0.06, 'inc': 0.0, 'max': 0.06, 'dec': 0.00, 'floor': 0.06 }
+                                  , {'init': 0.03, 'inc': 0.0, 'max': 0.03, 'dec': 0.01, 'floor': 0.01 }
+                                  ]
 
         self.resetUpdateDelay()
 
@@ -67,7 +61,7 @@ class Ball(GameObj):
 
     def resetUpdateDelay(self):
         # NOTE self._updateDelay_s is a member of gameObj.. But we're not using it here. Thoughts?
-        self._update_delay = [ self._update_delay_dict[self._objState][0]['init'], self._update_delay_dict[self._objState][1]['init'] ]
+        self._update_delay = [ self._update_delay_dict[0]['init'], self._update_delay_dict[1]['init'] ]
         pass
 
 
@@ -92,10 +86,9 @@ class Ball(GameObj):
                 self._position[i] += self._speed[i]
 
                 # Recompute the update delay in this direction, using _update_delay_dict
-                # TODO - get rid of objState
-                self._update_delay[i] -= self._update_delay_dict[ self._objState ][i]['dec']
-                if self._update_delay[i] < self._update_delay_dict[ self._objState ][i]['floor']:
-                    self._update_delay[i] = self._update_delay_dict[ self._objState ][i]['floor']
+                self._update_delay[i] -= self._update_delay_dict[i]['dec']
+                if self._update_delay[i] < self._update_delay_dict[i]['floor']:
+                    self._update_delay[i] = self._update_delay_dict[i]['floor']
 
         self._computeCollisionGeometry(cell_size)
 

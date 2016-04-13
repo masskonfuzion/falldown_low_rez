@@ -9,6 +9,7 @@ import math
 from ball import Ball
 from row import Row
 from row_manager import RowManager
+from ball_game_state import BallGameState
 
 # TODO: For scorekeeping, keep track of ball's last contact? e.g., with_row, with_boundary, something like that? That way, we can know when the ball fall through a hole, and give points. Give bonuses for touching the bottom of the screen
 
@@ -19,6 +20,14 @@ def drawGrid(screen, cell_size, screen_size):
         pygame.draw.line(screen, color, ( 0                     , (i + 1) * cell_size[0] ), ( screen_size[1]        , (i + 1) * cell_size[1] ) )
 
 def main():
+    # TODO add game states (e.g. intro, playing, menu, etc)
+    # TODO add scoring / game logic
+    #   Ideas:
+    #   Game requires fierce tapping to move (instead of auto move)
+    #   Game can include powerups (e.g., auto-move; warp)
+    #   Game evaluates difficulty and how "nice" it's been to you; e.g. game knows how many rows are on screen; where you are on screen; when it last gave you a powerup; etc. Judge when to dole out powerups based on that
+    #   Scorekeeping requires detecting collisions with a row's gap
+
     pygame.init()
 
     # dirt-nasty initialization: screen_size is a tuple (width, height); width, height is initialized as 640x640
@@ -91,31 +100,35 @@ def main():
             for geom in row._collGeoms:
                 if geom:
                     if geom.isColliding(ball._collGeoms[0], cell_size):
-                        # Compute the collision normal (from the center of one AABB to the center of the other. Note: this is what a true contract resolution system should be doing)
-                        # Multiply by 0.5 to force Python to convert the numbers from int to float
-                        ballCenter = [ ball._position[0] + ball._size[0] * 0.5, ball._position[1] + ball._size[1] * 0.5 ]
-                        geomCenter = [ geom._position[0] + geom._size[0] * 0.5, geom._position[1] + geom._size[1] * 0.5 ]
+                        if geom._type == Row.COLLISION_TYPE_ROW:
+                            # Compute the collision normal (from the center of one AABB to the center of the other. Note: this is what a true contract resolution system should be doing)
+                            # Multiply by 0.5 to force Python to convert the numbers from int to float
+                            ballCenter = [ ball._position[0] + ball._size[0] * 0.5, ball._position[1] + ball._size[1] * 0.5 ]
+                            geomCenter = [ geom._position[0] + geom._size[0] * 0.5, geom._position[1] + geom._size[1] * 0.5 ]
 
-                        # This is a straight-up vector subtraction. No vector class needed :-) We're taking madd shortcuts
-                        contactNormal = [ ballCenter[0] - geomCenter[0], ballCenter[1] - geomCenter[1] ]
+                            # This is a straight-up vector subtraction. No vector class needed :-) We're taking madd shortcuts
+                            contactNormal = [ ballCenter[0] - geomCenter[0], ballCenter[1] - geomCenter[1] ]
 
-                        # At this point, we know we're colliding already, so we can calculate the penetration depths along each AABB axis
-                        penDepth = [ ball._collGeoms[0]._maxPt[0] - geom._minPt[0], ball._collGeoms[0]._maxPt[1] - geom._minPt[1] ] 
+                            # At this point, we know we're colliding already, so we can calculate the penetration depths along each AABB axis
+                            penDepth = [ ball._collGeoms[0]._maxPt[0] - geom._minPt[0], ball._collGeoms[0]._maxPt[1] - geom._minPt[1] ] 
 
-                        correctionVector = [0, 0]
+                            correctionVector = [0, 0]
 
-                        if abs(penDepth[0]) < abs(penDepth[1]):
-                            correctionVector[0] = -penDepth[0] / cell_size[0]
-                        else:
-                            correctionVector[1] = -penDepth[1] / cell_size[1]
+                            if abs(penDepth[0]) < abs(penDepth[1]):
+                                correctionVector[0] = -penDepth[0] / cell_size[0]
+                            else:
+                                correctionVector[1] = -penDepth[1] / cell_size[1]
 
-                        ball.setPosition( ball._position[0] + correctionVector[0], ball._position[1] + correctionVector[1] )
-                        ball._computeCollisionGeometry(cell_size) # NOTE: the ball should recompute its geometry on a setPosition() call. Perhaps a fn override is needed (right now, setPosition is part of base class)
-                        ball.resetUpdateDelay()
+                            ball.setPosition( ball._position[0] + correctionVector[0], ball._position[1] + correctionVector[1] )
+                            ball._computeCollisionGeometry(cell_size) # NOTE: the ball should recompute its geometry on a setPosition() call. Perhaps a fn override is needed (right now, setPosition is part of base class)
+                            ball.resetUpdateDelay()
 
-                        # Note: The following draw statements will be invisible unless you also disable screen filling in the draw() fn. But then, the screen won't clear, and you'll have a trail
-                        #pygame.draw.circle(screen, (128,0,0), (int(ballCenter[0] * cell_size[0]), int(ballCenter[1] * cell_size[1])), 16, 2)
-                        #pygame.draw.circle(screen, (128,0,128), (int(geomCenter[0] * cell_size[0]), int(geomCenter[1] * cell_size[1])), 16, 2)
+                            # Note: The following draw statements will be invisible unless you also disable screen filling in the draw() fn. But then, the screen won't clear, and you'll have a trail
+                            #pygame.draw.circle(screen, (128,0,0), (int(ballCenter[0] * cell_size[0]), int(ballCenter[1] * cell_size[1])), 16, 2)
+                            #pygame.draw.circle(screen, (128,0,128), (int(geomCenter[0] * cell_size[0]), int(geomCenter[1] * cell_size[1])), 16, 2)
+                        elif geom._type == Row.COLLISION_TYPE_GAP:
+                            # TODO add score keeping
+                            pass
 
 
         # (e.g. constrain ball to screen space)

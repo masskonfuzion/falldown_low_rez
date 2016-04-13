@@ -17,7 +17,7 @@ class GameObj(object):
                                   # TODO - delete update_delay_s? We'll use the dict instead?
 
         self.update_delay_dict = {} # key/value pairs, e.g.: { 'on_row': 0.25, 'falling': 0.1 }
-        self._objState = "" # object's state.
+        self._objState = 0 # object's state.
         self._accumulator_s = [0.0, 0.0]
 
     def setSize(self, sx, sy):

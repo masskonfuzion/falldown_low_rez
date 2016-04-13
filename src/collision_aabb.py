@@ -8,6 +8,7 @@ class CollisionAABB(GameObj):
         # Size is given in grid cells - screen pixel calculations will be derived from them
         self._minPt = [0, 0]
         self._maxPt = [0, 0]
+        self._type = 0    # The idea is to give the collision geom an identifier that lets the game decide how to handle collisions involving geoms of this type
 
 
     def isColliding(self, other, cell_size):
