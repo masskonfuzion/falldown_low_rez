@@ -9,7 +9,6 @@ from collision_aabb import CollisionAABB
 class Row(GameObj):
     ''' A row of blocks.
     '''
-
     def __init__(self, numBlocks = 16, yPosition = 32, gap = -1, updateDelay = 1):
         super(Row, self).__init__()
 
@@ -45,14 +44,20 @@ class Row(GameObj):
 
     def setGap(self, gap):
         self._gap = self._getRandomGap() if gap == -1 else gap
-        #TODO Consider computing render geometry here? And also collision geometry? (If we're using collision geometry)
+
 
     def getGap(self):
         return self._gap
 
+
     def setUpdateDelay(self, delay_s):
         self._updateDelay = delay_s
 
+
+    def reInit(self, yPosition = 32, gap = -1):
+        self._position[1] = yPosition # We really only care about the row's y position on the grid (x defaults to 0)
+        # NOTE here, we simply set position; recomputation of render geometry and collision geometry is handled during the update step
+        self.setGap(gap)
 
     def update(self, dt_s, cell_size):
         # TODO: Uhm, actually move the rows
@@ -66,6 +71,7 @@ class Row(GameObj):
         # TODO: Fix - you're creating a totally new collision geom on every update.. That's wasteful. Instead, create the collision geom at the same time as the row is created
         self._computeRenderGeometry(cell_size)
         self._computeCollisionGeometry(cell_size)
+
 
     def _computeRenderGeometry(self, cell_size):
         if self._gap == 0:
@@ -90,6 +96,7 @@ class Row(GameObj):
             sPt = [ (self._gap + 1) * self._size[0] * cell_size[0], self._position[1] * cell_size[1] ]
             ePt = [ sPt[0] + (64 - (self._gap + 1) * self._size[0]) * cell_size[0], sPt[1] + self._size[1] * cell_size[1] ]
             self._drawRects[1] = (sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
+
 
     def _computeCollisionGeometry(self, cell_size):
         # NOTE: In this game, the AABB geometry is the same as the rendering geometry
@@ -120,6 +127,7 @@ class Row(GameObj):
             self._collGeoms[1]._maxPt = [ self._drawRects[1][0] + self._drawRects[1][2], self._drawRects[1][1] + self._drawRects[1][3] ]
             self._collGeoms[1].setPosition(self._getGridCoordFromScreenCoord(self._collGeoms[1]._minPt[0], cell_size), self._position[1])
             self._collGeoms[1].setSize(self._drawRects[1][2] / cell_size[0], self._size[1])
+
 
     def _getGridCoordFromScreenCoord(self, coord, cell_size):
         return coord / cell_size[0] # Cells are square, so it doesn't matter which cell_size coordinate we use

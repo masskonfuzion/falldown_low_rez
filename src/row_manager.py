@@ -11,14 +11,15 @@ class RowManager(GameObj):
         self._updateDelay = updateDelay # Note: the row manager keeps the update delay for all its rows
         self._rows = []
 
-        #self._create
         
     # the following function prototypes are placeholders. Update them as needed
     def createRowAndAddToRowList(self, numBlocks=16, yPosition=32, gap=-1, updateDelay=1):
         # TODO could add checking to make sure we don't add too many items
         self._rows.append( Row(numBlocks, yPosition, gap, self._updateDelay) )
 
+
     def reInitRow(self):
+        # TODO call reinit on rows; probably need to update the function signature here, to take in a row, gap, and position (et. al.?)
         pass
 
     
