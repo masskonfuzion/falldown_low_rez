@@ -13,9 +13,11 @@ class RowManager(GameObj):
 
         
     # the following function prototypes are placeholders. Update them as needed
-    def createRowAndAddToRowList(self, numBlocks=16, yPosition=32, gap=-1, updateDelay=1):
+    def createRowAndAddToRowList(self, numBlocks=16, yPosition=32, gap=-1, updateDelay=1, cellSize = [10,10]):
         # TODO could add checking to make sure we don't add too many items
         self._rows.append( Row(numBlocks, yPosition, gap, updateDelay) )
+        self._rows[ len(self._rows) - 1 ]._computeRenderGeometry(cellSize)
+        self._rows[ len(self._rows) - 1 ]._computeCollisionGeometry(cellSize)
 
 
     def reInitRow(self):

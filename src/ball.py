@@ -32,6 +32,7 @@ class Ball(GameObj):
         self.setSize(2,2)
 
         self._objState = BallGameState.UNINITIALIZED
+        self._lastContactRow = -1
         
         self._update_delay_dict = [ {'init': 0.06, 'inc': 0.0, 'max': 0.06, 'dec': 0.00, 'floor': 0.06 }
                                   , {'init': 0.03, 'inc': 0.0, 'max': 0.03, 'dec': 0.01, 'floor': 0.01 }
@@ -43,6 +44,10 @@ class Ball(GameObj):
         self.controlState = BallControlState()
 
         self._collGeoms = [ CollisionAABB() ]  # A list with 1 elements; we use a list here because it's what our algorithms want
+
+
+    def changeGameState(self, newState):
+        self._objState = newState
 
 
     def draw(self, screen, cell_size):
@@ -59,6 +64,9 @@ class Ball(GameObj):
             geom.draw(screen, cell_size)
 
 
+    def getGameState(self):
+        return self._objState
+
     def resetUpdateDelay(self):
         # NOTE self._updateDelay_s is a member of gameObj.. But we're not using it here. Thoughts?
         self._update_delay = [ self._update_delay_dict[0]['init'], self._update_delay_dict[1]['init'] ]
@@ -72,6 +80,8 @@ class Ball(GameObj):
             self._speed[0] = -self._maxSpeed[0]
         elif self.controlState.rightKeyPressed:
             self._speed[0] = self._maxSpeed[0]
+        else:
+            self._speed[0] = 0
 
 
         # Move the ball (if applicable -- only move if update delay has elapsed)

@@ -70,10 +70,10 @@ class Row(GameObj):
             self._accumulator_s[1] -= self._updateDelay
             self._position[1] -= 1
 
-        # Upon movement, recompute render and collision geometry
-        # TODO: Fix - you're creating a totally new collision geom on every update.. That's wasteful. Instead, create the collision geom at the same time as the row is created
-        self._computeRenderGeometry(cell_size)
-        self._computeCollisionGeometry(cell_size)
+            # Upon movement, recompute render and collision geometry
+            # TODO: Fix - you're creating a totally new collision geom on every update.. That's wasteful. Instead, create the collision geom at the same time as the row is created
+            self._computeRenderGeometry(cell_size)
+            self._computeCollisionGeometry(cell_size)
 
 
     def _computeRenderGeometry(self, cell_size):
@@ -104,18 +104,23 @@ class Row(GameObj):
     def _computeCollisionGeometry(self, cell_size):
         # NOTE: In this game, the AABB geometry is the same as the rendering geometry
 
+        # NOTE: We make sure to put the gap in slot 0, so we can test for collisions with the ball against the gap 1st, before the row geoms
+
         # TODO Don't create new CollisionAABB's at every recomputation.. That stresses the garbage collector. Just reinitialize existing geoms. For geom[2], which may or may not be active, set to COLLISION_TYPE_NONE to tell game not to use it for anything
 
         # Also Note: You could have computed the collision geom based on the render geometry, but multiplying things is more fun
         self._collGeoms[0] = CollisionAABB()
         self._collGeoms[0]._type = Row.COLLISION_TYPE_GAP
-        self._collGeoms[0]._minPt = [ self._gap * self._size[0] * cell_size[0], self._position[1] * cell_size[1] ]
-        self._collGeoms[0]._maxPt = [ (self._gap * self._size[0] * cell_size[0]) + self._size[0] * cell_size[0], (self._position[1] * cell_size[1]) + self._size[1] * cell_size[1] ]
-        self._collGeoms[0].setPosition(self._gap * self._size[0], self._position[1])
-        self._collGeoms[0].setSize(self._drawRects[0][2] / cell_size[0], self._size[1])
+        offset = 2 # Grid offset to put collision 'zone' for score keeping
+        self._collGeoms[0]._minPt = [ (self._gap * self._size[0] * cell_size[0]) + cell_size[0], (self._position[1] + self._size[1] + offset) * cell_size[1] ]
+        self._collGeoms[0]._maxPt = [ (self._gap * self._size[0] * cell_size[0]) + (self._size[0] - 1) * cell_size[0], (self._position[1] + self._size[1] + offset + 1) * cell_size[1] ]
+        self._collGeoms[0].setPosition(self._getGridCoordFromScreenCoord(self._collGeoms[0]._minPt[0], cell_size), self._position[1] + self._size[1] + offset)
+        self._collGeoms[0].setSize((self._collGeoms[0]._maxPt[0] - self._collGeoms[0]._minPt[0]) / cell_size[0], 1)
+        #print "Gap: type:{} minPt:{} maxPt:{} pos:{} size:{}".format(self._collGeoms[0]._type, self._collGeoms[0]._minPt, self._collGeoms[0]._maxPt, self._collGeoms[0]._position, self._collGeoms[0]._size)
 
         if self._gap == 0 or self._gap == self._numBlocks - 1:
             self._collGeoms[1] = CollisionAABB()
+            self._collGeoms[2] = None
             #self._collGeoms[0].setPosition(self._position[0], self._position[1])
 
             # NOTE: Here, we're totally cheating and computing the AABB based on the render geometry.
@@ -123,8 +128,9 @@ class Row(GameObj):
             self._collGeoms[1]._type = Row.COLLISION_TYPE_ROW
             self._collGeoms[1]._minPt = [ self._drawRects[0][0], self._drawRects[0][1] ]
             self._collGeoms[1]._maxPt = [ self._drawRects[0][0] + self._drawRects[0][2], self._drawRects[0][1] + self._drawRects[0][3] ]
-            self._collGeoms[1].setPosition(self._getGridCoordFromScreenCoord(self._collGeoms[0]._minPt[0], cell_size), self._position[1])
+            self._collGeoms[1].setPosition(self._getGridCoordFromScreenCoord(self._collGeoms[1]._minPt[0], cell_size), self._position[1])
             self._collGeoms[1].setSize(self._drawRects[0][2] / cell_size[0], self._size[1])
+            #print "Row: type:{} minPt:{} maxPt:{} pos:{} size:{}".format(self._collGeoms[1]._type, self._collGeoms[1]._minPt, self._collGeoms[1]._maxPt, self._collGeoms[1]._position, self._collGeoms[1]._size)
 
         else:
             # Note: You ALWAYS will have at least 2 collision geom, so the if/else conditions could be different. But whatever.. :-D
@@ -134,14 +140,18 @@ class Row(GameObj):
             self._collGeoms[1]._type = Row.COLLISION_TYPE_ROW
             self._collGeoms[1]._minPt = [ self._drawRects[0][0], self._drawRects[0][1] ]
             self._collGeoms[1]._maxPt = [ self._drawRects[0][0] + self._drawRects[0][2], self._drawRects[0][1] + self._drawRects[0][3] ]
-            self._collGeoms[1].setPosition(self._getGridCoordFromScreenCoord(self._collGeoms[0]._minPt[0], cell_size), self._position[1])
+            self._collGeoms[1].setPosition(self._getGridCoordFromScreenCoord(self._collGeoms[1]._minPt[0], cell_size), self._position[1])
             self._collGeoms[1].setSize(self._drawRects[0][2] / cell_size[0], self._size[1])
+            #print "Row: type:{} minPt:{} maxPt:{} pos:{} size:{}".format(self._collGeoms[1]._type, self._collGeoms[1]._minPt, self._collGeoms[1]._maxPt, self._collGeoms[1]._position, self._collGeoms[1]._size)
 
             self._collGeoms[2]._type = Row.COLLISION_TYPE_ROW
             self._collGeoms[2]._minPt = [ self._drawRects[1][0], self._drawRects[1][1] ]
             self._collGeoms[2]._maxPt = [ self._drawRects[1][0] + self._drawRects[1][2], self._drawRects[1][1] + self._drawRects[1][3] ]
-            self._collGeoms[2].setPosition(self._getGridCoordFromScreenCoord(self._collGeoms[1]._minPt[0], cell_size), self._position[1])
+            self._collGeoms[2].setPosition(self._getGridCoordFromScreenCoord(self._collGeoms[2]._minPt[0], cell_size), self._position[1])
             self._collGeoms[2].setSize(self._drawRects[1][2] / cell_size[0], self._size[1])
+            #print "Row: type:{} minPt:{} maxPt:{} pos:{} size:{}".format(self._collGeoms[2]._type, self._collGeoms[2]._minPt, self._collGeoms[2]._maxPt, self._collGeoms[2]._position, self._collGeoms[2]._size)
+
+        #print
 
 
     def _getGridCoordFromScreenCoord(self, coord, cell_size):

@@ -44,14 +44,16 @@ def main():
     ball.setSpeed(0,1)
     ball.setMaxSpeed(1,1)
 
+    scoredFlag = False # Flag that tells whether player has scored or not # TODO make scorekeeping/game event management more robust
+
     rm = RowManager()
-    rm.createRowAndAddToRowList(yPosition=10, updateDelay=0.5)
-    rm.createRowAndAddToRowList(yPosition=20, updateDelay=0.5)
-    rm.createRowAndAddToRowList(yPosition=30, updateDelay=0.5)
-    rm.createRowAndAddToRowList(yPosition=40, updateDelay=0.5)
-    rm.createRowAndAddToRowList(yPosition=50, updateDelay=0.5)
-    rm.createRowAndAddToRowList(yPosition=60, updateDelay=0.5)
-    rm.createRowAndAddToRowList(yPosition=70, updateDelay=0.5)
+    rm.createRowAndAddToRowList(yPosition=10, updateDelay=1, cellSize = cell_size)
+    rm.createRowAndAddToRowList(yPosition=20, updateDelay=1, cellSize = cell_size)
+    rm.createRowAndAddToRowList(yPosition=30, updateDelay=1, cellSize = cell_size)
+    rm.createRowAndAddToRowList(yPosition=40, updateDelay=1, cellSize = cell_size)
+    rm.createRowAndAddToRowList(yPosition=50, updateDelay=1, cellSize = cell_size)
+    rm.createRowAndAddToRowList(yPosition=60, updateDelay=1, cellSize = cell_size)
+    rm.createRowAndAddToRowList(yPosition=70, updateDelay=1, cellSize = cell_size)
 
     prev_time = pygame.time.get_ticks()
     while True:
@@ -90,7 +92,11 @@ def main():
         # Get collisions (note - here, we're using specialized logic. For a more generic game engine, we would need to do more work here. But, we're purpose-building the "engine" for this game, sooo whatever :-D
         # There can only ever be 1 collision/contact in this game..
         # O(n^2)... terrible
-        for row in rm._rows:
+
+        # NOTE To properly evaluate scoring logic, we need to know which row the ball is touching. We can either add a data member to the row object or otherwise use a counter loop, rather than an iterator. We chose the counter loop
+        for i in xrange(0, len(rm._rows)):
+            row = rm._rows[i]
+
             # Test rows going off the screen
             if row._position[1] + row._size[1] / 2 == 0:
                 #row.reInit(64 - row._size[1] / 2, -1)  # TODO Consider not hardcoding to -1; Allow "levels" with pre-determined gap sequences
@@ -99,8 +105,17 @@ def main():
             # Test collisions
             for geom in row._collGeoms:
                 if geom:
+                    # NOTE: We need to test for collision with a gap first, then check for the row, because the ball can possibly be in contact with both the row and gap at the same time. That way, we can be sure that we're clearly on a gap if the ball is in contact with the gap but not the row at the same time.
+                    # TODO remove cell_size from the isColliding call
                     if geom.isColliding(ball._collGeoms[0], cell_size):
-                        if geom._type == Row.COLLISION_TYPE_ROW:
+                        if geom._type == Row.COLLISION_TYPE_GAP:
+                            # TODO add score keeping
+                            if ball.getGameState() != BallGameState.FREEFALL:
+                                ball.changeGameState(BallGameState.FREEFALL)
+                                scoredFlag = True
+                                print "Changing ball game state to FREEFALL"
+
+                        elif geom._type == Row.COLLISION_TYPE_ROW:
                             # Compute the collision normal (from the center of one AABB to the center of the other. Note: this is what a true contract resolution system should be doing)
                             # Multiply by 0.5 to force Python to convert the numbers from int to float
                             ballCenter = [ ball._position[0] + ball._size[0] * 0.5, ball._position[1] + ball._size[1] * 0.5 ]
@@ -126,10 +141,12 @@ def main():
                             # Note: The following draw statements will be invisible unless you also disable screen filling in the draw() fn. But then, the screen won't clear, and you'll have a trail
                             #pygame.draw.circle(screen, (128,0,0), (int(ballCenter[0] * cell_size[0]), int(ballCenter[1] * cell_size[1])), 16, 2)
                             #pygame.draw.circle(screen, (128,0,128), (int(geomCenter[0] * cell_size[0]), int(geomCenter[1] * cell_size[1])), 16, 2)
-                        elif geom._type == Row.COLLISION_TYPE_GAP:
-                            # TODO add score keeping
-                            pass
 
+                            # Change gamestate of ball
+                            if ball.getGameState() != BallGameState.ON_ROW and ball._lastContactRow != i:
+                                ball.changeGameState(BallGameState.ON_ROW)
+                                ball._lastContactRow = i
+                                print "Changing ball game state to ON_ROW"
 
         # (e.g. constrain ball to screen space)
         # TODO put constraints into function?
@@ -147,6 +164,14 @@ def main():
         rm.draw(screen, cell_size)
 
         # ----- post-render (e.g. score/overlays)
+        # If ball state is FREEFALL at this point, then we can register a score
+        #if scoredFlag:
+        #    print "Jyeaw! Score!"
+        #    scoredFlag = False
+        
+        #for i in range(0, ball.getGameState()):
+        #    print "BallGameState:{}".format(ball.getGameState()),
+        #print
 
         
         pygame.display.flip()
