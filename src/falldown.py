@@ -13,11 +13,35 @@ from ball_game_state import BallGameState
 
 # TODO: For scorekeeping, keep track of ball's last contact? e.g., with_row, with_boundary, something like that? That way, we can know when the ball fall through a hole, and give points. Give bonuses for touching the bottom of the screen
 
+class DaGame:
+    ''' Application class that stores all the data and stuff
+    '''
+    def __init__(self):
+        pass
+
 def drawGrid(screen, cell_size, screen_size):
     for i in range(0, 63):
         color = 192, 192, 192
         pygame.draw.line(screen, color, ( (i + 1) * cell_size[0], 0                      ), ( (i + 1) * cell_size[1], screen_size[1]         ) )
         pygame.draw.line(screen, color, ( 0                     , (i + 1) * cell_size[0] ), ( screen_size[1]        , (i + 1) * cell_size[1] ) )
+
+def initLevel(row_mgr, num_rows, update_delay, reInitCell, cell_size):
+    # TODO Make the following updates:
+    # - change num_rows to row_spacing. or something.
+    # - Generate rows so that row spacing is consistent all the way down the screen. Mimic scenario where, if spacing is 10, then 7 rows are created (i.e., there's a row created off-screen, at cell 70, to keep spacing consistent on reInit. The goal is to make sure that the spacing of all rows on the screen is ALWAYS the same; so make enough rows to ensure that
+    # - And lastly, compute the reInitCell - the cell position where each row should be reInitialized at when a row goes above the top edge of the screen (and make sure it gets returned to the main function.. Perhaps store these properties in a dict or some other object that Python will pass to the function as a reference)
+    # - Make sure this initLevel function is smart enough to add new rows to the row list when necessary, and to otherwise reInit rows when it's not necessary to add new rows to the list. Maybe make the function dumb, and have the prorammer specify it in the function call? Or otherwise, have the function compute the number of rows necessary to keep the row spacing even, and add new rows as necessary.
+    # TODO actually.. initLevel should belong to the row manager.. That's the entire point
+
+    #for i in xrange(0, num_rows):
+    if True: # Putting in a BS conditional just to keep indent levels the same. Next project should be to move the initLevel function into the row manager
+        row_mgr.createRowAndAddToRowList(yPosition=10, updateDelay=update_delay, cellSize = cell_size)
+        row_mgr.createRowAndAddToRowList(yPosition=20, updateDelay=update_delay, cellSize = cell_size)
+        row_mgr.createRowAndAddToRowList(yPosition=30, updateDelay=update_delay, cellSize = cell_size)
+        row_mgr.createRowAndAddToRowList(yPosition=40, updateDelay=update_delay, cellSize = cell_size)
+        row_mgr.createRowAndAddToRowList(yPosition=50, updateDelay=update_delay, cellSize = cell_size)
+        row_mgr.createRowAndAddToRowList(yPosition=60, updateDelay=update_delay, cellSize = cell_size)
+        row_mgr.createRowAndAddToRowList(yPosition=70, updateDelay=update_delay, cellSize = cell_size)
 
 def main():
     # TODO add game states (e.g. intro, playing, menu, etc)
@@ -45,15 +69,20 @@ def main():
     ball.setMaxSpeed(1,1)
 
     scoredFlag = False # Flag that tells whether player has scored or not # TODO make scorekeeping/game event management more robust
+    score = 0
+    GAP_SCORE = 10  # NOTE Scoring elements could be managed by a class/object. But whatever, no time!
+
+    #rowReInitGridCell = 0       # Grid cell where new rows will be added (more accurately, where they'll be re-initialized)
+    initialRowUpdateDelay = 1
+    initialNumRows = 7
+    #initialSpacingBetweenRows = 10
+
+
 
     rm = RowManager()
-    rm.createRowAndAddToRowList(yPosition=10, updateDelay=1, cellSize = cell_size)
-    rm.createRowAndAddToRowList(yPosition=20, updateDelay=1, cellSize = cell_size)
-    rm.createRowAndAddToRowList(yPosition=30, updateDelay=1, cellSize = cell_size)
-    rm.createRowAndAddToRowList(yPosition=40, updateDelay=1, cellSize = cell_size)
-    rm.createRowAndAddToRowList(yPosition=50, updateDelay=1, cellSize = cell_size)
-    rm.createRowAndAddToRowList(yPosition=60, updateDelay=1, cellSize = cell_size)
-    rm.createRowAndAddToRowList(yPosition=70, updateDelay=1, cellSize = cell_size)
+    initLevel(rm, initialNumRows, initialRowUpdateDelay, 70, cell_size) 
+    # TODO make sure the reInit call uses the reInitCell defined here (and for that matter, don't hardcode it here)
+    # TODO actually.. initLevel should belong to the row manager.. That's the entire point
 
     prev_time = pygame.time.get_ticks()
     while True:
@@ -99,8 +128,8 @@ def main():
 
             # Test rows going off the screen
             if row._position[1] + row._size[1] / 2 == 0:
-                #row.reInit(64 - row._size[1] / 2, -1)  # TODO Consider not hardcoding to -1; Allow "levels" with pre-determined gap sequences
-                row.reInit(70 - row._size[1] / 2, -1)  # NOTE decide what to do with new rows.. starting at 70 works if we're starting new rows every 10 grid cells
+                #row.reInit(64 - row._size[1] / 2, -1)  # TODO Consider not hardcoding gap to -1; Allow "levels" with pre-determined gap sequences
+                row.reInit(70 - row._size[1] / 2, -1)  # TODO decide what to do with new rows.. starting at 70 works if we're starting new rows every 10 grid cells. Figure out how to compute
                 # NOTE render geom and collision geom are not recomputed until the next update(). But it's ok; at this point in time, the row is off the screen
             # Test collisions
             for geom in row._collGeoms:
@@ -156,6 +185,8 @@ def main():
             if ball._position[i] + ball._size[i] > 64:
                 ball._position[i] = 64 - ball._size[i]
 
+            # TODO Add a ball game state here? Right now, if the ball reaches the bottom of the screen, it's considered 'freefall' because there's nothing that sets the ball game state to anything else
+
         # ----- Draw stuff
         screen.fill(bg_col)
 
@@ -165,9 +196,10 @@ def main():
 
         # ----- post-render (e.g. score/overlays)
         # If ball state is FREEFALL at this point, then we can register a score
-        #if scoredFlag:
-        #    print "Jyeaw! Score!"
-        #    scoredFlag = False
+        if scoredFlag:
+            #print "Jyeaw! Score!"
+            score += GAP_SCORE # GAP_SCORE can increase as the difficulty level increases
+            scoredFlag = False
         
         #for i in range(0, ball.getGameState()):
         #    print "BallGameState:{}".format(ball.getGameState()),
