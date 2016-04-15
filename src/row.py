@@ -111,9 +111,9 @@ class Row(GameObj):
         # Also Note: You could have computed the collision geom based on the render geometry, but multiplying things is more fun
         self._collGeoms[0] = CollisionAABB()
         self._collGeoms[0]._type = Row.COLLISION_TYPE_GAP
-        offset = 2 # Grid offset to put collision 'zone' for score keeping
-        self._collGeoms[0]._minPt = [ (self._gap * self._size[0] * cell_size[0]) + cell_size[0], (self._position[1] + self._size[1] + offset) * cell_size[1] ]
-        self._collGeoms[0]._maxPt = [ (self._gap * self._size[0] * cell_size[0]) + (self._size[0] - 1) * cell_size[0], (self._position[1] + self._size[1] + offset + 1) * cell_size[1] ]
+        offset = 0 # Grid offset to put collision 'zone' for score keeping
+        self._collGeoms[0]._minPt = [ (self._gap * self._size[0] * cell_size[0]) + cell_size[0], (self._position[1]) * cell_size[1] ]
+        self._collGeoms[0]._maxPt = [ (self._gap * self._size[0] * cell_size[0]) + (self._size[0] - 1) * cell_size[0], (self._position[1] + self._size[1] + offset) * cell_size[1] ]
         self._collGeoms[0].setPosition(self._getGridCoordFromScreenCoord(self._collGeoms[0]._minPt[0], cell_size), self._position[1] + self._size[1] + offset)
         self._collGeoms[0].setSize((self._collGeoms[0]._maxPt[0] - self._collGeoms[0]._minPt[0]) / cell_size[0], 1)
         #print "Gap: type:{} minPt:{} maxPt:{} pos:{} size:{}".format(self._collGeoms[0]._type, self._collGeoms[0]._minPt, self._collGeoms[0]._maxPt, self._collGeoms[0]._position, self._collGeoms[0]._size)
