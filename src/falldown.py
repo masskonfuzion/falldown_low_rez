@@ -207,9 +207,9 @@ def main():
         # ----- post-render (e.g. score/overlays)
         # If ball state is FREEFALL at this point, then we can register a score
         if scoredFlag:
-            print "Jyeaw! Score"
             score += GAP_SCORE # GAP_SCORE can increase as the difficulty level increases
             scoredFlag = False
+            print "Jyeaw! Score={}".format(score)
         
         #for i in range(0, ball.getGameState()):
         #    print "BallGameState:{}".format(ball.getGameState()),
