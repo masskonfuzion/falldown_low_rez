@@ -10,6 +10,9 @@ class CollisionAABB(GameObj):
         self._maxPt = [0, 0]
         self._type = 0    # The idea is to give the collision geom an identifier that lets the game decide how to handle collisions involving geoms of this type
 
+    def __str__(self):
+        return "minPt:{} maxPt:{} type:{}".format(self._minPt, self._maxPt, self._type)
+
 
     def isColliding(self, other, cell_size):
         ''' Test for collision with the another AABB, aptly named, "other"

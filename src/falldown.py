@@ -25,23 +25,6 @@ def drawGrid(screen, cell_size, screen_size):
         pygame.draw.line(screen, color, ( (i + 1) * cell_size[0], 0                      ), ( (i + 1) * cell_size[1], screen_size[1]         ) )
         pygame.draw.line(screen, color, ( 0                     , (i + 1) * cell_size[0] ), ( screen_size[1]        , (i + 1) * cell_size[1] ) )
 
-def initLevel(row_mgr, num_rows, update_delay, reInitCell, cell_size):
-    # TODO Make the following updates:
-    # - change num_rows to row_spacing. or something.
-    # - Generate rows so that row spacing is consistent all the way down the screen. Mimic scenario where, if spacing is 10, then 7 rows are created (i.e., there's a row created off-screen, at cell 70, to keep spacing consistent on reInit. The goal is to make sure that the spacing of all rows on the screen is ALWAYS the same; so make enough rows to ensure that
-    # - And lastly, compute the reInitCell - the cell position where each row should be reInitialized at when a row goes above the top edge of the screen (and make sure it gets returned to the main function.. Perhaps store these properties in a dict or some other object that Python will pass to the function as a reference)
-    # - Make sure this initLevel function is smart enough to add new rows to the row list when necessary, and to otherwise reInit rows when it's not necessary to add new rows to the list. Maybe make the function dumb, and have the prorammer specify it in the function call? Or otherwise, have the function compute the number of rows necessary to keep the row spacing even, and add new rows as necessary.
-    # TODO actually.. initLevel should belong to the row manager.. That's the entire point
-
-    #for i in xrange(0, num_rows):
-    if True: # Putting in a BS conditional just to keep indent levels the same. Next project should be to move the initLevel function into the row manager
-        row_mgr.createRowAndAddToRowList(yPosition=10, updateDelay=update_delay, cellSize = cell_size)
-        row_mgr.createRowAndAddToRowList(yPosition=20, updateDelay=update_delay, cellSize = cell_size)
-        row_mgr.createRowAndAddToRowList(yPosition=30, updateDelay=update_delay, cellSize = cell_size)
-        row_mgr.createRowAndAddToRowList(yPosition=40, updateDelay=update_delay, cellSize = cell_size)
-        row_mgr.createRowAndAddToRowList(yPosition=50, updateDelay=update_delay, cellSize = cell_size)
-        row_mgr.createRowAndAddToRowList(yPosition=60, updateDelay=update_delay, cellSize = cell_size)
-        row_mgr.createRowAndAddToRowList(yPosition=70, updateDelay=update_delay, cellSize = cell_size)
 
 def main():
     # TODO add game states (e.g. intro, playing, menu, etc)
@@ -64,9 +47,11 @@ def main():
 
     # TODO add ball to a list of game objects. e.g. [ ball, [ rows ] ], or maybe even better: [ ball, row_mgr ] (where row_mgr contains rows)
     ball = Ball()
-    ball.setPosition(10, 10) # Position is given in coordinates on the 64x64 grid. Actual screen coordinates are calculated from grid coordinates
+    ball.setPosition(32, 0) # Position is given in coordinates on the 64x64 grid. Actual screen coordinates are calculated from grid coordinates
     ball.setSpeed(0,1)
     ball.setMaxSpeed(1,1)
+    ball.changeGameState(BallGameState.FREEFALL)
+    print "Changing ball game state to FREEFALL"
 
     scoredFlag = False # Flag that tells whether player has scored or not # TODO make scorekeeping/game event management more robust
     score = 0
@@ -80,11 +65,13 @@ def main():
 
 
     rm = RowManager()
-    initLevel(rm, initialNumRows, initialRowUpdateDelay, 70, cell_size) 
+    rm.initLevel(initialNumRows, initialRowUpdateDelay, 70, cell_size) 
     # TODO make sure the reInit call uses the reInitCell defined here (and for that matter, don't hardcode it here)
     # TODO actually.. initLevel should belong to the row manager.. That's the entire point
 
+
     prev_time = pygame.time.get_ticks()
+
     while True:
         curr_time = pygame.time.get_ticks()
         dt_s = (curr_time - prev_time) / 1000.0
@@ -125,12 +112,17 @@ def main():
         # NOTE To properly evaluate scoring logic, we need to know which row the ball is touching. We can either add a data member to the row object or otherwise use a counter loop, rather than an iterator. We chose the counter loop
         for i in xrange(0, len(rm._rows)):
             row = rm._rows[i]
+            rowCollisionFound = False # Perhaps put this variable in a class/object? (Purpose of var is to stop testing collisions against all rows upon 1st collision)
+
+            #print "DEBUG row={} gap={}".format(i, row._gap)
+            #print "\tDEBUG row._collGeoms={}".format(row._collGeoms)
 
             # Test rows going off the screen
             if row._position[1] + row._size[1] / 2 == 0:
                 #row.reInit(64 - row._size[1] / 2, -1)  # TODO Consider not hardcoding gap to -1; Allow "levels" with pre-determined gap sequences
                 row.reInit(70 - row._size[1] / 2, -1)  # TODO decide what to do with new rows.. starting at 70 works if we're starting new rows every 10 grid cells. Figure out how to compute
                 # NOTE render geom and collision geom are not recomputed until the next update(). But it's ok; at this point in time, the row is off the screen
+
             # Test collisions
             for geom in row._collGeoms:
                 if geom:
@@ -138,13 +130,18 @@ def main():
                     # TODO remove cell_size from the isColliding call
                     if geom.isColliding(ball._collGeoms[0], cell_size):
                         if geom._type == Row.COLLISION_TYPE_GAP:
-                            # TODO add score keeping
+                            #print "\t\tDEBUG gap collision! ball geom={} row geom={}".format(row._collGeoms[0], geom)
                             if ball.getGameState() != BallGameState.FREEFALL:
                                 ball.changeGameState(BallGameState.FREEFALL)
-                                scoredFlag = True
                                 print "Changing ball game state to FREEFALL"
 
+                            # TODO add score keeping
+                            if ball._lastRowScored != i: 
+                                ball._lastRowScored = i 
+                                scoredFlag = True # This flag could also be handled as a message from the ball or row or whatever, to the game logic (in a better designed game), to trigger the game logic's score handler
+
                         elif geom._type == Row.COLLISION_TYPE_ROW:
+                            #print "\t\tDEBUG row collision! ball geom={} row geom={}".format(row._collGeoms[0], geom)
                             # Compute the collision normal (from the center of one AABB to the center of the other. Note: this is what a true contract resolution system should be doing)
                             # Multiply by 0.5 to force Python to convert the numbers from int to float
                             ballCenter = [ ball._position[0] + ball._size[0] * 0.5, ball._position[1] + ball._size[1] * 0.5 ]
@@ -172,10 +169,29 @@ def main():
                             #pygame.draw.circle(screen, (128,0,128), (int(geomCenter[0] * cell_size[0]), int(geomCenter[1] * cell_size[1])), 16, 2)
 
                             # Change gamestate of ball
-                            if ball.getGameState() != BallGameState.ON_ROW and ball._lastContactRow != i:
+                            if ball.getGameState() != BallGameState.ON_ROW and ball._lastRowTouched != i:
                                 ball.changeGameState(BallGameState.ON_ROW)
-                                ball._lastContactRow = i
+                                ball._lastRowTouched = i
                                 print "Changing ball game state to ON_ROW"
+
+                        rowCollisionFound = True
+                        break # break out of for loop if we have a collision
+
+                    #else:
+                    #    # If no row collisions were found at all, then we must be in freefall
+                    #    #print "\t\tDEBUG no collision! ball geom={} row geom={}".format(row._collGeoms[0], geom)
+                    #    if ball.getGameState() != BallGameState.FREEFALL:
+                    #        ball.changeGameState(BallGameState.FREEFALL)
+                    #        print "Changing ball game state to FREEFALL"
+
+            if rowCollisionFound:
+                # If we found a collision against any row, we can stop testing for any collisions, because we're done. Reset the flag and _exit all for loops_
+                rowCollisionFound = False
+                break
+
+        #print # blank line
+
+
 
         # (e.g. constrain ball to screen space)
         # TODO put constraints into function?
@@ -197,7 +213,7 @@ def main():
         # ----- post-render (e.g. score/overlays)
         # If ball state is FREEFALL at this point, then we can register a score
         if scoredFlag:
-            #print "Jyeaw! Score!"
+            print "Jyeaw! Score"
             score += GAP_SCORE # GAP_SCORE can increase as the difficulty level increases
             scoredFlag = False
         
