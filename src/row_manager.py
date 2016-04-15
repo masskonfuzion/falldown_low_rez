@@ -48,6 +48,12 @@ class RowManager(GameObj):
         for row in self._rows:
             row.update(dt_s, cell_size)
 
+            # Test rows going off the screen
+            if row._position[1] + row._size[1] / 2 == 0:
+                #row.reInit(64 - row._size[1] / 2, -1)  # TODO Consider not hardcoding gap to -1; Allow "levels" with pre-determined gap sequences
+                row.reInit(70 - row._size[1] / 2, -1)  # TODO decide what to do with new rows.. starting at 70 works if we're starting new rows every 10 grid cells. Figure out how to compute. May need to pass a game logic object into the update() functions (which means creating a game logic class/object)
+                # NOTE render geom and collision geom are not recomputed until the next update(). But it's ok; at this point in time, the row is off the screen
+
 
     def draw(self, screen, cell_size):
         ''' Draw all rows managed by the row manager
