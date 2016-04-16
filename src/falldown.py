@@ -59,13 +59,12 @@ def main():
 
     #rowReInitGridCell = 0       # Grid cell where new rows will be added (more accurately, where they'll be re-initialized)
     initialRowUpdateDelay = 1
-    initialNumRows = 7
-    #initialSpacingBetweenRows = 10
+    initialRowSpacing = 3
 
 
 
     rm = RowManager()
-    rm.initLevel(initialNumRows, initialRowUpdateDelay, 70, cell_size) 
+    rm.initLevel(initialRowSpacing, initialRowUpdateDelay, cell_size) 
     # TODO make sure the reInit call uses the reInitCell defined here (and for that matter, don't hardcode it here)
     # TODO actually.. initLevel should belong to the row manager.. That's the entire point
 
