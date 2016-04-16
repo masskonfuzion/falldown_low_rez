@@ -200,8 +200,8 @@ def main():
         screen.fill(bg_col)
 
         drawGrid(screen, cell_size, screen_size)
-        ball.draw(screen, cell_size)
         rm.draw(screen, cell_size)
+        ball.draw(screen, cell_size)
 
         # ----- post-render (e.g. score/overlays)
         # If ball state is FREEFALL at this point, then we can register a score
