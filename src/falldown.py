@@ -10,6 +10,7 @@ from ball import Ball
 from row import Row
 from row_manager import RowManager
 from ball_game_state import BallGameState
+from display_msg_manager import DisplayMessageManager
 
 # TODO: For scorekeeping, keep track of ball's last contact? e.g., with_row, with_boundary, something like that? That way, we can know when the ball fall through a hole, and give points. Give bonuses for touching the bottom of the screen
 
@@ -24,11 +25,6 @@ def drawGrid(screen, cell_size, screen_size):
         color = 192, 192, 192
         pygame.draw.line(screen, color, ( (i + 1) * cell_size[0], 0                      ), ( (i + 1) * cell_size[1], screen_size[1]         ) )
         pygame.draw.line(screen, color, ( 0                     , (i + 1) * cell_size[0] ), ( screen_size[1]        , (i + 1) * cell_size[1] ) )
-
-def getTextSurface(fontObj, txtStr, txtColor):
-    ''' Return a pygame text surface object. To render on-screen, the game must blit the surface to the screen
-    '''
-    return fontObj.render(txtStr, True, txtColor)
 
 def main():
     # TODO add game states (e.g. intro, playing, menu, etc)
@@ -48,7 +44,6 @@ def main():
     screen = pygame.display.set_mode(screen_size)
 
     bg_col = 255,255,255
-    font = pygame.font.Font('../asset/font/ARCADE.TTF', 32)
 
     # TODO add ball to a list of game objects. e.g. [ ball, [ rows ] ], or maybe even better: [ ball, row_mgr ] (where row_mgr contains rows)
     ball = Ball()
@@ -66,7 +61,7 @@ def main():
     initialRowUpdateDelay = 1
     initialRowSpacing = 3
 
-
+    mm = DisplayMessageManager()
 
     rm = RowManager()
     rm.initLevel(initialRowSpacing, initialRowUpdateDelay, cell_size) 
@@ -105,6 +100,7 @@ def main():
         # ----- Update stuff
         ball.update(dt_s, cell_size)
         rm.update(dt_s, cell_size)
+        mm.update(dt_s, cell_size)
 
         # ----- pre-render 
         # TODO make accessor functions for every _xyz member? e.g., instead of ball._position, make ball.getPosition()?
@@ -214,10 +210,9 @@ def main():
             score += GAP_SCORE # GAP_SCORE can increase as the difficulty level increases
             scoredFlag = False
             print "Jyeaw! Score={}".format(score)
+            mm.setMessage("+{}".format(GAP_SCORE), [ ball._position[0], ball._position[1] - ball._size[1] ] )
 
-        textSurface = getTextSurface(font, "Kathy Rules", (128,64,32))
-
-        screen.blit(textSurface,(100,300))
+        mm.draw(screen, cell_size)
         
         #for i in range(0, ball.getGameState()):
         #    print "BallGameState:{}".format(ball.getGameState()),
