@@ -4,7 +4,6 @@ import pygame
 import sys
 import math
 
-
 # Import game objects (perhaps this can go into a "game manager" of some sort?)
 from ball import Ball
 from row import Row
@@ -12,12 +11,14 @@ from row_manager import RowManager
 from ball_game_state import BallGameState
 from display_msg_manager import DisplayMessageManager
 
-# TODO: For scorekeeping, keep track of ball's last contact? e.g., with_row, with_boundary, something like that? That way, we can know when the ball fall through a hole, and give points. Give bonuses for touching the bottom of the screen
 
 class DaGame:
     ''' Application class that stores all the data and stuff
     '''
     def __init__(self):
+        ''' Application class
+        '''
+        # Welp, we didn't get to this in time for #LOWREZJAM. We should've started off with an application object, but we didn't, so now we have a skeleton class, to be implemented later..
         pass
 
 def drawGrid(screen, cell_size, screen_size):
@@ -38,10 +39,11 @@ def main():
     pygame.init()
 
     # dirt-nasty initialization: screen_size is a tuple (width, height); width, height is initialized as 640x640
-    screen_size = width, height = 640, 640
-    #screen_size = width, height = 854, 640 # The playable area will be a 640 x 640 square.
-    cell_size = width / 64, height / 64 # cell size (starts off as 10px x 10px. recompute this if screen size changes)
+    game_size = [640, 640]
+    screen_size = [854, 640] # The playable area will be a 640 x 640 square.
+    cell_size = [game_size[0] / 64, game_size[1] / 64] # cell size (starts off as 10px x 10px. recompute this if screen size changes)
     screen = pygame.display.set_mode(screen_size)
+    game_viewport = pygame.Surface((640, 640))
 
     bg_col = 255,255,255
 
@@ -56,6 +58,7 @@ def main():
     scoredFlag = False # Flag that tells whether player has scored or not # TODO make scorekeeping/game event management more robust
     score = 0
     GAP_SCORE = 10  # NOTE Scoring elements could be managed by a class/object. But whatever, no time!
+    tries = 3   # We're calling them "tries" because "lives" doesn't make sense for a ball :-D
 
     #rowReInitGridCell = 0       # Grid cell where new rows will be added (more accurately, where they'll be re-initialized)
     initialRowUpdateDelay = 1
@@ -198,11 +201,13 @@ def main():
             # TODO Add a ball game state here? Right now, if the ball reaches the bottom of the screen, it's considered 'freefall' because there's nothing that sets the ball game state to anything else
 
         # ----- Draw stuff
-        screen.fill(bg_col)
-
-        drawGrid(screen, cell_size, screen_size)
-        rm.draw(screen, cell_size)
-        ball.draw(screen, cell_size)
+        screen.fill((0,0,0))
+        game_viewport.fill(bg_col)
+        
+        #drawGrid(game_viewport, cell_size, screen_size)
+        drawGrid(game_viewport, cell_size, game_size)
+        rm.draw(game_viewport, cell_size)
+        ball.draw(game_viewport, cell_size)
 
         # ----- post-render (e.g. score/overlays)
         # If ball state is FREEFALL at this point, then we can register a score
@@ -212,13 +217,13 @@ def main():
             print "Jyeaw! Score={}".format(score)
             mm.setMessage("+{}".format(GAP_SCORE), [ ball._position[0], ball._position[1] - ball._size[1] ] )
 
-        mm.draw(screen, cell_size)
+        mm.draw(game_viewport, cell_size)
         
         #for i in range(0, ball.getGameState()):
         #    print "BallGameState:{}".format(ball.getGameState()),
         #print
 
-        
+        screen.blit(game_viewport, (0, 0))    # blit the game viewport onto the bigger screen
         pygame.display.flip()
 
         ## The stuff between here and tne __name__ test is debug stuff. You can delete it once the bugs are worked out
