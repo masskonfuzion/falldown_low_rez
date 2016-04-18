@@ -10,6 +10,7 @@ class RowManager(GameObj):
         self._numRows = numRows
         self._updateDelay = updateDelay # Note: the row manager keeps the update delay for all its rows. TODO: Make sure this gets userd, or otherwise delete it
         self._rows = []
+        self._rowSpacing = 6
         self._rowReinitPos = 0
 
         
@@ -35,27 +36,86 @@ class RowManager(GameObj):
         # TODO actually.. initLevel should belong to the row manager.. That's the entire point
 
         r = Row() # create throwaway row, just to get default row size (used in calculation of # rows and reinit position
-        row_spacing += r._size[1]
+        self._rowSpacing = row_spacing # store the row spacing so we can change it, from the Application class, in later calls to reInitLevel
 
-        self._numRows = (64 / row_spacing) + 1 # We can hardcode 64 because the rules of the game jam for which we're making this game require a 64x64 grid
-        self._rowReinitPos = self._numRows * row_spacing
+        # Compute the apparent spacing so the the amount of space between rows is the actual specified # (i.e., the not the specified # - row height)
+        apparent_row_spacing = row_spacing + r._size[1]
 
-        # TODO set self._numRows. Also set
-        print "DEBUG RowManager numRows:{} rowReinitPos:{}".format(self._numRows, self._rowReinitPos)
+        # NOTE Probably don't need to store self._numRows, because we can get that value from len(self._rows). Dah well... Too late to fix! Scrambling to submit game!
+        self._numRows = (64 / apparent_row_spacing) + 1 # We can hardcode 64 because the rules of the game jam for which we're making this game require a 64x64 grid
+        self._rowReinitPos = self._numRows * apparent_row_spacing
+
+        print "DEBUG RowManager rowSpacing:{} numRows:{} rowReinitPos:{}".format(self._rowSpacing, self._numRows, self._rowReinitPos)
     
         for i in xrange(0, self._numRows):
-            self.createRowAndAddToRowList(yPosition=row_spacing * (i + 1), updateDelay=update_delay, cellSize = cell_size)
+            self.createRowAndAddToRowList(yPosition=apparent_row_spacing * (i + 1), updateDelay=update_delay, cellSize = cell_size)
 
+    ## NOT WORKING!!
+    #def reInitLevel(self, row_spacing, update_delay, cell_size):
+    #    ''' Re-initialize the level.
+    #        More specifically, increase the difficulty -- reduce row spacing. This method does not support _decreasing_ the difficulty
+    #    '''
+    #    print "DEBUG RowManager BEFORE reinit: rowSpacing:{} numRows:{} rowReinitPos:{}".format(self._rowSpacing, self._numRows, self._rowReinitPos)
+
+    #    # Compute the apparent spacing so the the amount of space between rows is the actual specified # (i.e., the not the specified # - row height)
+    #    self._rowSpacing = row_spacing
+    #    apparent_row_spacing = self._rowSpacing + self._rows[0]._size[1]
+
+    #    newNumRows = (64 / apparent_row_spacing) + 1 # We can hardcode 64 because the rules of the game jam for which we're making this game require a 64x64 grid
+    #    self._rowReinitPos = newNumRows * apparent_row_spacing
+
+    #    print "DEBUG RowManager AFTER reinit: rowSpacing:{} numRows:{} rowReinitPos:{}".format(self._rowSpacing, newNumRows, self._rowReinitPos)
+    #    # Go through the rows array and change the update delay. While we're at it, let's find the lowest row on the screen (or, might be off the screen)
+
+    #    lowestRowPos = 0
+    #    for row in self._rows:
+    #        # This loop ends up redoing work already done in the above loop.. But oh well; we're scrambling to meet the Low Rez Jam 2016 submission deadline (in 3.5 hrs) so.. fix it later
+    #        row._updateDelay = update_delay
+    #        lowestRowPos = max(lowestRowPos, row._position[1])
+
+    #    # Add new rows, if applicable
+    #    currNumRows = len(self._rows)
+    #    if currNumRows < newNumRows:
+    #        newRowPos = lowestRowPos
+    #        print "DEBUG RowManager adding new rows to get from {} rows to {} rows".format(len(self._rows), newNumRows)
+    #        while len(self._rows) < newNumRows:
+    #            newRowPos += apparent_row_spacing
+    #            self.createRowAndAddToRowList(yPosition=newRowPos, updateDelay=update_delay, cellSize = cell_size)
+    #            self._rows[len(self._rows) - 1]._accumulator_s[1] = self._rows[currNumRows - 1]._accumulator_s[1] # Copy accumulator from the last item from before we started adding rows. This way, rows will all update at the same time
+
+    #    # NOTE Probably don't need to store self._numRows, because we can get that value from len(self._rows). Dah well... Too late to fix! Scrambling to submit game!
+    #    self._numRows = len(self._rows)
+
+    #    assert(self._numRows == newNumRows)
+
+    def changeUpdateDelay(self, newUpdateDelay):
+        self._updateDelay = newUpdateDelay
 
     def update(self, dt_s, cell_size):
-        for row in self._rows:
-            row.update(dt_s, cell_size)
+        self._accumulator_s[1] += dt_s
 
-            # Test rows going off the screen
-            if row._position[1] + row._size[1] / 2 == 0:
-                #row.reInit(64 - row._size[1] / 2, -1)  # TODO Consider not hardcoding gap to -1; Allow "levels" with pre-determined gap sequences
-                row.reInit(self._rowReinitPos - row._size[1] / 2, -1)  # TODO decide what to do with new rows.. starting at 70 works if we're starting new rows every 10 grid cells. Figure out how to compute. May need to pass a game logic object into the update() functions (which means creating a game logic class/object)
-                # NOTE render geom and collision geom are not recomputed until the next update(). But it's ok; at this point in time, the row is off the screen
+        if self._accumulator_s[1] > self._updateDelay:
+            self._accumulator_s[1] -= self._updateDelay
+
+            for row in self._rows:
+                row.update(dt_s, cell_size)
+
+                # Test rows going off the screen
+                if row._position[1] + row._size[1] / 2 == 0:
+                    row.reInit(self._rowReinitPos - row._size[1] / 2, -1) 
+
+                ##    # Get the position of the lowest row. If it is at or past the reinit point (which can happen when row spacing adjustment when difficulty level increases), then make the new position offset from the deepest row
+                ##    deepestRowPosition = 0
+                ##    for row_scanner in self._rows:
+                ##        deepestRowPosition = max(deepestRowPosition, row_scanner._position[1])
+
+                ##        if deepestRowPosition + row._size[1] / 2 > self._rowReinitPos - self._rowSpacing - row_scanner._size[1]:
+                ##            row.reInit((deepestRowPosition + self._rowSpacing + row._size[1]) - (row._size[1] / 2), -1)
+                ##        else:
+                ##            row.reInit(self._rowReinitPos - row._size[1] / 2, -1) 
+                    
+                    
+                    # NOTE render geom and collision geom are not recomputed until the next update(). But it's ok; at this point in time, the row is off the screen
 
 
     def draw(self, screen, cell_size):

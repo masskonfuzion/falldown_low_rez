@@ -64,16 +64,12 @@ class Row(GameObj):
         self.setGap(gap)
 
     def update(self, dt_s, cell_size):
-        self._accumulator_s[1] += dt_s # NOTE _accumulator_s is part of the gameObj class.. Perhaps break it out to the ball? Because the ball needs a [x,y] accumulator; the rows only need a single value
+        self._position[1] -= 1
 
-        if self._accumulator_s[1] >= self._updateDelay:
-            self._accumulator_s[1] -= self._updateDelay
-            self._position[1] -= 1
-
-            # Upon movement, recompute render and collision geometry
-            # TODO: Fix - you're creating a totally new collision geom on every update.. That's wasteful. Instead, create the collision geom at the same time as the row is created
-            self._computeRenderGeometry(cell_size)
-            self._computeCollisionGeometry(cell_size)
+        # Upon movement, recompute render and collision geometry
+        # TODO: Fix - you're creating a totally new collision geom on every update.. That's wasteful. Instead, create the collision geom at the same time as the row is created
+        self._computeRenderGeometry(cell_size)
+        self._computeCollisionGeometry(cell_size)
 
 
     def _computeRenderGeometry(self, cell_size):

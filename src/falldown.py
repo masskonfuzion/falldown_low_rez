@@ -41,8 +41,9 @@ class GameApplication(object):
         self.GAP_SCORE = 10  # NOTE Scoring elements could be managed by a class/object. But whatever, no time!
         self.tries = 3   # We're calling them "tries" because "lives" doesn't make sense for a ball :-D
 
-        self.initialRowUpdateDelay = 1
-        self.initialRowSpacing = 3
+        self.initialRowUpdateDelay = .5
+        self.initialRowSpacing = 4
+        self._lastDifficultyIncreaseScore = 0
 
         self.mm = DisplayMessageManager()
 
@@ -65,6 +66,8 @@ class GameApplication(object):
         self.ball.update(dt_s, cell_size)
         self.rm.update(dt_s, cell_size)
         self.mm.update(dt_s, cell_size)
+
+        self.updateDifficulty()
 
     def processEvents(self):
         for event in pygame.event.get():
@@ -95,6 +98,15 @@ class GameApplication(object):
                 self.ball._position[i] = 64 - self.ball._size[i]
 
             # TODO Add a ball game state here? Right now, if the ball reaches the bottom of the screen, it's considered 'freefall' because there's nothing that sets the ball game state to anything else
+
+
+    def updateDifficulty(self):
+        # Some hard-coded stuff here -- would like to make a more robust level management system, but I'm scrambling to meet the submission deadline for Low Rez Jam 2016. Maybe I'll update later
+        if self.score % 100 == 0 and self._lastDifficultyIncreaseScore < self.score:
+            self._lastDifficultyIncreaseScore = self.score
+            self.rm.changeUpdateDelay(self.rm._updateDelay - 0.1)
+            self.mm.setMessage("Level Up!".format(self.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ], (192, 64, 64), 8 )
+            #self.rm.reInitLevel(self.rm._rowSpacing - 1, self.rm._updateDelay - 0.1, self.cell_size) 
 
 
     def doCollisions(self):
@@ -181,7 +193,7 @@ class GameApplication(object):
         if self.scoredFlag:
             self.score += self.GAP_SCORE # GAP_SCORE can increase as the difficulty level increases
             self.scoredFlag = False
-            print "Jyeaw! Score={}".format(self.score)
+            #print "Jyeaw! Score={}".format(self.score)
             self.mm.setMessage("+{}".format(self.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ] )
 
 
