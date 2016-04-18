@@ -18,6 +18,9 @@ class DisplayMessage(GameObj):
         self._age = 0.0
         self._alive = True
 
+    def changeText(self, txtStr):
+        self._text = txtStr
+
     def update(self, dt_s, cell_size):
         if not self._alive:
             return

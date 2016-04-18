@@ -9,6 +9,7 @@ from ball import Ball
 from row import Row
 from row_manager import RowManager
 from ball_game_state import BallGameState
+from display_msg import DisplayMessage
 from display_msg_manager import DisplayMessageManager
 
 
@@ -47,6 +48,12 @@ class GameApplication(object):
 
         self.rm = RowManager()
         self.rm.initLevel(self.initialRowSpacing, self.initialRowUpdateDelay, self.cell_size) 
+
+        self.displayMsgScore = DisplayMessage()
+        self.displayMsgScore.create(txtStr="Score: ", position=[66, 5], color=(192,192,192))
+
+        self.displayMsgTries = DisplayMessage()
+        self.displayMsgTries.create(txtStr="Tries: ", position=[66, 10], color=(192,192,192))
 
     def drawGrid(self, screen, cell_size, screen_size):
         for i in range(0, 63):
@@ -169,6 +176,14 @@ class GameApplication(object):
 
         #print # blank line
 
+    def updateScore(self):
+        # If ball state is FREEFALL at this point, then we can register a score
+        if self.scoredFlag:
+            self.score += self.GAP_SCORE # GAP_SCORE can increase as the difficulty level increases
+            self.scoredFlag = False
+            print "Jyeaw! Score={}".format(self.score)
+            self.mm.setMessage("+{}".format(self.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ] )
+
 
     def preRenderScene(self):
         self.doCollisions()
@@ -186,16 +201,26 @@ class GameApplication(object):
         self.rm.draw(self.game_viewport, self.cell_size)
         self.ball.draw(self.game_viewport, self.cell_size)
 
-    def postRenderScene(self):
-        # If ball state is FREEFALL at this point, then we can register a score
-        if self.scoredFlag:
-            self.score += self.GAP_SCORE # GAP_SCORE can increase as the difficulty level increases
-            self.scoredFlag = False
-            print "Jyeaw! Score={}".format(self.score)
-            self.mm.setMessage("+{}".format(self.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ] )
 
+    def displayMessages(self):
         self.mm.draw(self.game_viewport, self.cell_size)
-        
+
+    def displayGameStats(self):
+
+        # Janky hardcoding here... Just trying to meet the game submission deadline
+        self.displayMsgScore.changeText("Score: {}".format(self.score))
+        textSurfaceScore = self.displayMsgScore.getTextSurface(self.mm._font)
+        self.surface_bg.blit(textSurfaceScore, (self.displayMsgScore._position[0] * self.cell_size[0], self.displayMsgScore._position[1] * self.cell_size[1] ))
+
+        self.displayMsgTries.changeText("Tries: {}".format(self.tries))
+        textSurfaceTries = self.displayMsgTries.getTextSurface(self.mm._font)
+        self.surface_bg.blit(textSurfaceTries, (self.displayMsgTries._position[0] * self.cell_size[0], self.displayMsgTries._position[1] * self.cell_size[1] ))
+
+    def postRenderScene(self):
+        self.updateScore()
+        self.displayMessages()
+        self.displayGameStats()
+
         #for i in range(0, ball.getGameState()):
         #    print "BallGameState:{}".format(self.ball.getGameState()),
         #print
