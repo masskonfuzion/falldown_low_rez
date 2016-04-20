@@ -36,10 +36,10 @@ class Row(GameObj):
             if rect:
                 pygame.draw.rect(screen, (128, 128, 128), rect)
 
-        # DEBUG draw the collision geometry
-        for geom in self._collGeoms:
-            if geom:
-                geom.draw(screen, cell_size)
+        ## DEBUG draw the collision geometry
+        #for geom in self._collGeoms:
+        #    if geom:
+        #        geom.draw(screen, cell_size)
 
 
     def _getRandomGap(self):

@@ -34,6 +34,8 @@ class RowManager(GameObj):
         # - And lastly, compute the reInitCell - the cell position where each row should be reInitialized at when a row goes above the top edge of the screen (and make sure it gets returned to the main function.. Perhaps store these properties in a dict or some other object that Python will pass to the function as a reference)
         # - Make sure this initLevel function is smart enough to add new rows to the row list when necessary, and to otherwise reInit rows when it's not necessary to add new rows to the list. Maybe make the function dumb, and have the prorammer specify it in the function call? Or otherwise, have the function compute the number of rows necessary to keep the row spacing even, and add new rows as necessary.
         # TODO actually.. initLevel should belong to the row manager.. That's the entire point
+        if self._rows:
+            del self._rows[:] # Apparently there is no clear() for lists
 
         r = Row() # create throwaway row, just to get default row size (used in calculation of # rows and reinit position
         self._rowSpacing = row_spacing # store the row spacing so we can change it, from the Application class, in later calls to reInitLevel
@@ -45,7 +47,7 @@ class RowManager(GameObj):
         self._numRows = (64 / apparent_row_spacing) + 1 # We can hardcode 64 because the rules of the game jam for which we're making this game require a 64x64 grid
         self._rowReinitPos = self._numRows * apparent_row_spacing
 
-        print "DEBUG RowManager rowSpacing:{} numRows:{} rowReinitPos:{}".format(self._rowSpacing, self._numRows, self._rowReinitPos)
+        #print "DEBUG RowManager rowSpacing:{} numRows:{} rowReinitPos:{}".format(self._rowSpacing, self._numRows, self._rowReinitPos)
     
         for i in xrange(0, self._numRows):
             self.createRowAndAddToRowList(yPosition=apparent_row_spacing * (i + 1), updateDelay=update_delay, cellSize = cell_size)

@@ -27,23 +27,26 @@ class GameApplication(object):
         self.game_viewport = pygame.Surface((640, 640))
 
         self.bg_col = 255,255,255
-
-        # TODO add ball to a list of game objects. e.g. [ ball, [ rows ] ], or maybe even better: [ ball, row_mgr ] (where row_mgr contains rows)
-        self.ball = Ball()
-        self.ball.setPosition(32, 0) # Position is given in coordinates on the 64x64 grid. Actual screen coordinates are calculated from grid coordinates
-        self.ball.setSpeed(0,1)
-        self.ball.setMaxSpeed(1,1)
-        self.ball.changeGameState(BallGameState.FREEFALL)
-        print "Changing ball game state to FREEFALL"
-
         self.scoredFlag = False # Flag that tells whether player has scored or not # TODO make scorekeeping/game event management more robust
         self.score = 0
         self.GAP_SCORE = 10  # NOTE Scoring elements could be managed by a class/object. But whatever, no time!
         self.tries = 3   # We're calling them "tries" because "lives" doesn't make sense for a ball :-D
 
+        self._gotCrushed = False
+        self._gameState = "Playing"
+
         self.initialRowUpdateDelay = .5
         self.initialRowSpacing = 4
         self._lastDifficultyIncreaseScore = 0
+
+        # TODO add ball to a list of game objects. e.g. [ ball, [ rows ] ], or maybe even better: [ ball, row_mgr ] (where row_mgr contains rows)
+        self.ball = Ball()
+        self.ball._accumulator_s[1] = 0.0
+        self.ball.setPosition(32, 0) # Position is given in coordinates on the 64x64 grid. Actual screen coordinates are calculated from grid coordinates
+        self.ball.setSpeed(0,1)
+        self.ball.setMaxSpeed(1,1)
+        self.ball.changeGameState(BallGameState.FREEFALL)
+        #print "Changing ball game state to FREEFALL"
 
         self.mm = DisplayMessageManager()
 
@@ -55,6 +58,12 @@ class GameApplication(object):
 
         self.displayMsgTries = DisplayMessage()
         self.displayMsgTries.create(txtStr="Tries: ", position=[66, 10], color=(192,192,192))
+    
+        self.displayMsgCrushed = DisplayMessage()
+        self.displayMsgCrushed.create(txtStr="Crushed :-(", position=[66, 20], color=(192,192,192))
+    
+        self.displayMsgGameOver = DisplayMessage()
+        self.displayMsgGameOver.create(txtStr="GameOver :-(", position=[66, 32], color=(192,192,192))
 
     def drawGrid(self, screen, cell_size, screen_size):
         for i in range(0, 63):
@@ -63,30 +72,62 @@ class GameApplication(object):
             pygame.draw.line(screen, color, ( 0                     , (i + 1) * cell_size[0] ), ( screen_size[1]        , (i + 1) * cell_size[1] ) )
 
     def update(self, dt_s, cell_size):
-        self.ball.update(dt_s, cell_size)
-        self.rm.update(dt_s, cell_size)
-        self.mm.update(dt_s, cell_size)
+        # HORRENDOUS state mgmt style here. Use State Pattern instead
+        if self._gameState == "Playing":
+            self.ball.update(dt_s, cell_size)
+            self.rm.update(dt_s, cell_size)
+            self.mm.update(dt_s, cell_size)
 
-        self.updateDifficulty()
+            self.updateDifficulty()
 
     def processEvents(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            elif event.type == pygame.KEYDOWN:
-				# NOTE!!!! In a better-designed game, this keydown event would put a message on a message queue, which a destination of "Ball" or whatever. Then, the ball, which is listening to the queue, gets the message
 
-                # Left arrow key
-                if (event.key == pygame.K_LEFT or event.key == pygame.K_j):
-                    self.ball.controlState.setLeftKeyPressedTrue()
-                # Right arrow key
-                elif (event.key == pygame.K_RIGHT or event.key == pygame.K_l):
-                    self.ball.controlState.setRightKeyPressedTrue()
-            elif event.type == pygame.KEYUP:
-                if (event.key == pygame.K_LEFT or event.key == pygame.K_j):
-                    self.ball.controlState.setLeftKeyPressedFalse()
-                elif (event.key == pygame.K_RIGHT or event.key == pygame.K_l):
-                    self.ball.controlState.setRightKeyPressedFalse()
+            # TERRIBLE state mgmt style here
+            if self._gameState == "Playing":
+                if event.type == pygame.KEYDOWN:
+			    	# NOTE!!!! In a better-designed game, this keydown event would put a message on a message queue, which a destination of "Ball" or whatever. Then, the ball, which is listening to the queue, gets the message
+
+                    # Left arrow key
+                    if (event.key == pygame.K_LEFT or event.key == pygame.K_j):
+                        self.ball.controlState.setLeftKeyPressedTrue()
+                    # Right arrow key
+                    elif (event.key == pygame.K_RIGHT or event.key == pygame.K_l):
+                        self.ball.controlState.setRightKeyPressedTrue()
+                elif event.type == pygame.KEYUP:
+                    if (event.key == pygame.K_LEFT or event.key == pygame.K_j):
+                        self.ball.controlState.setLeftKeyPressedFalse()
+                    elif (event.key == pygame.K_RIGHT or event.key == pygame.K_l):
+                        self.ball.controlState.setRightKeyPressedFalse()
+
+            elif self._gameState == "Crushed":
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_RETURN:
+                        self.tries -= 1
+
+                        if self.tries > 0:
+                            self._gameState = "Playing"
+                        else:
+                            self._gameState = "GameOver"
+
+                        # Super janky way of resetting the ball. Running out of time
+                        self.ball._accumulator_s[1] = 0.0
+                        self.ball.setPosition(32, 0) # Position is given in coordinates on the 64x64 grid. Actual screen coordinates are calculated from grid coordinates
+                        self.ball.setSpeed(0,1)
+                        self.ball.setMaxSpeed(1,1)
+                        self.ball.changeGameState(BallGameState.FREEFALL)
+
+                        self.rm.initLevel(self.initialRowSpacing, self.initialRowUpdateDelay, self.cell_size) 
+
+
+            elif self._gameState == "GameOver":
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
+                        sys.exit()
+
+
 
     def enforceConstraints(self):
         # (e.g. constrain ball to screen space)
@@ -94,6 +135,10 @@ class GameApplication(object):
         for i in range(0, 2):
             if self.ball._position[i] < 0:
                 self.ball._position[i] = 0
+                if i == 1:
+                    self._gotCrushed = True
+                    self._gameState = "Crushed"
+
             if self.ball._position[i] + self.ball._size[i] > 64:
                 self.ball._position[i] = 64 - self.ball._size[i]
 
@@ -130,9 +175,8 @@ class GameApplication(object):
                             #print "\t\tDEBUG gap collision! ball geom={} row geom={}".format(row._collGeoms[0], geom)
                             if self.ball.getGameState() != BallGameState.FREEFALL:
                                 self.ball.changeGameState(BallGameState.FREEFALL)
-                                print "Changing ball game state to FREEFALL"
+                                #print "Changing ball game state to FREEFALL"
 
-                            # TODO add score keeping
                             if self.ball._lastRowScored != i: 
                                 self.ball._lastRowScored = i 
                                 self.scoredFlag = True # This flag could also be handled as a message from the ball or row or whatever, to the game logic (in a better designed game), to trigger the game logic's score handler
@@ -169,7 +213,7 @@ class GameApplication(object):
                             if self.ball.getGameState() != BallGameState.ON_ROW and self.ball._lastRowTouched != i:
                                 self.ball.changeGameState(BallGameState.ON_ROW)
                                 self.ball._lastRowTouched = i
-                                print "Changing ball game state to ON_ROW"
+                                #print "Changing ball game state to ON_ROW"
 
                         rowCollisionFound = True
                         break # break out of for loop if we have a collision
@@ -228,6 +272,14 @@ class GameApplication(object):
         textSurfaceTries = self.displayMsgTries.getTextSurface(self.mm._font)
         self.surface_bg.blit(textSurfaceTries, (self.displayMsgTries._position[0] * self.cell_size[0], self.displayMsgTries._position[1] * self.cell_size[1] ))
 
+        if self._gameState == "Crushed":
+            textSurfaceCrushed = self.displayMsgCrushed.getTextSurface(self.mm._font)
+            self.surface_bg.blit(textSurfaceCrushed, (self.displayMsgCrushed._position[0] * self.cell_size[0], self.displayMsgCrushed._position[1] * self.cell_size[1] ))
+            
+        if self._gameState == "GameOver":
+            textSurfaceGameOver = self.displayMsgGameOver.getTextSurface(self.mm._font)
+            self.surface_bg.blit(textSurfaceGameOver, (self.displayMsgGameOver._position[0] * self.cell_size[0], self.displayMsgGameOver._position[1] * self.cell_size[1] ))
+
     def postRenderScene(self):
         self.updateScore()
         self.displayMessages()
@@ -238,7 +290,6 @@ class GameApplication(object):
         #print
 
         self.surface_bg.blit(self.game_viewport, (0, 0))    # blit the game viewport onto the bigger surface_bg
-        #self.showGameStats() # TODO!!! WRITE THIS FUNCTION
 
         pygame.display.flip()
 

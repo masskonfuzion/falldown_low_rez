@@ -60,9 +60,9 @@ class Ball(GameObj):
         
         pygame.draw.rect(screen, color, my_rect)
 
-        # DEBUG Draw the collision geometry
-        for geom in self._collGeoms:
-            geom.draw(screen, cell_size)
+        ## DEBUG Draw the collision geometry
+        #for geom in self._collGeoms:
+        #    geom.draw(screen, cell_size)
 
 
     def getGameState(self):
