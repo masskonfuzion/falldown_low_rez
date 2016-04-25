@@ -31,6 +31,9 @@ def main():
         # ----- Process events
         game.processEvents()
 
+        # ----- Process commands
+        game.processCommands()
+
         # ----- Update stuff
         game.update(dt_s, game.cell_size)
 
