@@ -15,9 +15,12 @@ def main():
     #   Game evaluates difficulty and how "nice" it's been to you; e.g. game knows how many rows are on screen; where you are on screen; when it last gave you a powerup; etc. Judge when to dole out powerups based on that
     #   Scorekeeping requires detecting collisions with a row's gap
 
+    # TODO Put pygame.init() into the GameApplication class?
     pygame.init()
 
     game = GameApplication()
+
+	# TODO make sure to change state to the Intro State
 
     # NOTE timer should be part of application class, too, but this is hack'n'slash.. No time to fix it!!
     prev_time = pygame.time.get_ticks()

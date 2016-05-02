@@ -3,7 +3,6 @@ import pygame
 from collision_aabb import CollisionAABB
 from ball_game_state import BallGameState
 
-# TODO Consider putting BallControlState into its own class?
 class BallControlState:
     def __init__(self):
         self.leftKeyPressed = False

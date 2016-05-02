@@ -54,6 +54,7 @@ class DisplayMessageManager(GameObj):
 
 
     def draw(self, screen, cell_size):
+        # TODO make sure messages display fully on-screen. E.g., if you level up while rolling through a gap at the far right edge of the screen, the "Level Up" graphic will be cut off
         for msg in self._messages:
             if msg._alive:
                 textSurface = msg.getTextSurface(self._font)

@@ -30,6 +30,7 @@ class GameApplication(object):
 
         self._gotCrushed = False
         self._gameState = "Playing"
+        self._states = []   # States are managed via stack, which we will implement using a Python list
 
         self.initialRowUpdateDelay = .5
         self.initialRowSpacing = 4
@@ -51,7 +52,6 @@ class GameApplication(object):
         #self._cmdQueue.Initialize(64)
 
         # Register Event Listeners
-        # TODO add an event listener that takes Pygame events (or whatever other events) and translates them into Game Commands
         self._eventQueue.RegisterListener('ball', self.ball, 'PlayerControl')
 
         # Register Command Listeners
@@ -74,14 +74,45 @@ class GameApplication(object):
         self.displayMsgGameOver = DisplayMessage()
         self.displayMsgGameOver.create(txtStr="GameOver :-(", position=[66, 32], color=(192,192,192))
 
+    def cleanup(self):
+        pass
+
     def drawGrid(self, screen, cell_size, screen_size):
         for i in range(0, 63):
             color = 192, 192, 192
             pygame.draw.line(screen, color, ( (i + 1) * cell_size[0], 0                      ), ( (i + 1) * cell_size[1], screen_size[1]         ) )
             pygame.draw.line(screen, color, ( 0                     , (i + 1) * cell_size[0] ), ( screen_size[1]        , (i + 1) * cell_size[1] ) )
 
+
+    def changeState(self, toState):
+        """Change State to toState"""
+        fromState = self.PopState() # Get the current state and then pop it off the stack
+        if fromState:
+            fromState.Cleanup()
+
+        self.PushState(toState)
+        self.GetState().Init()
+
+    def pushState(self, toState):
+        """Push toState onto the stack"""
+        self._states.append(toState)
+
+    def popState(self):
+        """Remove state from the stack, and return it"""
+        fromState = None
+        if self._states:
+            fromState = self._states.pop()
+        return fromState
+
     def update(self, dt_s, cell_size):
+        """Call Update() on state at top of stack
+           
+           Call State's Update(), passing in a reference to the engine. The state may need a reference to the engine, especially when the engine has valuable data, e.g. time keeping or other objects the state needs access to
+        """
+        #self.GetState().Update(self)
+
         # HORRENDOUS state mgmt style here. Use State Pattern instead
+		# TODO move this stuff into the playing state
         if self._gameState == "Playing":
             self.ball.update(dt_s, cell_size)
             self.rm.update(dt_s, cell_size)
@@ -90,6 +121,9 @@ class GameApplication(object):
             self.updateDifficulty()
 
     def processEvents(self):
+        """Call ProcessEvents on state at top of stack"""
+        #self.GetState().ProcessEvents(self)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 # TODO Create a quit request message, and add it to the Messaging Handler. Oh yeah, also make a Messaging Handler
@@ -136,6 +170,7 @@ class GameApplication(object):
                                                                }
                                                   }) # here, the call keyword says that the message payload is an instruction to call a function
 
+			# TODO make these other states into GameState instances
             elif self._gameState == "Crushed":
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_RETURN:
@@ -162,6 +197,9 @@ class GameApplication(object):
                         sys.exit()
 
     def processCommands(self):
+        """Call ProcessEvents on state at top of stack"""
+        #self.GetState().ProcessCommands(self)
+
         msg = self._eventQueue.Dequeue()
         while msg:
             #print "DEBUG Dequeued message: {}".format(msg)
@@ -173,7 +211,7 @@ class GameApplication(object):
                 if msg['payload']['action'] == 'call_function':
                     # The registered listener had better have the function call available heh... otherwise, kaboom
                     objRef = listener_obj_dict['ref']
-                    fn_ptr = getattr(objRef.controlState, msg['payload']['function_name']) # TODO un-hardcode the "controlState" attr -- make it possible to define which obj attribute is responsible for handling the command
+                    fn_ptr = getattr(objRef.controlState, msg['payload']['function_name']) # TODO un-hardcode the ball's "controlState" attr -- make it possible to customize which obj attribute is responsible for handling the command
                     #args = msg['params'].split('=') # NOTE the params should be a comma-separated list of = separated key/vals, e.g. params = "a=1,b=2,c=3,..."
 
                     #eval(fn_ptr)
@@ -184,7 +222,6 @@ class GameApplication(object):
 
     def enforceConstraints(self):
         # (e.g. constrain ball to screen space)
-        # TODO put constraints into function?
         for i in range(0, 2):
             if self.ball._position[i] < 0:
                 self.ball._position[i] = 0
@@ -295,6 +332,9 @@ class GameApplication(object):
 
 
     def preRenderScene(self):
+        """Call PreRender on state at top of stack"""
+        #self.GetState().PreRenderScene(self)
+
         self.doCollisions()
         self.enforceConstraints()
 
@@ -303,6 +343,9 @@ class GameApplication(object):
         ''' Render scene
             NOTE render() does not 'write' to the screen.
         '''
+        """Call PreRender on state at top of stack"""
+        #self.GetState().RenderScene(self)
+
         self.surface_bg.fill((0,0,0))
         self.game_viewport.fill(self.bg_col)
         
@@ -334,6 +377,9 @@ class GameApplication(object):
             self.surface_bg.blit(textSurfaceGameOver, (self.displayMsgGameOver._position[0] * self.cell_size[0], self.displayMsgGameOver._position[1] * self.cell_size[1] ))
 
     def postRenderScene(self):
+        """Call PreRender on state at top of stack"""
+        #self.GetState().PostRenderScene(self)
+
         self.updateScore()
         self.displayMessages()
         self.displayGameStats()
