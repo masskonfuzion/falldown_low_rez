@@ -39,6 +39,7 @@ class GameApplication(object):
     def pushState(self, toState):
         """Push toState onto the stack"""
         self._states.append(toState)
+        self.getState().Init(self)
 
     def popState(self):
         """Remove state from the stack, and return it"""
