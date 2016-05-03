@@ -24,7 +24,7 @@ class GameApplication(object):
         """Change State to toState"""
         fromState = self.popState() # Get the current state and then pop it off the stack
         if fromState:
-            fromState.cleanup()
+            fromState.Cleanup()
 
         self.pushState(toState)
         self.getState().Init(self)

@@ -2,10 +2,6 @@
 import pygame
 import sys
 
-from ball import Ball
-from row import Row
-from row_manager import RowManager
-from ball_game_state import BallGameState
 from display_msg import DisplayMessage
 from display_msg_manager import DisplayMessageManager
 from message_queue import MessageQueue
@@ -45,7 +41,7 @@ class GameStatePause(game_state_base.GameStateBase):
         # Haha, psych! There are none
 
         # Register Command Listeners
-        #self._cmdQueue.RegisterListener('ball', self.ball, 'PlayerControl')
+        # Ditto
 
         self.mm = DisplayMessageManager()
 

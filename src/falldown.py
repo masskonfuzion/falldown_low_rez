@@ -5,7 +5,7 @@ import sys
 import math
 
 from game_application import GameApplication
-import game_state_playing
+import game_state_intro
 
 def main():
     # TODO add game states (e.g. intro, playing, menu, etc)
@@ -22,7 +22,7 @@ def main():
     game = GameApplication()
 
 	# TODO make sure to change state to the Intro State
-    game.changeState(game_state_playing.GameStatePlaying.Instance())
+    game.changeState(game_state_intro.GameStateIntro.Instance())
 
     # NOTE timer should be part of application class, too, but this is hack'n'slash.. No time to fix it!!
     prev_time = pygame.time.get_ticks()
