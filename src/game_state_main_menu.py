@@ -47,7 +47,9 @@ class GameStateMainMenu(game_state_base.GameStateBase):
         self.mm = DisplayMessageManager()
 
         self.menuOptions = [ { 'text': 'Fall Down', 'position': [30, 30] }
-                           , { 'text': 'Credits', 'position': [30, 40] }
+                           , { 'text': 'Settings', 'position': [30, 35] }
+                           , { 'text': 'High Scores', 'position': [30, 40] }
+                           , { 'text': 'Credits', 'position': [30, 45] }
                            , { 'text': 'Exit', 'position': [30, 50] }
                            ]
         self.displayMessages = []
@@ -97,9 +99,15 @@ class GameStateMainMenu(game_state_base.GameStateBase):
                         # NOTE: Could also put the selection #s into the menu option definitions, so this if/else block wouldn't need to know which # matches up with which option; it could get that info from the menu option definition
                         engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
                     elif self.selection == 1:
-                        # Credits
+                        # Settings
                         pass
                     elif self.selection == 2:
+                        # High Scores
+                        pass
+                    elif self.selection == 3:
+                        # Credits
+                        pass
+                    elif self.selection == 4:
                         engineRef.isRunning = False
 
                 elif (event.key == pygame.K_ESCAPE):
