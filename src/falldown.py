@@ -27,7 +27,7 @@ def main():
     # NOTE timer should be part of application class, too, but this is hack'n'slash.. No time to fix it!!
     prev_time = pygame.time.get_ticks()
 
-    while True:
+    while game.isRunning:
         curr_time = pygame.time.get_ticks()
         dt_s = (curr_time - prev_time) / 1000.0
         #print "Curr {}, prev {}, dt {}".format(curr_time, prev_time, dt_s)
@@ -55,6 +55,8 @@ def main():
 
         # ----- post-render (e.g. score/overlays)
         game.postRenderScene()
+
+    # TODO do any engine cleanup
 
 
 if __name__ == '__main__':

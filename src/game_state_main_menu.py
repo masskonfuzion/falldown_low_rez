@@ -29,7 +29,6 @@ class GameStateMainMenu(game_state_base.GameStateBase):
         self.screen_size = engineRef.screen_size
         self.cell_size = engineRef.cell_size
         self.surface_bg = engineRef.surface_bg
-        self.game_viewport = engineRef.game_viewport
         self.bg_col = engineRef.bg_col
 
 
@@ -47,8 +46,16 @@ class GameStateMainMenu(game_state_base.GameStateBase):
 
         self.mm = DisplayMessageManager()
 
-        self.displayMsgScore = DisplayMessage()
-        self.displayMsgScore.create(txtStr="MainMenu", position=[66, 5], color=(192,192,192))
+        self.menuOptions = [ { 'text': 'Fall Down', 'position': [30, 30] }
+                           , { 'text': 'Credits', 'position': [30, 40] }
+                           , { 'text': 'Exit', 'position': [30, 50] }
+                           ]
+        self.displayMessages = []
+        for menuOpt in self.menuOptions:
+            self.displayMessages.append(DisplayMessage())
+            self.displayMessages[len(self.displayMessages) - 1].create(txtStr=menuOpt['text'], position=menuOpt['position'], color=(192,192,192))
+
+        self.selection = 0
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
@@ -85,10 +92,24 @@ class GameStateMainMenu(game_state_base.GameStateBase):
 
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):
-                    engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
-            if event.type == pygame.KEYDOWN:
-                if (event.key == pygame.K_ESCAPE):
+                    if self.selection == 0:
+                        # NOTE: Could make class name in all game state subclasses the same; that way, we could simply code the game to look in e.g. module name "game_state_" + whatever, and call the class' Instance() method
+                        # NOTE: Could also put the selection #s into the menu option definitions, so this if/else block wouldn't need to know which # matches up with which option; it could get that info from the menu option definition
+                        engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
+                    elif self.selection == 1:
+                        # Credits
+                        pass
+                    elif self.selection == 2:
+                        engineRef.isRunning = False
+
+                elif (event.key == pygame.K_ESCAPE):
                     engineRef.changeState(game_state_intro.GameStateIntro.Instance())
+
+                elif event.key == pygame.K_DOWN:
+                    self.selection = (self.selection + 1) % len(self.displayMessages)
+
+                elif event.key == pygame.K_UP:
+                    self.selection = (self.selection - 1) % len(self.displayMessages)
 
     def ProcessCommands(self, engineRef):
         # No command processing needed here because this is a super-simple pause state
@@ -105,18 +126,27 @@ class GameStateMainMenu(game_state_base.GameStateBase):
 
     def RenderScene(self, engineRef):
         self.surface_bg.fill((0,0,0))
-        self.game_viewport.fill(self.bg_col)
+
+        # Janky hardcoding here... TODO fix the jankiness
+        for displayMsg in self.displayMessages:
+            textSurf = displayMsg.getTextSurface(self.mm._font)
+            self.surface_bg.blit(textSurf, (displayMsg._position[0] * self.cell_size[0], displayMsg._position[1] * self.cell_size[1] ))
         
 
     def PostRenderScene(self, engineRef):
-        self.displayGameStats()
-        self.surface_bg.blit(self.game_viewport, (0, 0))    # blit the game viewport onto the bigger surface_bg
+        # Draw a box around the selected menu item
+        # NOTE: I could've put the box in the renderScene function, but the box is technically an "overlay". Also, whatever, who cares? :-D
+
+        dispMsgRef = self.displayMessages[self.selection]
+
+        #TODO easy optimization: compute and store the font rendering size
+        selectRect = ( (dispMsgRef._position[0] - 1) * self.cell_size[0]
+                     , (dispMsgRef._position[1] - 1) * self.cell_size[1]
+                     , self.mm._font.size(dispMsgRef._text + "  ")[0]
+                     , self.mm._font.size(dispMsgRef._text)[1]
+                     )
+
+        pygame.draw.rect(self.surface_bg, (192,128,0), selectRect, 2)
+        # Flip the buffers
         pygame.display.flip()
-
-
-    def displayGameStats(self):
-        # Janky hardcoding here... TODO fix the jankiness
-        self.displayMsgScore.changeText("MainMenu")
-        textSurfaceScore = self.displayMsgScore.getTextSurface(self.mm._font)
-        self.surface_bg.blit(textSurfaceScore, (self.displayMsgScore._position[0] * self.cell_size[0], self.displayMsgScore._position[1] * self.cell_size[1] ))
 

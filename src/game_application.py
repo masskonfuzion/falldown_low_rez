@@ -15,6 +15,7 @@ class GameApplication(object):
         self.game_viewport = pygame.Surface((640, 640))
 
         self.bg_col = 255,255,255
+        self.isRunning = True
         self._states = []   # States are managed via stack, which we will implement using a Python list
 
     def cleanup(self):
