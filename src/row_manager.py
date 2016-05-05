@@ -93,7 +93,7 @@ class RowManager(GameObj):
     def changeUpdateDelay(self, newUpdateDelay):
         self._updateDelay = newUpdateDelay
 
-    def update(self, dt_s, cell_size):
+    def update(self, dt_s, cell_size, game_stats_obj):
         # TODO pass in game difficulty information, so we can adjust the method of assigning gaps
         self._accumulator_s[1] += dt_s
 
@@ -101,11 +101,11 @@ class RowManager(GameObj):
             self._accumulator_s[1] -= self._updateDelay
 
             for row in self._rows:
-                row.update(dt_s, cell_size)
+                row.update(dt_s, cell_size, game_stats_obj)
 
                 # Test rows going off the screen
                 if row._position[1] + row._size[1] / 2 == 0:
-                    row.reInit(self._rowReinitPos - row._size[1] / 2, -1) 
+                    row.reInit(self._rowReinitPos - row._size[1] / 2, -1, game_stats_obj)
 
                 ##    # Get the position of the lowest row. If it is at or past the reinit point (which can happen when row spacing adjustment when difficulty level increases), then make the new position offset from the deepest row
                 ##    deepestRowPosition = 0

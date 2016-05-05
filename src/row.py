@@ -58,12 +58,12 @@ class Row(GameObj):
         self._updateDelay = delay_s
 
 
-    def reInit(self, yPosition = 32, gap = -1):
+    def reInit(self, yPosition = 32, gap = -1, game_stats_obj = None):
         self._position[1] = yPosition # We really only care about the row's y position on the grid (x defaults to 0)
         # NOTE here, we simply set position; recomputation of render geometry and collision geometry is handled during the update step
         self.setGap(gap)
 
-    def update(self, dt_s, cell_size):
+    def update(self, dt_s, cell_size, game_stats_obj):
         self._position[1] -= 1
 
         # Upon movement, recompute render and collision geometry

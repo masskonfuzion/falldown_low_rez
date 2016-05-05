@@ -29,6 +29,7 @@ class GameplayStats(object):
         self.initialRowUpdateDelay = .5
         self.initialRowSpacing = 4
         self._lastDifficultyIncreaseScore = 0
+        self.level = 1
         # TODO perhaps count what "level" we're on, and pass that into the row manager / row class
 
 
@@ -55,7 +56,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
         self.game_viewport = engineRef.game_viewport
         self.bg_col = engineRef.bg_col
 
-        self.vital_stats = GameplayState()
+        self.vital_stats = GameplayStats()
 
 
         # TODO add ball to a list of game objects. e.g. [ ball, [ rows ] ], or maybe even better: [ ball, row_mgr ] (where row_mgr contains rows)
@@ -90,8 +91,11 @@ class GameStatePlaying(game_state_base.GameStateBase):
         self.displayMsgTries = DisplayMessage()
         self.displayMsgTries.create(txtStr="Tries: ", position=[66, 10], color=(192,192,192))
     
+        self.displayMsgLevel = DisplayMessage()
+        self.displayMsgLevel.create(txtStr="Level: ", position=[66, 20], color=(192,192,192))
+
         self.displayMsgCrushed = DisplayMessage()
-        self.displayMsgCrushed.create(txtStr="Crushed :-(", position=[66, 20], color=(192,192,192))
+        self.displayMsgCrushed.create(txtStr="Crushed :-(", position=[66, 30], color=(192,192,192))
     
         self.displayMsgGameOver = DisplayMessage()
         self.displayMsgGameOver.create(txtStr="GameOver :-(", position=[66, 32], color=(192,192,192))
@@ -225,12 +229,13 @@ class GameStatePlaying(game_state_base.GameStateBase):
 
 
     def Update(self, engineRef, dt_s, cell_size):
+        # NOTE: How should we Update() and PreRender()? (Acceptable answers also include _not_distinguishing and simply making the PreRender() do what Update() does, and getting rid of Update())
         # HORRENDOUS state mgmt style here. Use State Pattern instead
 		# TODO move this stuff into the playing state
         if self.vital_stats._gameState == "Playing":
-            self.ball.update(dt_s, cell_size)
-            self.rm.update(dt_s, cell_size)
-            self.mm.update(dt_s, cell_size)
+            self.ball.update(dt_s, cell_size, self.vital_stats)
+            self.rm.update(dt_s, cell_size, self.vital_stats)
+            self.mm.update(dt_s, cell_size, self.vital_stats)
 
             self.updateDifficulty()
 
@@ -285,6 +290,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
     def updateDifficulty(self):
         # Some hard-coded stuff here -- would like to make a more robust level management system, but I'm scrambling to meet the submission deadline for Low Rez Jam 2016. Maybe I'll update later
         if self.vital_stats.score % 100 == 0 and self.vital_stats._lastDifficultyIncreaseScore < self.vital_stats.score:
+            self.vital_stats.level += 1
             self.vital_stats._lastDifficultyIncreaseScore = self.vital_stats.score
             self.rm.changeUpdateDelay(self.rm._updateDelay - 0.1)
             self.mm.setMessage("Level Up!".format(self.vital_stats.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ], (192, 64, 64), 8 )
@@ -384,6 +390,10 @@ class GameStatePlaying(game_state_base.GameStateBase):
         self.displayMsgTries.changeText("Tries: {}".format(self.vital_stats.tries))
         textSurfaceTries = self.displayMsgTries.getTextSurface(self.mm._font)
         self.surface_bg.blit(textSurfaceTries, (self.displayMsgTries._position[0] * self.cell_size[0], self.displayMsgTries._position[1] * self.cell_size[1] ))
+
+        self.displayMsgLevel.changeText("Level: {}".format(self.vital_stats.level))
+        textSurfaceLevel = self.displayMsgLevel.getTextSurface(self.mm._font)
+        self.surface_bg.blit(textSurfaceLevel, (self.displayMsgLevel._position[0] * self.cell_size[0], self.displayMsgLevel._position[1] * self.cell_size[1] ))
 
         if self.vital_stats._gameState == "Crushed":
             textSurfaceCrushed = self.displayMsgCrushed.getTextSurface(self.mm._font)

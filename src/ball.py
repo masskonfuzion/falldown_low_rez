@@ -73,7 +73,7 @@ class Ball(GameObj):
         pass
 
 
-    def update(self, dt_s, cell_size):
+    def update(self, dt_s, cell_size, game_stats_obj):
         # NOTE: Here's where things get cool. _Every obj has a max speed of exactly 1 grid slot up/down and left/right per frame_. "Speed" is emulated based on update delay, rather than # of spaces moved per update
 		# Prepare velocity and stuff based on user input (NOTE: With better design, this call would take place in a function that reads messages off a message queue)
         if self.controlState.leftKeyPressed:

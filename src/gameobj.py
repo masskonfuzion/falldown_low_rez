@@ -46,9 +46,10 @@ class GameObj(object):
         self._maxSpeed[0] = sx
         self._maxSpeed[1] = sy
 
-    def update(self, dt_s, cell_size):
+    def update(self, dt_s, cell_size, game_stats_obj):
         ''' Update (which really involves simply counting dt and figuring out whether or not we should be moving or sitting still)
         '''
+        # NOTE: game_stats_obj is an object that has vital game info, e.g. score, level, etc. For this base class, we should consider using **args or some other construct that allows flexibility for many different inputs to the Update() function
         # cell_size is a 2-item list passed in from the application
         # dt_s is delta-time, in seconds
         raise NotImplementedError

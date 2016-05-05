@@ -48,7 +48,7 @@ class DisplayMessageManager(GameObj):
         # It's possible to return None here. Make sure to test for that case
         return retObj
 
-    def update(self, dt_s, cell_size):
+    def update(self, dt_s, cell_size, game_stats_obj):
         for msg in self._messages:
             msg.update(dt_s, cell_size)
 
