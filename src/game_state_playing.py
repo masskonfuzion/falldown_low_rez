@@ -13,8 +13,24 @@ from message_queue import MessageQueue
 import game_state_base
 import game_state_pause
 
-#import game_state_intro # TODO make an intro state that's dope
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
+
+# TODO put the scoring/difficulty/game state tracking vars into a game logic object. Make that logic object available to all of the playing state objects, e.g. row manager and all those.
+class GameplayStats(object):
+    def __init__(self):
+        self.scoredFlag = False # Flag that tells whether player has scored or not # TODO make scorekeeping/game event management more robust
+        self.score = 0
+        self.GAP_SCORE = 10  # NOTE Scoring elements could be managed by a class/object. But whatever, no time!
+        self.tries = 3   # We're calling them "tries" because "lives" doesn't make sense for a ball :-D
+
+        self._gotCrushed = False
+        self._gameState = "Playing"
+
+        self.initialRowUpdateDelay = .5
+        self.initialRowSpacing = 4
+        self._lastDifficultyIncreaseScore = 0
+        # TODO perhaps count what "level" we're on, and pass that into the row manager / row class
+
 
 class GameStatePlaying(game_state_base.GameStateBase):
     __instance = None
@@ -39,18 +55,8 @@ class GameStatePlaying(game_state_base.GameStateBase):
         self.game_viewport = engineRef.game_viewport
         self.bg_col = engineRef.bg_col
 
+        self.vital_stats = GameplayState()
 
-        self.scoredFlag = False # Flag that tells whether player has scored or not # TODO make scorekeeping/game event management more robust
-        self.score = 0
-        self.GAP_SCORE = 10  # NOTE Scoring elements could be managed by a class/object. But whatever, no time!
-        self.tries = 3   # We're calling them "tries" because "lives" doesn't make sense for a ball :-D
-
-        self._gotCrushed = False
-        self._gameState = "Playing"
-
-        self.initialRowUpdateDelay = .5
-        self.initialRowSpacing = 4
-        self._lastDifficultyIncreaseScore = 0
 
         # TODO add ball to a list of game objects. e.g. [ ball, [ rows ] ], or maybe even better: [ ball, row_mgr ] (where row_mgr contains rows)
         self.ball = Ball()
@@ -76,7 +82,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
         self.mm = DisplayMessageManager()
 
         self.rm = RowManager()
-        self.rm.initLevel(self.initialRowSpacing, self.initialRowUpdateDelay, self.cell_size) 
+        self.rm.initLevel(self.vital_stats.initialRowSpacing, self.vital_stats.initialRowUpdateDelay, self.cell_size) 
 
         self.displayMsgScore = DisplayMessage()
         self.displayMsgScore.create(txtStr="Score: ", position=[66, 5], color=(192,192,192))
@@ -127,7 +133,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
                 sys.exit()
 
             # TERRIBLE state mgmt style here
-            if self._gameState == "Playing":
+            if self.vital_stats._gameState == "Playing":
                 if event.type == pygame.KEYDOWN:
                     if (event.key == pygame.K_p):
                         engineRef.pushState(game_state_pause.GameStatePause.Instance())
@@ -171,15 +177,15 @@ class GameStatePlaying(game_state_base.GameStateBase):
                                                   }) # here, the call keyword says that the message payload is an instruction to call a function
 
 			# TODO make these other states into GameState instances
-            elif self._gameState == "Crushed":
+            elif self.vital_stats._gameState == "Crushed":
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_RETURN:
-                        self.tries -= 1
+                        self.vital_stats.tries -= 1
 
-                        if self.tries > 0:
-                            self._gameState = "Playing"
+                        if self.vital_stats.tries > 0:
+                            self.vital_stats._gameState = "Playing"
                         else:
-                            self._gameState = "GameOver"
+                            self.vital_stats._gameState = "GameOver"
 
                         # Super janky way of resetting the ball. Running out of time
                         self.ball._accumulator_s[1] = 0.0
@@ -188,10 +194,10 @@ class GameStatePlaying(game_state_base.GameStateBase):
                         self.ball.setMaxSpeed(1,1)
                         self.ball.changeGameState(BallGameState.FREEFALL)
 
-                        self.rm.initLevel(self.initialRowSpacing, self.initialRowUpdateDelay, self.cell_size) 
+                        self.rm.initLevel(self.vital_stats.initialRowSpacing, self.vital_stats.initialRowUpdateDelay, self.cell_size) 
 
 
-            elif self._gameState == "GameOver":
+            elif self.vital_stats._gameState == "GameOver":
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
                         sys.exit()
@@ -221,7 +227,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
     def Update(self, engineRef, dt_s, cell_size):
         # HORRENDOUS state mgmt style here. Use State Pattern instead
 		# TODO move this stuff into the playing state
-        if self._gameState == "Playing":
+        if self.vital_stats._gameState == "Playing":
             self.ball.update(dt_s, cell_size)
             self.rm.update(dt_s, cell_size)
             self.mm.update(dt_s, cell_size)
@@ -267,8 +273,8 @@ class GameStatePlaying(game_state_base.GameStateBase):
             if self.ball._position[i] < 0:
                 self.ball._position[i] = 0
                 if i == 1:
-                    self._gotCrushed = True
-                    self._gameState = "Crushed"
+                    self.vital_stats._gotCrushed = True
+                    self.vital_stats._gameState = "Crushed"
 
             if self.ball._position[i] + self.ball._size[i] > 64:
                 self.ball._position[i] = 64 - self.ball._size[i]
@@ -278,10 +284,10 @@ class GameStatePlaying(game_state_base.GameStateBase):
 
     def updateDifficulty(self):
         # Some hard-coded stuff here -- would like to make a more robust level management system, but I'm scrambling to meet the submission deadline for Low Rez Jam 2016. Maybe I'll update later
-        if self.score % 100 == 0 and self._lastDifficultyIncreaseScore < self.score:
-            self._lastDifficultyIncreaseScore = self.score
+        if self.vital_stats.score % 100 == 0 and self.vital_stats._lastDifficultyIncreaseScore < self.vital_stats.score:
+            self.vital_stats._lastDifficultyIncreaseScore = self.vital_stats.score
             self.rm.changeUpdateDelay(self.rm._updateDelay - 0.1)
-            self.mm.setMessage("Level Up!".format(self.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ], (192, 64, 64), 8 )
+            self.mm.setMessage("Level Up!".format(self.vital_stats.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ], (192, 64, 64), 8 )
             #self.rm.reInitLevel(self.rm._rowSpacing - 1, self.rm._updateDelay - 0.1, self.cell_size) 
 
 
@@ -310,7 +316,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
 
                             if self.ball._lastRowScored != i: 
                                 self.ball._lastRowScored = i 
-                                self.scoredFlag = True # This flag could also be handled as a message from the ball or row or whatever, to the game logic (in a better designed game), to trigger the game logic's score handler
+                                self.vital_stats.scoredFlag = True # This flag could also be handled as a message from the ball or row or whatever, to the game logic (in a better designed game), to trigger the game logic's score handler
 
                         elif geom._type == Row.COLLISION_TYPE_ROW:
                             #print "\t\tDEBUG row collision! ball geom={} row geom={}".format(row._collGeoms[0], geom)
@@ -349,13 +355,6 @@ class GameStatePlaying(game_state_base.GameStateBase):
                         rowCollisionFound = True
                         break # break out of for loop if we have a collision
 
-                    #else:
-                    #    # If no row collisions were found at all, then we must be in freefall
-                    #    #print "\t\tDEBUG no collision! ball geom={} row geom={}".format(row._collGeoms[0], geom)
-                    #    if self.ball.getGameState() != BallGameState.FREEFALL:
-                    #        self.ball.changeGameState(BallGameState.FREEFALL)
-                    #        print "Changing ball game state to FREEFALL"
-
             if rowCollisionFound:
                 # If we found a collision against any row, we can stop testing for any collisions, because we're done. Reset the flag and _exit all for loops_
                 rowCollisionFound = False
@@ -365,11 +364,11 @@ class GameStatePlaying(game_state_base.GameStateBase):
 
     def updateScore(self):
         # If ball state is FREEFALL at this point, then we can register a score
-        if self.scoredFlag:
-            self.score += self.GAP_SCORE # GAP_SCORE can increase as the difficulty level increases
-            self.scoredFlag = False
-            #print "Jyeaw! Score={}".format(self.score)
-            self.mm.setMessage("+{}".format(self.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ] )
+        if self.vital_stats.scoredFlag:
+            self.vital_stats.score += self.vital_stats.GAP_SCORE # GAP_SCORE can increase as the difficulty level increases
+            self.vital_stats.scoredFlag = False
+            #print "Jyeaw! Score={}".format(self.vital_stats.score)
+            self.mm.setMessage("+{}".format(self.vital_stats.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ] )
 
 
     def displayMessages(self):
@@ -378,19 +377,19 @@ class GameStatePlaying(game_state_base.GameStateBase):
     def displayGameStats(self):
 
         # Janky hardcoding here... Just trying to meet the game submission deadline
-        self.displayMsgScore.changeText("Score: {}".format(self.score))
+        self.displayMsgScore.changeText("Score: {}".format(self.vital_stats.score))
         textSurfaceScore = self.displayMsgScore.getTextSurface(self.mm._font)
         self.surface_bg.blit(textSurfaceScore, (self.displayMsgScore._position[0] * self.cell_size[0], self.displayMsgScore._position[1] * self.cell_size[1] ))
 
-        self.displayMsgTries.changeText("Tries: {}".format(self.tries))
+        self.displayMsgTries.changeText("Tries: {}".format(self.vital_stats.tries))
         textSurfaceTries = self.displayMsgTries.getTextSurface(self.mm._font)
         self.surface_bg.blit(textSurfaceTries, (self.displayMsgTries._position[0] * self.cell_size[0], self.displayMsgTries._position[1] * self.cell_size[1] ))
 
-        if self._gameState == "Crushed":
+        if self.vital_stats._gameState == "Crushed":
             textSurfaceCrushed = self.displayMsgCrushed.getTextSurface(self.mm._font)
             self.surface_bg.blit(textSurfaceCrushed, (self.displayMsgCrushed._position[0] * self.cell_size[0], self.displayMsgCrushed._position[1] * self.cell_size[1] ))
             
-        if self._gameState == "GameOver":
+        if self.vital_stats._gameState == "GameOver":
             textSurfaceGameOver = self.displayMsgGameOver.getTextSurface(self.mm._font)
             self.surface_bg.blit(textSurfaceGameOver, (self.displayMsgGameOver._position[0] * self.cell_size[0], self.displayMsgGameOver._position[1] * self.cell_size[1] ))
 

@@ -94,6 +94,7 @@ class RowManager(GameObj):
         self._updateDelay = newUpdateDelay
 
     def update(self, dt_s, cell_size):
+        # TODO pass in game difficulty information, so we can adjust the method of assigning gaps
         self._accumulator_s[1] += dt_s
 
         if self._accumulator_s[1] > self._updateDelay:

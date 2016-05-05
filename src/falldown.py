@@ -21,7 +21,6 @@ def main():
 
     game = GameApplication()
 
-	# TODO make sure to change state to the Intro State
     game.changeState(game_state_intro.GameStateIntro.Instance())
 
     # NOTE timer should be part of application class, too, but this is hack'n'slash.. No time to fix it!!

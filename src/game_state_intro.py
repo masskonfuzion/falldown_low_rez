@@ -27,8 +27,13 @@ class GameStateIntro(game_state_base.GameStateBase):
         self.screen_size = engineRef.screen_size
         self.cell_size = engineRef.cell_size
         self.surface_bg = engineRef.surface_bg
-        self.game_viewport = engineRef.game_viewport
         self.bg_col = engineRef.bg_col
+
+        image_paths = [ "../asset/image/home-made_engine.png" ]
+        self.img_surfs = []
+
+        for path in image_paths:
+            self.img_surfs.append(pygame.image.load(path))
 
 
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
@@ -45,8 +50,7 @@ class GameStateIntro(game_state_base.GameStateBase):
 
         self.mm = DisplayMessageManager()
 
-        self.displayMsgScore = DisplayMessage()
-        self.displayMsgScore.create(txtStr="Intro", position=[66, 5], color=(192,192,192))
+        self.splash_screen_threshold = 5 # num of seconds to keep up a splash screen
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
@@ -99,19 +103,11 @@ class GameStateIntro(game_state_base.GameStateBase):
         pass
 
     def RenderScene(self, engineRef):
-        self.surface_bg.fill((0,0,0))
-        self.game_viewport.fill(self.bg_col)
+        self.surface_bg.fill((255,255,255))
+        # TODO add in timer thresholds; cycle through splash screens on keypress, or if no keypress, then after time threshold expires
+        self.surface_bg.blit(self.img_surfs[0], (0,0))
         
 
     def PostRenderScene(self, engineRef):
-        self.displayGameStats()
-        self.surface_bg.blit(self.game_viewport, (0, 0))    # blit the game viewport onto the bigger surface_bg
         pygame.display.flip()
-
-
-    def displayGameStats(self):
-        # Janky hardcoding here... TODO fix the jankiness
-        self.displayMsgScore.changeText("Intro")
-        textSurfaceScore = self.displayMsgScore.getTextSurface(self.mm._font)
-        self.surface_bg.blit(textSurfaceScore, (self.displayMsgScore._position[0] * self.cell_size[0], self.displayMsgScore._position[1] * self.cell_size[1] ))
 
