@@ -65,8 +65,11 @@ class MessageQueue:
         return self._registeredListeners[topic]
         
 
-    #def Clear(self):
-    #    pass
+    def Clear(self):
+        self._head = 0
+        self._tail = 0
+        del self._queue[:]
+        self._empty = True
 
     def Initialize(self, num_slots):
         """Allocate space for the message queue

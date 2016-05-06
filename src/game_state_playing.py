@@ -27,7 +27,8 @@ class GameplayStats(object):
         self._gotCrushed = False
         self._gameState = "Playing"
 
-        self.initialRowUpdateDelay = 0.09375
+        #self.initialRowUpdateDelay = 0.09375 # From bottom to top in 6 seconds
+        self.initialRowUpdateDelay = 0.140625 # From bottom to top in 9 seconds
         self.initialRowSpacing = 4
         self._lastDifficultyIncreaseScore = 0
         self.level = 1
@@ -140,9 +141,6 @@ class GameStatePlaying(game_state_base.GameStateBase):
             # TERRIBLE state mgmt style here
             if self.vital_stats._gameState == "Playing":
                 if event.type == pygame.KEYDOWN:
-                    if (event.key == pygame.K_p):
-                        engineRef.pushState(game_state_pause.GameStatePause.Instance())
-
                     # Left arrow key
                     if (event.key == pygame.K_LEFT or event.key == pygame.K_j):
                         #self.ball.controlState.setLeftKeyPressedTrue()
@@ -153,16 +151,21 @@ class GameStatePlaying(game_state_base.GameStateBase):
                                                                , 'params' : ''
                                                                }
                                                   } ) # here, the call keyword says that the message payload is an instruction to call a function
+                        print "Left DOWN"
                         # TODO Maybe make the params a string of key=value pairs - split on '='
                     # Right arrow key
                     elif (event.key == pygame.K_RIGHT or event.key == pygame.K_l):
-                        #self.ball.controlState.setRightKeyPressedTrue()
+                    #self.ball.controlState.setRightKeyPressedTrue()
                         self._eventQueue.Enqueue( { 'topic': 'PlayerControl', 
                                                     'payload': { 'action': 'call_function'
                                                                , 'function_name': 'setRightKeyPressedTrue'
                                                                , 'params': ''
                                                                }
                                                   }) # here, the call keyword says that the message payload is an instruction to call a function
+                        print "Right DOWN"
+                    elif (event.key == pygame.K_p):
+                        engineRef.pushState(game_state_pause.GameStatePause.Instance())
+
                 elif event.type == pygame.KEYUP:
                     if (event.key == pygame.K_LEFT or event.key == pygame.K_j):
                         #self.ball.controlState.setLeftKeyPressedFalse()
@@ -172,6 +175,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
                                                                , 'params': ''
                                                                }
                                                   } ) # here, the call keyword says that the message payload is an instruction to call a function
+                        print "Left UP"
                     elif (event.key == pygame.K_RIGHT or event.key == pygame.K_l):
                         #self.ball.controlState.setRightKeyPressedFalse()
                         self._eventQueue.Enqueue( { 'topic': 'PlayerControl',
@@ -180,25 +184,31 @@ class GameStatePlaying(game_state_base.GameStateBase):
                                                                , 'params': ''
                                                                }
                                                   }) # here, the call keyword says that the message payload is an instruction to call a function
+                        print "Right UP"
 
 			# TODO make these other states into GameState instances
             elif self.vital_stats._gameState == "Crushed":
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_RETURN:
-                        self.vital_stats.tries -= 1
 
                         if self.vital_stats.tries > 0:
                             self.vital_stats._gameState = "Playing"
                         else:
                             self.vital_stats._gameState = "GameOver"
 
+                        self.vital_stats._gotCrushed = False
+
                         # Super janky way of resetting the ball. Running out of time
                         self.ball._accumulator_s[1] = 0.0
                         self.ball.setPosition(32, 0) # Position is given in coordinates on the 64x64 grid. Actual screen coordinates are calculated from grid coordinates
                         self.ball.setSpeed(0,1)
                         self.ball.setMaxSpeed(1,1)
-                        self.ball.changeGameState(BallGameState.FREEFALL)
                         self.ball.controlState.reset()
+                        self.ball.changeGameState(BallGameState.FREEFALL)
+
+                        # TODO find a way to somehow reuse the memory space used by the original queue Initialize() call (called during initialization of the Playing State). Right now, we're discarding the old and freshly allocating new space.
+                        self._eventQueue.Clear()
+                        self._eventQueue.Initialize(64)
 
                         self.rm.initLevel(self.vital_stats.initialRowSpacing, self.vital_stats.initialRowUpdateDelay, self.cell_size) 
 
@@ -279,9 +289,10 @@ class GameStatePlaying(game_state_base.GameStateBase):
         for i in range(0, 2):
             if self.ball._position[i] < 0:
                 self.ball._position[i] = 0
-                if i == 1:
+                if i == 1 and not self.vital_stats._gotCrushed:
                     self.vital_stats._gotCrushed = True
                     self.vital_stats._gameState = "Crushed"
+                    self.vital_stats.tries -= 1
 
             if self.ball._position[i] + self.ball._size[i] > 64:
                 self.ball._position[i] = 64 - self.ball._size[i]
