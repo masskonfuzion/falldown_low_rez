@@ -105,7 +105,10 @@ class GameStateIntro(game_state_base.GameStateBase):
     def RenderScene(self, engineRef):
         self.surface_bg.fill((255,255,255))
         # TODO add in timer thresholds; cycle through splash screens on keypress, or if no keypress, then after time threshold expires
-        self.surface_bg.blit(self.img_surfs[0], (0,0))
+        posX = int(self.surface_bg.get_width() / 2) - int(self.img_surfs[0].get_width() / 2)
+        posY = int(self.surface_bg.get_height() / 2) - int(self.img_surfs[0].get_height() / 2)
+
+        self.surface_bg.blit(self.img_surfs[0], (posX,posY))
         
 
     def PostRenderScene(self, engineRef):

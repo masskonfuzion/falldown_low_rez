@@ -76,12 +76,6 @@ class GameStatePlaying(game_state_base.GameStateBase):
         #self._cmdQueue = MessageQueue() # Command queue, e.g. "Start moving left"
         #self._cmdQueue.Initialize(64)
 
-        # Register Event Listeners
-        self._eventQueue.RegisterListener('ball', self.ball, 'PlayerControl')
-
-        # Register Command Listeners
-        #self._cmdQueue.RegisterListener('ball', self.ball, 'PlayerControl')
-
         self.mm = DisplayMessageManager()
 
         self.rm = RowManager()
@@ -101,6 +95,13 @@ class GameStatePlaying(game_state_base.GameStateBase):
     
         self.displayMsgGameOver = DisplayMessage()
         self.displayMsgGameOver.create(txtStr="GameOver :-(", position=[66, 32], color=(192,192,192))
+
+        # Register Event Listeners
+        self._eventQueue.RegisterListener('ball', self.ball.controlState, 'PlayerControl')
+        self._eventQueue.RegisterListener('rowmgr', self.rm, 'Difficulty')
+
+        # Register Command Listeners
+        #self._cmdQueue.RegisterListener('ball', self.ball, 'PlayerControl')
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
@@ -138,7 +139,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
                 # TODO Create a quit request message, and add it to the Messaging Handler. Oh yeah, also make a Messaging Handler
                 sys.exit()
 
-            # TERRIBLE state mgmt style here
+            # Basic state mgmt style here
             if self.vital_stats._gameState == "Playing":
                 if event.type == pygame.KEYDOWN:
                     # Left arrow key
@@ -228,10 +229,11 @@ class GameStatePlaying(game_state_base.GameStateBase):
                 if msg['payload']['action'] == 'call_function':
                     # The registered listener had better have the function call available heh... otherwise, kaboom
                     objRef = listener_obj_dict['ref']
-                    fn_ptr = getattr(objRef.controlState, msg['payload']['function_name']) # TODO un-hardcode the ball's "controlState" attr -- make it possible to customize which obj attribute is responsible for handling the command
+                    fn_ptr = getattr(objRef, msg['payload']['function_name']) # TODO un-hardcode the ball's "controlState" attr -- make it possible to customize which obj attribute is responsible for handling the command
                     #args = msg['params'].split('=') # NOTE the params should be a comma-separated list of = separated key/vals, e.g. params = "a=1,b=2,c=3,..."
 
                     #eval(fn_ptr)
+                    # TODO add parameters to the function call
                     fn_ptr()
 
             msg = self._eventQueue.Dequeue()
@@ -306,6 +308,13 @@ class GameStatePlaying(game_state_base.GameStateBase):
             #self.rm.changeUpdateDelay(self.rm._updateDelay - 0.1)
             self.mm.setMessage("Level Up!".format(self.vital_stats.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ], (192, 64, 64), 8 )
             #self.rm.reInitLevel(self.rm._rowSpacing - 1, self.rm._updateDelay - 0.1, self.cell_size) 
+            self._eventQueue.Enqueue( { 'topic': 'Difficulty'
+                                      , 'payload': { 'action': 'call_function'
+                                                   , 'function_name': 'updateDifficulty'
+                                                   , 'params': ''
+                                                   }
+                                      }
+                                    )
 
 
     def doCollisions(self):

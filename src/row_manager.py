@@ -12,8 +12,9 @@ class RowManager(GameObj):
         self._rows = []
         self._rowSpacing = 6
         self._rowReinitPos = 0
-        self._min_gap_diff = 1 # gap diff is the dist between the gap on 'this' row and 'the next row'
-        self._max_gap_diff = 2
+        self._min_gap_diff = 0 # gap diff is the dist between the gap on 'this' row and 'the next row'
+        self._max_gap_diff = 3
+        # TODO come up with a way to evaluate difficulty. e.g., don't make the player cross the entire length of the screen 2x in a row. Figure out how to dole out consecutive same-gap rows (e.g. 2 or 3 consecutive rows each with the same gap).. stuff like that. Make the game follow a predictable sequence of row gap spacings; but let the actual gaps themselves be random. This way, high scores mean something.
 
         
     # the following function prototypes are placeholders. Update them as needed
@@ -95,6 +96,9 @@ class RowManager(GameObj):
 
     def changeUpdateDelay(self, newUpdateDelay):
         self._updateDelay = newUpdateDelay
+
+    def updateDifficulty(self):
+        print "Row Manager executing updateDifficulty()"
 
     def update(self, dt_s, cell_size, game_stats_obj):
         # TODO pass in game difficulty information, so we can adjust the method of assigning gaps
