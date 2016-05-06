@@ -11,6 +11,9 @@ class DisplayMessageManager(GameObj):
         self._defaultTTL = 3.0 # message time to live, in seconds
         self._nextFreeSlot = 0
 
+        self._preAllocateMemory()
+
+    def _preAllocateMemory(self):
         for i in xrange(0, self._maxMessages):
             self._messages.append(DisplayMessage())
 
@@ -26,6 +29,11 @@ class DisplayMessageManager(GameObj):
             msg.create(txtStr, position, txtColor, ttl)
         else:
             raise Exception("Ruh roh! I was unable to find a slot to store the message:{}!".format(txtStr))
+
+    def clear(self):
+        del self._messages[:]
+        self._preAllocateMemory()
+        self._nextFreeSlot = 0
 
     def getMessage(self, k):
         return self._messages[k]

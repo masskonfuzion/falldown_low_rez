@@ -151,7 +151,6 @@ class GameStatePlaying(game_state_base.GameStateBase):
                                                                , 'params' : ''
                                                                }
                                                   } ) # here, the call keyword says that the message payload is an instruction to call a function
-                        print "Left DOWN"
                         # TODO Maybe make the params a string of key=value pairs - split on '='
                     # Right arrow key
                     elif (event.key == pygame.K_RIGHT or event.key == pygame.K_l):
@@ -162,7 +161,6 @@ class GameStatePlaying(game_state_base.GameStateBase):
                                                                , 'params': ''
                                                                }
                                                   }) # here, the call keyword says that the message payload is an instruction to call a function
-                        print "Right DOWN"
                     elif (event.key == pygame.K_p):
                         engineRef.pushState(game_state_pause.GameStatePause.Instance())
 
@@ -175,7 +173,6 @@ class GameStatePlaying(game_state_base.GameStateBase):
                                                                , 'params': ''
                                                                }
                                                   } ) # here, the call keyword says that the message payload is an instruction to call a function
-                        print "Left UP"
                     elif (event.key == pygame.K_RIGHT or event.key == pygame.K_l):
                         #self.ball.controlState.setRightKeyPressedFalse()
                         self._eventQueue.Enqueue( { 'topic': 'PlayerControl',
@@ -184,7 +181,6 @@ class GameStatePlaying(game_state_base.GameStateBase):
                                                                , 'params': ''
                                                                }
                                                   }) # here, the call keyword says that the message payload is an instruction to call a function
-                        print "Right UP"
 
 			# TODO make these other states into GameState instances
             elif self.vital_stats._gameState == "Crushed":
@@ -209,6 +205,8 @@ class GameStatePlaying(game_state_base.GameStateBase):
                         # TODO find a way to somehow reuse the memory space used by the original queue Initialize() call (called during initialization of the Playing State). Right now, we're discarding the old and freshly allocating new space.
                         self._eventQueue.Clear()
                         self._eventQueue.Initialize(64)
+
+                        self.mm.clear()
 
                         self.rm.initLevel(self.vital_stats.initialRowSpacing, self.vital_stats.initialRowUpdateDelay, self.cell_size) 
 
