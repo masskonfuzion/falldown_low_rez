@@ -34,7 +34,11 @@ class Ball(GameObj):
         self._lastRowTouched = -1
         self._lastRowScored = -1
         
-        self._update_delay_dict = [ {'init': 0.06, 'inc': 0.0, 'max': 0.06, 'dec': 0.00, 'floor': 0.06 }
+        #self._update_delay_dict = [ {'init': 0.06, 'inc': 0.0, 'max': 0.06, 'dec': 0.00, 'floor': 0.06 }
+        #                          , {'init': 0.03, 'inc': 0.0, 'max': 0.03, 'dec': 0.01, 'floor': 0.01 }
+        #                          ]
+
+        self._update_delay_dict = [ {'init': 0.03125, 'inc': 0.0, 'max': 0.03125, 'dec': 0.00, 'floor': 0.03125 }
                                   , {'init': 0.03, 'inc': 0.0, 'max': 0.03, 'dec': 0.01, 'floor': 0.01 }
                                   ]
 

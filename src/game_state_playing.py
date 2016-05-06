@@ -12,6 +12,7 @@ from message_queue import MessageQueue
 
 import game_state_base
 import game_state_pause
+import game_state_main_menu
 
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
@@ -26,7 +27,7 @@ class GameplayStats(object):
         self._gotCrushed = False
         self._gameState = "Playing"
 
-        self.initialRowUpdateDelay = .5
+        self.initialRowUpdateDelay = 0.09375
         self.initialRowSpacing = 4
         self._lastDifficultyIncreaseScore = 0
         self.level = 1
@@ -197,6 +198,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
                         self.ball.setSpeed(0,1)
                         self.ball.setMaxSpeed(1,1)
                         self.ball.changeGameState(BallGameState.FREEFALL)
+                        self.ball.controlState.reset()
 
                         self.rm.initLevel(self.vital_stats.initialRowSpacing, self.vital_stats.initialRowUpdateDelay, self.cell_size) 
 
@@ -204,7 +206,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
             elif self.vital_stats._gameState == "GameOver":
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
-                        sys.exit()
+                        engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
     def ProcessCommands(self, engineRef):
         msg = self._eventQueue.Dequeue()
@@ -292,7 +294,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
         if self.vital_stats.score % 100 == 0 and self.vital_stats._lastDifficultyIncreaseScore < self.vital_stats.score:
             self.vital_stats.level += 1
             self.vital_stats._lastDifficultyIncreaseScore = self.vital_stats.score
-            self.rm.changeUpdateDelay(self.rm._updateDelay - 0.1)
+            #self.rm.changeUpdateDelay(self.rm._updateDelay - 0.1)
             self.mm.setMessage("Level Up!".format(self.vital_stats.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ], (192, 64, 64), 8 )
             #self.rm.reInitLevel(self.rm._rowSpacing - 1, self.rm._updateDelay - 0.1, self.cell_size) 
 
