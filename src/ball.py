@@ -8,19 +8,20 @@ class BallControlState:
         self.leftKeyPressed = False
         self.rightKeyPressed = False
 
-    def setLeftKeyPressedTrue(self):
+    def setLeftKeyPressedTrue(self, engineRef):
+        # NOTE: engineRef is not used here, but is required to conform to the message queue design we've chosen (see game_state_playing module)
         self.leftKeyPressed = True
 
-    def setLeftKeyPressedFalse(self):
+    def setLeftKeyPressedFalse(self, engineRef):
         self.leftKeyPressed = False
 
-    def setRightKeyPressedTrue(self):
+    def setRightKeyPressedTrue(self, engineRef):
         self.rightKeyPressed = True
 
-    def setRightKeyPressedFalse(self):
+    def setRightKeyPressedFalse(self, engineRef):
         self.rightKeyPressed = False
 
-    def reset(self):
+    def reset(self, engineRef):
         self.leftKeyPressed = False
         self.rightKeyPressed = False
 

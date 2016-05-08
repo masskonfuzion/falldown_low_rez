@@ -200,7 +200,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
                         self.ball.setPosition(32, 0) # Position is given in coordinates on the 64x64 grid. Actual screen coordinates are calculated from grid coordinates
                         self.ball.setSpeed(0,1)
                         self.ball.setMaxSpeed(1,1)
-                        self.ball.controlState.reset()
+                        self.ball.controlState.reset(engineRef)
                         self.ball.changeGameState(BallGameState.FREEFALL)
 
                         # TODO find a way to somehow reuse the memory space used by the original queue Initialize() call (called during initialization of the Playing State). Right now, we're discarding the old and freshly allocating new space.
@@ -229,12 +229,11 @@ class GameStatePlaying(game_state_base.GameStateBase):
                 if msg['payload']['action'] == 'call_function':
                     # The registered listener had better have the function call available heh... otherwise, kaboom
                     objRef = listener_obj_dict['ref']
-                    fn_ptr = getattr(objRef, msg['payload']['function_name']) # TODO un-hardcode the ball's "controlState" attr -- make it possible to customize which obj attribute is responsible for handling the command
+                    fn_ptr = getattr(objRef, msg['payload']['function_name'])
                     #args = msg['params'].split('=') # NOTE the params should be a comma-separated list of = separated key/vals, e.g. params = "a=1,b=2,c=3,..."
 
-                    #eval(fn_ptr)
                     # TODO add parameters to the function call
-                    fn_ptr()
+                    fn_ptr(self)
 
             msg = self._eventQueue.Dequeue()
 

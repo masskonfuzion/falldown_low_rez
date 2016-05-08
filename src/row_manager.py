@@ -1,3 +1,4 @@
+import random
 from row import Row
 import pygame
 from gameobj import GameObj
@@ -16,11 +17,25 @@ class RowManager(GameObj):
         self._max_gap_diff = 3
         # TODO come up with a way to evaluate difficulty. e.g., don't make the player cross the entire length of the screen 2x in a row. Figure out how to dole out consecutive same-gap rows (e.g. 2 or 3 consecutive rows each with the same gap).. stuff like that. Make the game follow a predictable sequence of row gap spacings; but let the actual gaps themselves be random. This way, high scores mean something.
 
-        
+    def _getNewGapBasedOnDifficulty(self, prevGap):
+        gap = random.randint(0, self._rows[0]._numBlocks - 1) # Get numBlocks from a row because, for some reason, roe manager does not store numBlocks.. Weird.. What was I thinking??
+        while abs(gap - prevGap) < self._min_gap_diff or abs(gap - prevGap) > self._max_gap_diff:
+            gap = random.randint(0, self._rows[0]._numBlocks - 1)
+        return gap
+
     # the following function prototypes are placeholders. Update them as needed
     def createRowAndAddToRowList(self, numBlocks=16, yPosition=32, gap=-1, updateDelay=1, cellSize = [10,10]):
         # TODO could add checking to make sure we don't add too many items
-        self._rows.append( Row(numBlocks, yPosition, gap, updateDelay) )
+
+        # If this is the 1st row, simply create a random gap
+        if not self._rows:
+            self._rows.append( Row(numBlocks, yPosition, gap, updateDelay) )
+        else:
+            prevGap = self._rows[ len(self._rows) - 1]._gap
+            gap = self._getNewGapBasedOnDifficulty(prevGap)
+            ## TODO! Make sure to assign the gaps based on previous row's gap
+            self._rows.append( Row(numBlocks, yPosition, gap, updateDelay) )
+
         self._rows[ len(self._rows) - 1 ]._computeRenderGeometry(cellSize)
         self._rows[ len(self._rows) - 1 ]._computeCollisionGeometry(cellSize)
 
@@ -97,8 +112,13 @@ class RowManager(GameObj):
     def changeUpdateDelay(self, newUpdateDelay):
         self._updateDelay = newUpdateDelay
 
-    def updateDifficulty(self):
-        print "Row Manager executing updateDifficulty()"
+    def updateDifficulty(self, engineRef):
+        #print "Row Manager executing updateDifficulty()"
+        # TODO Put caps on these min and max gap differences
+        if engineRef.vital_stats.level % 3 == 0:
+            self._min_gap_diff += 1
+            self._max_gap_diff += 1
+
 
     def update(self, dt_s, cell_size, game_stats_obj):
         # TODO pass in game difficulty information, so we can adjust the method of assigning gaps
@@ -107,12 +127,16 @@ class RowManager(GameObj):
         if self._accumulator_s[1] > self._updateDelay:
             self._accumulator_s[1] -= self._updateDelay
 
-            for row in self._rows:
+            for i in range(0, len(self._rows)):
+                row = self._rows[i]
+
                 row.update(dt_s, cell_size, game_stats_obj)
 
                 # Test rows going off the screen
                 if row._position[1] + row._size[1] / 2 == 0:
-                    row.reInit(self._rowReinitPos - row._size[1] / 2, -1, game_stats_obj)
+                    prevGap = self._rows[ (i - 1) % len(self._rows) ]._gap
+                    newGap = self._getNewGapBasedOnDifficulty(prevGap)
+                    row.reInit(self._rowReinitPos - row._size[1] / 2, newGap, game_stats_obj)
 
                 ##    # Get the position of the lowest row. If it is at or past the reinit point (which can happen when row spacing adjustment when difficulty level increases), then make the new position offset from the deepest row
                 ##    deepestRowPosition = 0
