@@ -79,12 +79,14 @@ class GameStateMainMenu(game_state_base.GameStateBase):
     # TODO Consider changing "pause" to "PushState" or something; doesn't HAVE to be 'pause'
     def Pause(self):
         # TODO check your design - you may need a pointer/reference to the engine here, to be able to push onto the stack.
-        print "GAMESTATE MainMenu State pausing"
+        #print "GAMESTATE MainMenu State pausing"
+        pass
 
     # TODO Consider changing "resume" to "PopState" or something; doesn't HAVE to be 'resume'
     def Resume(self):
         # TODO check your design - you may need a pointer/reference to the engine here, to be able to pop from the stack
-        print "GAMESTATE MainMenu State resume"
+        #print "GAMESTATE MainMenu State resume"
+        pass
 
     def ProcessEvents(self, engineRef):
         for event in pygame.event.get():

@@ -105,7 +105,8 @@ class GameStatePlaying(game_state_base.GameStateBase):
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
-        print "GAMESTATE Playing State cleaning up."
+        #print "GAMESTATE Playing State cleaning up."
+        pass
 
     @staticmethod
     def Instance():
@@ -117,21 +118,23 @@ class GameStatePlaying(game_state_base.GameStateBase):
             GameStatePlaying.__instance = super(GameStatePlaying, GameStatePlaying).__new__(GameStatePlaying)
             GameStatePlaying.__instance.__init__()
             GameStatePlaying.__instance.SetName("Playing State")
-            print "GAMESTATE Playing State creating __instance object {}".format(GameStatePlaying.__instance)
+            #print "GAMESTATE Playing State creating __instance object {}".format(GameStatePlaying.__instance)
 
-        print "GAMESTATE Playing State getting __instance {}".format(GameStatePlaying.__instance)
+        #print "GAMESTATE Playing State getting __instance {}".format(GameStatePlaying.__instance)
         return GameStatePlaying.__instance
         
 
     # TODO Consider changing "pause" to "PushState" or something; doesn't HAVE to be 'pause'
     def Pause(self):
         # TODO check your design - you may need a pointer/reference to the engine here, to be able to push onto the stack.
-        print "GAMESTATE Playing State pausing"
+        #print "GAMESTATE Playing State pausing"
+        pass
 
     # TODO Consider changing "resume" to "PopState" or something; doesn't HAVE to be 'resume'
     def Resume(self):
         # TODO check your design - you may need a pointer/reference to the engine here, to be able to pop from the stack
-        print "GAMESTATE Playing State resume"
+        #print "GAMESTATE Playing State resume"
+        pass
 
     def ProcessEvents(self, engineRef):
         for event in pygame.event.get():

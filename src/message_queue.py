@@ -32,25 +32,27 @@ class MessageQueue:
 
             Message objects contain a topic and a payload. Still trying to work out exactly how to design message objects. In Python, they can be a dict
         """
-        #print "DEBUG Enqueueing message: {}".format(msg_obj)
-        self._queue[self._tail] = msg_obj
-        self._tail = (self._tail + 1) % len(self._queue)
         if self._empty:
             self._empty = False
-        assert (self._tail != self._head)
+        else:
+            self._tail = (self._tail + 1) % len(self._queue)
+            assert (self._tail != self._head) # If tail == head, that means we've enqueued too many messages and we're wrapping around
+        self._queue[self._tail] = msg_obj
+        #print "DEBUG Enqueued message: {}".format(msg_obj)
 
     def Dequeue(self):
-        return_obj = self._queue[self._head]
-
-        peekIndex = (self._head + 1)
-
         if self._empty:
             return None
+
         else:
+            return_obj = self._queue[self._head]
+
             if self._head == self._tail and not self._empty:
                 self._empty = True
             else:
-                self._head = peekIndex % len(self._queue)
+                self._head = (self._head + 1) % len(self._queue)
+
+            #print "DEBUG Dequeued message: {}".format(return_obj)
             return return_obj
 
     def RegisterListener(self, listener_name, listener, topic):
