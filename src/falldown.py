@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 #############################################################################
 # Copyright 2016 Mass KonFuzion Games
 # 
@@ -14,7 +16,6 @@
 # limitations under the License.
 #############################################################################
 
-#!/usr/bin/python2
 
 import pygame
 import sys
