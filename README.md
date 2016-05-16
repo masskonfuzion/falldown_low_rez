@@ -1,5 +1,5 @@
-# Falldown Low Rez
-Mass KonFuzion Games presents Falldown Low Rez, a re-imagining of [Falldown, the TI calculator game](https://www.youtube.com/watch?v=aIAx7kjb9Gg), in low-resolution. Oh wait, Falldown was low-resolution to begin with. Hmm....
+# Falldown x64
+Mass KonFuzion Games presents Falldown x64, a re-imagining of [Falldown, the TI calculator game](https://www.youtube.com/watch?v=aIAx7kjb9Gg), in low-resolution. Oh wait, Falldown was low-resolution to begin with. Hmm....
 This game was my submission for [Low Rez Jam 2016](https://itch.io/jam/lowrezjam2016).
 
 ## Installing and Running Falldown
