@@ -1,6 +1,6 @@
 # Falldown x64
 Mass KonFuzion Games presents Falldown x64, a re-imagining of [Falldown, the TI calculator game](https://www.youtube.com/watch?v=aIAx7kjb9Gg), in low-resolution. Oh wait, Falldown was low-resolution to begin with. Hmm....
-This game was my submission for [Low Rez Jam 2016](https://itch.io/jam/lowrezjam2016).
+This game was [my submission](https://masskonfuzion.itch.io/falldown-x64) for [Low Rez Jam 2016](https://itch.io/jam/lowrezjam2016).
 
 ## Installing and Running Falldown
 Falldown doesn't get "installed" per se; it is programmed in Python 2, so [if you don't already have Python 2, you'll need to get it](https://www.python.org/downloads/). **Note:** Get Python _2_, not Python _3_. Well, you can get Python 3 if you want it; it's great. But it won't run Falldown.
