@@ -23,13 +23,11 @@ from display_msg_manager import DisplayMessageManager
 from message_queue import MessageQueue
 
 import game_state_base
-import game_state_playing
-import game_state_intro
-import game_state_settings
-# TODO add states for a settings meun and stuff like that
+import game_state_main_menu
+
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
-class GameStateMainMenu(game_state_base.GameStateBase):
+class GameStateSettings(game_state_base.GameStateBase):
     __instance = None
 
     def __new__(cls):
@@ -63,10 +61,12 @@ class GameStateMainMenu(game_state_base.GameStateBase):
 
         self.mm = DisplayMessageManager()
 
-        self.menuOptions = [ { 'text': 'Fall Down', 'position': [30, 30] }
-                           , { 'text': 'Settings', 'position': [30, 35] }
-                           , { 'text': 'High Scores', 'position': [30, 40] }
-                           , { 'text': 'Credits', 'position': [30, 45] }
+        # TODO here, add an "menu object" type, e.g. text box, slider, etc
+        # TODO see if there's anything already in existence that we can use.. There's gotta be
+        self.menuOptions = [ { 'text': 'Difficulty', 'position': [30, 30] }     # Controls initial # of lives; initial row speed (update delay); initial # of rows maybe?
+                           , { 'text': 'Screen Size? (TODO)', 'position': [30, 35] }
+                           , { 'text': 'Sound Volume? (TODO: Add sound :-D)', 'position': [30, 40] }
+                           , { 'text': 'Music Volume? (TODO: Add music :-D :-D)', 'position': [30, 45] }
                            , { 'text': 'Exit', 'position': [30, 50] }
                            ]
         self.displayMessages = []
@@ -81,7 +81,7 @@ class GameStateMainMenu(game_state_base.GameStateBase):
         self.title_mm._font = pygame.font.Font('../asset/font/ARCADE.TTF', 64)
 
         self.titleMsg = DisplayMessage()
-        self.titleMsg.create(txtStr='Falldown x64', position=[1,1], color=(192,192,192))
+        self.titleMsg.create(txtStr='Settings', position=[1,1], color=(192,192,192))
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
@@ -93,23 +93,23 @@ class GameStateMainMenu(game_state_base.GameStateBase):
            
            This method is a static method because it does not use any object
         """
-        if GameStateMainMenu.__instance is None:
-            GameStateMainMenu.__instance = super(GameStateMainMenu, GameStateMainMenu).__new__(GameStateMainMenu)
-            GameStateMainMenu.__instance.__init__()
-            GameStateMainMenu.__instance.SetName("MainMenu State")
-        return GameStateMainMenu.__instance
+        if GameStateSettings.__instance is None:
+            GameStateSettings.__instance = super(GameStateSettings, GameStateSettings).__new__(GameStateSettings)
+            GameStateSettings.__instance.__init__()
+            GameStateSettings.__instance.SetName("Settings State")
+        return GameStateSettings.__instance
         
 
     # TODO Consider changing "pause" to "PushState" or something; doesn't HAVE to be 'pause'
     def Pause(self):
         # TODO check your design - you may need a pointer/reference to the engine here, to be able to push onto the stack.
-        #print "GAMESTATE MainMenu State pausing"
+        #print "GAMESTATE Settings State pausing"
         pass
 
     # TODO Consider changing "resume" to "PopState" or something; doesn't HAVE to be 'resume'
     def Resume(self):
         # TODO check your design - you may need a pointer/reference to the engine here, to be able to pop from the stack
-        #print "GAMESTATE MainMenu State resume"
+        #print "GAMESTATE Settings State resume"
         pass
 
     def ProcessEvents(self, engineRef):
@@ -123,21 +123,23 @@ class GameStateMainMenu(game_state_base.GameStateBase):
                     if self.selection == 0:
                         # NOTE: Could make class name in all game state subclasses the same; that way, we could simply code the game to look in e.g. module name "game_state_" + whatever, and call the class' Instance() method
                         # NOTE: Could also put the selection #s into the menu option definitions, so this if/else block wouldn't need to know which # matches up with which option; it could get that info from the menu option definition
-                        engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
+                        # TODO 
+                        #engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
+                        pass
                     elif self.selection == 1:
-                        # Settings
-                        engineRef.changeState(game_state_settings.GameStateSettings.Instance())
+                        # Screen size
+                        pass
                     elif self.selection == 2:
-                        # High Scores
+                        # Sound volume
                         pass
                     elif self.selection == 3:
-                        # Credits
+                        # Music volume
                         pass
                     elif self.selection == 4:
-                        engineRef.isRunning = False
+                        engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
                 elif (event.key == pygame.K_ESCAPE):
-                    engineRef.changeState(game_state_intro.GameStateIntro.Instance())
+                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
                 elif event.key == pygame.K_DOWN:
                     self.selection = (self.selection + 1) % len(self.displayMessages)
