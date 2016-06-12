@@ -23,6 +23,8 @@ class GameApplication(object):
     def __init__(self):
         ''' Application class
         '''
+        # TODO make screen size customizable. Use the dot-access config dict structure
+
         # dirt-nasty initialization: screen_size is a tuple (width, height); width, height is initialized as 640x640
         self.game_size = [640, 640]
         self.screen_size = [854, 640] # The playable area will be a 640 x 640 square.

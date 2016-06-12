@@ -1,0 +1,9 @@
+{
+    "numTries": 3
+,   "difficulty": 
+    {
+        "initialRowSpacing": 4
+    ,   "initialRowUpdateDelay": 0.140625
+    ,   "initialRowScreenClearTime": 9
+    }
+}

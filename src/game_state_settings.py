@@ -25,6 +25,11 @@ from message_queue import MessageQueue
 import game_state_base
 import game_state_main_menu
 
+import menu_item_base
+import menu_item_spinner
+import menu_item_label
+import menu_form
+
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
 class GameStateSettings(game_state_base.GameStateBase):
@@ -58,21 +63,36 @@ class GameStateSettings(game_state_base.GameStateBase):
 
         # Register Command Listeners
         # Ditto
+        
+        self.uiImgCache = { 'spinner':{ 'left': menu_item_base.MenuItemBase.createImage("../asset/image/back.png")
+                                      , 'right': menu_item_base.MenuItemBase.createImage("../asset/image/forward.png")
+                                      }
+                          }
 
-        self.mm = DisplayMessageManager()
+        self.ui = menu_form.UIForm('../data/config/settings.json')
+        self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,80], self.ui._font, 'Number of Tries') )
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'numTries', [50,120], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']) )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,180], self.ui._font, 'Initial Row Spacing') )
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'difficulty.initialRowSpacing', [50,220], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']) )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,280], self.ui._font, 'Initial Row Grid Travel Time (seconds)') )
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'difficulty.initialRowScreenClearTime', [50,320], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']) )
 
-        # TODO here, add an "menu object" type, e.g. text box, slider, etc
-        # TODO see if there's anything already in existence that we can use.. There's gotta be
-        self.menuOptions = [ { 'text': 'Difficulty', 'position': [30, 30] }     # Controls initial # of lives; initial row speed (update delay); initial # of rows maybe?
-                           , { 'text': 'Screen Size? (TODO)', 'position': [30, 35] }
-                           , { 'text': 'Sound Volume? (TODO: Add sound :-D)', 'position': [30, 40] }
-                           , { 'text': 'Music Volume? (TODO: Add music :-D :-D)', 'position': [30, 45] }
-                           , { 'text': 'Exit', 'position': [30, 50] }
-                           ]
-        self.displayMessages = []
-        for menuOpt in self.menuOptions:
-            self.displayMessages.append(DisplayMessage())
-            self.displayMessages[len(self.displayMessages) - 1].create(txtStr=menuOpt['text'], position=menuOpt['position'], color=(192,192,192))
+
+
+        ## self.mm = DisplayMessageManager()
+        ## # TODO here, add an "menu object" type, e.g. text box, slider, etc
+        ## # TODO see if there's anything already in existence that we can use.. There's gotta be
+        ## self.menuOptions = [ { 'text': 'Difficulty', 'position': [30, 30] }     # Controls initial # of lives; initial row speed (update delay); initial # of rows maybe?
+        ##                    , { 'text': 'Screen Size? (TODO)', 'position': [30, 35] }
+        ##                    , { 'text': 'Sound Volume? (TODO: Add sound :-D)', 'position': [30, 40] }
+        ##                    , { 'text': 'Music Volume? (TODO: Add music :-D :-D)', 'position': [30, 45] }
+        ##                    , { 'text': 'Exit', 'position': [30, 50] }
+        ##                    ]
+        ## self.displayMessages = []
+        ## for menuOpt in self.menuOptions:
+        ##     self.displayMessages.append(DisplayMessage())
+        ##     self.displayMessages[len(self.displayMessages) - 1].create(txtStr=menuOpt['text'], position=menuOpt['position'], color=(192,192,192))
 
         self.selection = 0
 
@@ -139,13 +159,23 @@ class GameStateSettings(game_state_base.GameStateBase):
                         engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
                 elif (event.key == pygame.K_ESCAPE):
+                    self.ui.saveConfigToFile()
                     engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
-                elif event.key == pygame.K_DOWN:
-                    self.selection = (self.selection + 1) % len(self.displayMessages)
+                ## elif event.key == pygame.K_DOWN:
+                ##     self.selection = (self.selection + 1) % len(self.displayMessages)
 
-                elif event.key == pygame.K_UP:
-                    self.selection = (self.selection - 1) % len(self.displayMessages)
+                ## elif event.key == pygame.K_UP:
+                ##     self.selection = (self.selection - 1) % len(self.displayMessages)
+
+
+            #TODO update the UI to be able to handle keyboard events, as well as mouse events
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self.ui.processMouseEvent(event)
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                self.ui.processMouseEvent(event)
+
 
     def ProcessCommands(self, engineRef):
         # No command processing needed here because this is a super-simple pause state
@@ -154,8 +184,7 @@ class GameStateSettings(game_state_base.GameStateBase):
 
 
     def Update(self, engineRef, dt_s, cell_size):
-        # No updates needed here
-        pass
+        self.ui.update(dt_s)
 
     def PreRenderScene(self, engineRef):
         pass
@@ -163,29 +192,33 @@ class GameStateSettings(game_state_base.GameStateBase):
     def RenderScene(self, engineRef):
         self.surface_bg.fill((0,0,0))
 
-        # Janky hardcoding here... TODO fix the jankiness
-        for displayMsg in self.displayMessages:
-            textSurf = displayMsg.getTextSurface(self.mm._font)
-            self.surface_bg.blit(textSurf, (displayMsg._position[0] * self.cell_size[0], displayMsg._position[1] * self.cell_size[1] ))
+        ## # Janky hardcoding here... TODO fix the jankiness
+        ## for displayMsg in self.displayMessages:
+        ##     textSurf = displayMsg.getTextSurface(self.mm._font)
+        ##     self.surface_bg.blit(textSurf, (displayMsg._position[0] * self.cell_size[0], displayMsg._position[1] * self.cell_size[1] ))
 
+        # Render the title text surface
         textSurf = self.titleMsg.getTextSurface(self.title_mm._font)
         self.surface_bg.blit(textSurf, (self.titleMsg._position[0] * self.cell_size[0], self.titleMsg._position[1] * self.cell_size[1]))
-        
+
+        # Render the UI
+        self.ui.render(self.surface_bg)
 
     def PostRenderScene(self, engineRef):
         # Draw a box around the selected menu item
         # NOTE: I could've put the box in the renderScene function, but the box is technically an "overlay". Also, whatever, who cares? :-D
 
-        dispMsgRef = self.displayMessages[self.selection]
+        ## dispMsgRef = self.displayMessages[self.selection]
 
-        #TODO easy optimization: compute and store the font rendering size
-        selectRect = ( (dispMsgRef._position[0] - 1) * self.cell_size[0]
-                     , (dispMsgRef._position[1] - 1) * self.cell_size[1]
-                     , self.mm._font.size(dispMsgRef._text + "  ")[0]
-                     , self.mm._font.size(dispMsgRef._text)[1]
-                     )
+        ## #TODO easy optimization: compute and store the font rendering size
+        ## selectRect = ( (dispMsgRef._position[0] - 1) * self.cell_size[0]
+        ##              , (dispMsgRef._position[1] - 1) * self.cell_size[1]
+        ##              , self.mm._font.size(dispMsgRef._text + "  ")[0]
+        ##              , self.mm._font.size(dispMsgRef._text)[1]
+        ##              )
 
-        pygame.draw.rect(self.surface_bg, (192,128,0), selectRect, 2)
+        ## pygame.draw.rect(self.surface_bg, (192,128,0), selectRect, 2)
         # Flip the buffers
+
         pygame.display.flip()
 

@@ -30,25 +30,27 @@ import game_state_base
 import game_state_pause
 import game_state_main_menu
 
+import dot_access_dict
+import json
+
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
 # TODO put the scoring/difficulty/game state tracking vars into a game logic object. Make that logic object available to all of the playing state objects, e.g. row manager and all those.
 class GameplayStats(object):
-    def __init__(self):
+    def __init__(self, configDict):
         self.scoredFlag = False # Flag that tells whether player has scored or not # TODO make scorekeeping/game event management more robust
         self.score = 0
         self.GAP_SCORE = 10  # NOTE Scoring elements could be managed by a class/object. But whatever, no time!
-        self.tries = 3   # We're calling them "tries" because "lives" doesn't make sense for a ball :-D
-
+        self.tries = configDict['numTries']   # We're calling them "tries" because "lives" doesn't make sense for a ball :-D
         self._gotCrushed = False
         self._gameState = "Playing"
-
-        #self.initialRowUpdateDelay = 0.09375 # From bottom to top in 6 seconds
-        self.initialRowUpdateDelay = 0.140625 # From bottom to top in 9 seconds
-        self.initialRowSpacing = 4
-        self._lastDifficultyIncreaseScore = 0
         self.level = 1
         # TODO perhaps count what "level" we're on, and pass that into the row manager / row class
+        self._lastDifficultyIncreaseScore = 0
+
+        # TODO - change the 64 to be the screen size, which we should modify the program to take in as a configurable setting
+        self.initialRowUpdateDelay = float(configDict['difficulty.initialRowScreenClearTime']) / float(64)
+        self.initialRowSpacing = configDict['difficulty.initialRowSpacing']
 
 
 class GameStatePlaying(game_state_base.GameStateBase):
@@ -74,8 +76,14 @@ class GameStatePlaying(game_state_base.GameStateBase):
         self.game_viewport = engineRef.game_viewport
         self.bg_col = engineRef.bg_col
 
-        self.vital_stats = GameplayStats()
+        # TODO perhaps move the loading of this config to the main game engine. Then, simply pass a reference to the config object into this function, rather than doing the loading here
+        # Load config file
+        with open('../data/config/settings.json', 'r+') as fd:
+            cfgFromFile = json.load(fd)
+        config = dot_access_dict.DotAccessDict(cfgFromFile)
 
+        self.vital_stats = GameplayStats(config)
+        # TODO - Fix Gameplaystats. Right now, it's a patchwork object that takes some items that were loaded in from a cfg file, but others that are hard-coded. The patchwork is an artifact of the patchwork design/implementation of this game (I'm adding things as I figure out how to, heh)
 
         # TODO add ball to a list of game objects. e.g. [ ball, [ rows ] ], or maybe even better: [ ball, row_mgr ] (where row_mgr contains rows)
         self.ball = Ball()

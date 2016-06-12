@@ -162,6 +162,7 @@ class GameStateMainMenu(game_state_base.GameStateBase):
         self.surface_bg.fill((0,0,0))
 
         # Janky hardcoding here... TODO fix the jankiness
+        # NOTE: You can get away with calling getTextSurface only one time, as long as the text to be displayed doesn't change
         for displayMsg in self.displayMessages:
             textSurf = displayMsg.getTextSurface(self.mm._font)
             self.surface_bg.blit(textSurf, (displayMsg._position[0] * self.cell_size[0], displayMsg._position[1] * self.cell_size[1] ))
