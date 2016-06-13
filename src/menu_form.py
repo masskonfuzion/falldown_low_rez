@@ -29,7 +29,7 @@ class UIForm(object):
         self._activeSubItem = None  # The active menu item's active sub-item (e.g. a spinner's left arrow)
         self._font = None           # Font object for the form TODO - use a list? Possibly move into a FormManager class? (e.g. a FontManager could contain many forms, for multi-screen menus; and also, could manage all the font objects and what not)
         self._fontColor = None
-
+        self._selectedItem = None
 
         self.loadConfigFromFile()
 
@@ -70,13 +70,13 @@ class UIForm(object):
                 # NOTE: This is the composite spinner object (the item can be contained in a list of objects or whatever)
                 # TODO - form controls should be in a list/array
                 # TODO add mouse-in-bounds test for label items. Even though they don't respond to mouse clicks, it might be useful (esp to make buttons, which are, essentially, labels with an action)
-                if uiItem.isMouseWithinBounds(mousePos): 
+                if uiItem['uiItem'].isMouseWithinBounds(mousePos): 
                     ##print "Mouse click button {} on object id:{}".format(event.button, id(uiItem))
                     # TODO perhaps separate the setting of the active item (during collection phase) from the handling (e.g. setting initial timer)/update
                     # TODO send a key/button press to the object (perhaps the object can have a queue of timestamped inputs, to process and look for double-clicks, etc)
-                    self._activeMenuItem = uiItem   # activeMenuItem is a variable that maybe can belong to a top-level UI manager object thingamajig
+                    self._activeMenuItem = uiItem['uiItem']   # activeMenuItem is a variable that maybe can belong to a top-level UI manager object thingamajig
 
-                    self._activeSubItem = uiItem.selectedSubItem(mousePos)    # activeSubItem is a variable that maybe can belong to a top-level UI manager object thingamajig
+                    self._activeSubItem = uiItem['uiItem'].selectedSubItem(mousePos)    # activeSubItem is a variable that maybe can belong to a top-level UI manager object thingamajig
                     self._activeSubItem.setMouseButtonState(event.button - 1, menu_item_base.UIItemState.mouseButtonDown, pygame.time.get_ticks() / 1000.0)
                     if self._activeSubItem._onClickFunc:
                         ##print "Calling uiItem subItem {} _onClickFunc"
@@ -97,18 +97,20 @@ class UIForm(object):
             # TODO Detect that the user clicked e.g. in menu whitespace, and set self._activeMenuItem to None
             # TODO Detect that the user clicked e.g. in menu whitespace, and set self._activeSubItem to None
 
-    def addMenuItem(self, uiItem):
+    def addMenuItem(self, uiItem, kbSelectIdx=None):
         """Add a UI menu item to this form's list of UI items
         """
-        self._uiItems.append(uiItem)
+        # TODO -- make this a dict. Add a flag for keyboard-interactive (i.e., anything could theoretically respond to the mouse/joystick, , but we have to include info about what's interactive with the keyboard
+        self._uiItems.append( {'uiItem': uiItem, 'kbSelectIdx': kbSelectIdx} )
+        # kbSelectIdx tells the item how to interact with the keyboard. The index # is the number in the list of keyboard-interactive items
 
     def update(self, dt_s):
         """Update
         """
         #TODO (only update the active item? All items?)
         for uiItem in self._uiItems:
-            uiItem.update(dt_s)
+            uiItem['uiItem'].update(dt_s)
 
     def render(self, renderSurface):
         for uiItem in self._uiItems:
-            uiItem.render(renderSurface)
+            uiItem['uiItem'].render(renderSurface)

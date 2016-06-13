@@ -71,28 +71,12 @@ class GameStateSettings(game_state_base.GameStateBase):
 
         self.ui = menu_form.UIForm('../data/config/settings.json')
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,80], self.ui._font, 'Number of Tries') )
-        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'numTries', [50,120], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']) )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,80], self.ui._font, 'Number of Tries'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'numTries', [50,120], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=0 )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,180], self.ui._font, 'Initial Row Spacing') )
-        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'difficulty.initialRowSpacing', [50,220], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']) )
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'difficulty.initialRowSpacing', [50,220], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=1 )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,280], self.ui._font, 'Initial Row Grid Travel Time (seconds)') )
-        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'difficulty.initialRowScreenClearTime', [50,320], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']) )
-
-
-
-        ## self.mm = DisplayMessageManager()
-        ## # TODO here, add an "menu object" type, e.g. text box, slider, etc
-        ## # TODO see if there's anything already in existence that we can use.. There's gotta be
-        ## self.menuOptions = [ { 'text': 'Difficulty', 'position': [30, 30] }     # Controls initial # of lives; initial row speed (update delay); initial # of rows maybe?
-        ##                    , { 'text': 'Screen Size? (TODO)', 'position': [30, 35] }
-        ##                    , { 'text': 'Sound Volume? (TODO: Add sound :-D)', 'position': [30, 40] }
-        ##                    , { 'text': 'Music Volume? (TODO: Add music :-D :-D)', 'position': [30, 45] }
-        ##                    , { 'text': 'Exit', 'position': [30, 50] }
-        ##                    ]
-        ## self.displayMessages = []
-        ## for menuOpt in self.menuOptions:
-        ##     self.displayMessages.append(DisplayMessage())
-        ##     self.displayMessages[len(self.displayMessages) - 1].create(txtStr=menuOpt['text'], position=menuOpt['position'], color=(192,192,192))
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'difficulty.initialRowScreenClearTime', [50,320], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=2 )
 
         self.selection = 0
 
