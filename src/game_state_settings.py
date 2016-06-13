@@ -69,7 +69,7 @@ class GameStateSettings(game_state_base.GameStateBase):
                                       }
                           }
 
-        self.ui = menu_form.UIForm('../data/config/settings.json')
+        self.ui = menu_form.UIForm('../data/config/settings.json', engineRef=engineRef) # I hope the program understands that the engineRef on the left is the function parameter, and the one on the right is the passed-in reference
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,80], self.ui._font, 'Number of Tries'), kbSelectIdx=None )
         self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'numTries', [50,120], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=0 )
@@ -77,8 +77,12 @@ class GameStateSettings(game_state_base.GameStateBase):
         self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'difficulty.initialRowSpacing', [50,220], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=1 )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,280], self.ui._font, 'Initial Row Grid Travel Time (seconds)') )
         self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'difficulty.initialRowScreenClearTime', [50,320], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=2 )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,450], self.ui._font, 'Return'), kbSelectIdx=3, action="self._engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())" ) # TODO maybe make a set of possible actions and simplify this action definition
 
-        self.selection = 0
+        self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
+        self.ui._maxKbSelection = 3 # Janky hack to know how many kb-interactive items are on the form
+
+        # TODO possibly make the menu require the user to navigate to items, and then press "enter" or something to activate the selected item for editing?
 
         #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
         self.title_mm = DisplayMessageManager()
@@ -123,49 +127,19 @@ class GameStateSettings(game_state_base.GameStateBase):
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):
-                    if self.selection == 0:
-                        # NOTE: Could make class name in all game state subclasses the same; that way, we could simply code the game to look in e.g. module name "game_state_" + whatever, and call the class' Instance() method
-                        # NOTE: Could also put the selection #s into the menu option definitions, so this if/else block wouldn't need to know which # matches up with which option; it could get that info from the menu option definition
-                        # TODO 
-                        #engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
-                        pass
-                    elif self.selection == 1:
-                        # Screen size
-                        pass
-                    elif self.selection == 2:
-                        # Sound volume
-                        pass
-                    elif self.selection == 3:
-                        # Music volume
-                        pass
-                    elif self.selection == 4:
-                        engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
-
-                elif (event.key == pygame.K_ESCAPE):
-                    self.ui.saveConfigToFile()
-                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
-
-                ## elif event.key == pygame.K_DOWN:
-                ##     self.selection = (self.selection + 1) % len(self.displayMessages)
-
-                ## elif event.key == pygame.K_UP:
-                ##     self.selection = (self.selection - 1) % len(self.displayMessages)
-
+                self.ui.processKeyboardEvent(event, engineRef)
 
             #TODO update the UI to be able to handle keyboard events, as well as mouse events
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                self.ui.processMouseEvent(event)
+                self.ui.processMouseEvent(event, engineRef)
 
             elif event.type == pygame.MOUSEBUTTONUP:
-                self.ui.processMouseEvent(event)
-
+                self.ui.processMouseEvent(event, engineRef)
 
     def ProcessCommands(self, engineRef):
         # No command processing needed here because this is a super-simple pause state
         # However, in a more complex game, the pause menu could have more intricate controls and elements (e.g. settings menu or something), in which case command processing could be needed
         pass
-
 
     def Update(self, engineRef, dt_s, cell_size):
         self.ui.update(dt_s)
