@@ -77,7 +77,7 @@ class GameStateSettings(game_state_base.GameStateBase):
         self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'difficulty.initialRowSpacing', [50,220], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=1 )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,280], self.ui._font, 'Initial Row Grid Travel Time (seconds)') )
         self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'difficulty.initialRowScreenClearTime', [50,320], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=2 )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,450], self.ui._font, 'Return'), kbSelectIdx=3, action="self._engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())" ) # TODO maybe make a set of possible actions and simplify this action definition
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,450], self.ui._font, 'Return'), kbSelectIdx=3, action="exitUI" ) # TODO maybe make a set of possible actions and simplify this action definition
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
         self.ui._maxKbSelection = 3 # Janky hack to know how many kb-interactive items are on the form
@@ -90,10 +90,6 @@ class GameStateSettings(game_state_base.GameStateBase):
 
         self.titleMsg = DisplayMessage()
         self.titleMsg.create(txtStr='Settings', position=[1,1], color=(192,192,192))
-
-    def exitCallback(self):
-        self.ui.saveConfigToFile()
-        engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness

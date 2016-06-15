@@ -118,9 +118,14 @@ class UIForm(object):
                 uiItem = self.getKBActiveItem()
                 if uiItem:
                     if uiItem['action']:
-                        # Note: uiItem should be something.. It should not be None. If it's None, that means something bad happened
-                        # TODO make it possible to execute a series of commands?? I'm not sure.. But we need to be able to save the form and then change state.
-                        eval(uiItem['action'])
+                        ## # Note: uiItem should be something.. It should not be None. If it's None, that means something bad happened
+                        ## # TODO make it possible to execute a series of commands?? I'm not sure.. But we need to be able to save the form and then change state.
+                        ## eval(uiItem['action'])
+
+                        # Or, is it better to have defined actions, like the following?
+                        if uiItem['action'] == 'exitUI':    # TODO could also use a dict, with key=actionName, val=fn ptr to execute
+                            self.saveConfigToFile()
+                            self._engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
             if event.key == pygame.K_ESCAPE:
                 self.saveConfigToFile()
