@@ -91,6 +91,10 @@ class GameStateSettings(game_state_base.GameStateBase):
         self.titleMsg = DisplayMessage()
         self.titleMsg.create(txtStr='Settings', position=[1,1], color=(192,192,192))
 
+    def exitCallback(self):
+        self.ui.saveConfigToFile()
+        engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
+
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
         pass

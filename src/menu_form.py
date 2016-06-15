@@ -40,11 +40,12 @@ class UIForm(object):
         self.loadConfigFromFile()
 
         if menuDefFile:
-            # TODO implement this -- load menu definition from json
+            # TODO implement this -- load menu definition from json (or otherwise, delete this whole block)
             # Maybe call a function to load from json?
             pass
         else:
             # TODO don't hardcode menu definition? Right now, menu is hardcoded and passed into this constructor
+            # NOTE: Right now, the menuDefFile is entirely unsed. And the menu items are defined outside the scope of this class
             pass
 
     def loadConfigFromFile(self):
@@ -67,9 +68,8 @@ class UIForm(object):
         """
         # TODO Make it possible for the UI to know where the "cursor" is, and to be able to move the cursor with the mouse, joystick, whatever. Also, the UI should respond to button presses on the keyboard, mouse, joystick, whatever
         # TODO update UI event handling to be more modular -- e.g. this UI form should call functions to handle a "button press" regardless of what input device generated the input
-        for uiItem in self._uiItems:
-            # TODO redo this test.. It should be if mousebuttondown, then for item in UIItems
-            if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            for uiItem in self._uiItems:
                 mousePos = pygame.mouse.get_pos()
                 pressedButtons = pygame.mouse.get_pressed() # [0] = left; [1] = middle; [2] = right
                 timeStamp = pygame.time.get_ticks() / 1000.0 # get timestamp; convert to seconds
@@ -78,32 +78,33 @@ class UIForm(object):
                 # NOTE: This is the composite spinner object (the item can be contained in a list of objects or whatever)
                 # TODO - form controls should be in a list/array
                 # TODO add mouse-in-bounds test for label items. Even though they don't respond to mouse clicks, it might be useful (esp to make buttons, which are, essentially, labels with an action)
+                # TODO Have a function callback of some sort for each UI Item type, and call it. Spinners can have an internal subitem collision check; labels can execute a command; other items can do (or not do) actions, based on context.
                 if uiItem['uiItem'].isMouseWithinBounds(mousePos): 
                     ##print "Mouse click button {} on object id:{}".format(event.button, id(uiItem))
                     # TODO perhaps separate the setting of the active item (during collection phase) from the handling (e.g. setting initial timer)/update
                     # TODO send a key/button press to the object (perhaps the object can have a queue of timestamped inputs, to process and look for double-clicks, etc)
                     self._activeMenuItem = uiItem['uiItem']   # activeMenuItem is a variable that maybe can belong to a top-level UI manager object thingamajig
-
-                    self._activeSubItem = uiItem['uiItem'].selectedSubItem(mousePos)    # activeSubItem is a variable that maybe can belong to a top-level UI manager object thingamajig
-                    self._activeSubItem.setMouseButtonState(event.button - 1, menu_item_base.UIItemState.mouseButtonDown, pygame.time.get_ticks() / 1000.0)
-                    if self._activeSubItem._onClickFunc:
-                        ##print "Calling uiItem subItem {} _onClickFunc"
-                        self._activeSubItem._onClickFunc() 
-                        # Because the spinner is initialized with a bound value, which is managed internally, onClickFunc does not need to pass in any parameters
                     
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if self._activeMenuItem:
-                    # Unset whatever button was pressed (i.e. unset mouse tracking var of active menu item
-                    self._activeMenuItem.setMouseButtonState(event.button - 1, menu_item_base.UIItemState.mouseButtonUp, pygame.time.get_ticks() / 1000.0)
-                    # NOTE: because activeSubItem (used above) is local scope, we can't use it here. Instead, we "ask" the menu item for its subitems.
-                    # TODO: fix your busted design
-                    if self._activeMenuItem._subItems:
-                        # NOTE: This is janky - design a better way to track the state of subItems
-                        for subItem in self._activeMenuItem._subItems:
-                            subItem.setMouseButtonState(event.button - 1, menu_item_base.UIItemState.mouseButtonUp, pygame.time.get_ticks() / 1000.0)
+                    # TODO: implement the following function call; it should be the only function call in this scope (i.e., delete the stuff below it to the next elif block
+                    # self._activeMenuItem.processMouseEvent(mousePos) # This function should set a state, and/or execute a function
+
+                    # ============= TODO Query the spinner for a subitem, to set the mouse state ==========
+                    # TODO maybe we should change the onClickFuncs to take in the event, timestamp, etc
+                    self._activeMenuItem.setMouseButtonState(event.button - 1, menu_item_base.UIItemState.mouseButtonDown, pygame.time.get_ticks() / 1000.0)
+                    self._activeMenuItem.setMousePosition(mousePos)
+
+                    if self._activeMenuItem._onClickFunc:
+                        # TODO perhaps the clickFuncs should take in the mouse position and button states? Or otherwise, the onClickFuncs should NOT take those, but should USE them, after they've been set elsewhere (e.g. in setMouseButtonState, setMousePosition, etc)?
+                        self._activeMenuItem._onClickFunc() 
 
             # TODO Detect that the user clicked e.g. in menu whitespace, and set self._activeMenuItem to None
             # TODO Detect that the user clicked e.g. in menu whitespace, and set self._activeSubItem to None
+            # OR... TODO do away with _activeSubItem? Really, the main form should not know about subitems; only top-level items. If a top-level item has subitems, it should handle them internally
+
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if self._activeMenuItem:
+                # Unset whatever button was pressed (i.e. unset mouse tracking var of active menu item
+                self._activeMenuItem.setMouseButtonState(event.button - 1, menu_item_base.UIItemState.mouseButtonUp, pygame.time.get_ticks() / 1000.0)
 
     def processKeyboardEvent(self, event, engineRef):
         """Process keyboard event
@@ -118,9 +119,11 @@ class UIForm(object):
                 if uiItem:
                     if uiItem['action']:
                         # Note: uiItem should be something.. It should not be None. If it's None, that means something bad happened
+                        # TODO make it possible to execute a series of commands?? I'm not sure.. But we need to be able to save the form and then change state.
                         eval(uiItem['action'])
 
             if event.key == pygame.K_ESCAPE:
+                self.saveConfigToFile()
                 self._engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
             elif event.key == pygame.K_DOWN:

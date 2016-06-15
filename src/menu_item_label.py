@@ -14,3 +14,6 @@ class MenuItemLabel(menu_item_base.MenuItemBase):
     def render(self, renderSurface):
         renderSurface.blit(self._surface, (self._position[0], self._position[1]))
 
+    def hasSubItems(self):
+        """Return True if this item has subitems; False if not"""
+        return False

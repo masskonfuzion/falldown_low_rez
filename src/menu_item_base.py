@@ -69,7 +69,10 @@ class MenuItemBase(object):
                                  , { "state": UIItemState.mouseButtonUp, "timestamp": 0.0, "elapsedTime": 0.0 } # right button
                                  ]
 
+        self._mousePos = [0,0]
+
     def setMouseButtonState(self, buttonID, state, timestamp):
+        # TODO Remove default implementation and make setMouseButtonState raise NotImplementedError?
         ##print "menu_item_base.setMouseButtonState({},{},{})".format(buttonID, state, timestamp)
         self._mouseButtonState[buttonID]['state'] = state
         self._mouseButtonState[buttonID]['timestamp'] = timestamp
@@ -79,6 +82,17 @@ class MenuItemBase(object):
             self._mouseButtonState[buttonID]['elapsedTime'] - 0.0
         ##print "Item {} mouseButtonState: {}".format(id(self), self._mouseButtonState)
 
+    def setMousePosition(self, mouse_pos):
+        """Set the mouse position (usually in the context of the mouse cursor's position at the time of a click or other event
+           mouse_pos is a pygame tuple, created by pygame.mouse.get_pos()
+        """
+        self._mousePos[0] = mouse_pos[0]
+        self._mousePos[1] = mouse_pos[1]
+
+    def hasSubItems(self):
+        """Return True if this item has subitems; False if not
+        """
+        raise NotImplementedError
 
     def bindTo(self, targetObj, keyPath):
         """Assign self._boundObj to target. Target should be a pointer/reference to the data object this menu

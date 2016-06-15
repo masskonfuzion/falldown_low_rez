@@ -13,6 +13,8 @@ class MenuItemSpinner(menu_item_base.MenuItemBase):
         self.bindTo(configDict, configKey) # bind to the supplied config dict
 
         self._subItems = [] # To be filled: [0] = left arror; [1] = text; [2] = right arrow
+
+        # Initialize subitems (TODO perhaps put subitem init into a function?)
         for i in xrange(0, 3):
             self._subItems.append( menu_item_base.MenuItemBase() )
 
@@ -35,9 +37,13 @@ class MenuItemSpinner(menu_item_base.MenuItemBase):
 
         self.recalculateSubItems()
 
+        # Set this item's own onClickFunc
+        self._onClickFunc = self.doTopLevelClick
+
         # TODO: Make a class called ClickableBase, and also 2 subclasses: ClickableImage and ClickableText.  The classes will have functions to detect mousee clicks; the Text will be a text box (e.g., for the spinner value), and the image will have icons/images (for the arrow pictures, or whatever other form elements we want to support)
 
         # TODO: When making composite items (e.g. spinner, which has probably 3 image surfaces (2 for arrow images/icons, and 1 for text), the sub-items will be blitted onto the top-level item's surface, and then the top-level's surface will be blitted onto to the screen
+
 
     def recalculateSubItems(self):
         """ Recalculate the sizes/positions of the subitems; update the size of the composite object, as well
@@ -52,11 +58,19 @@ class MenuItemSpinner(menu_item_base.MenuItemBase):
         self._size[1] = self._subItems[0]._size[1]
 
     def selectedSubItem(self, mouse_pos):
+        """Return the selected subitem, based on mouse position
+
+           This function is only called if the mouse has been clicked on this item.
+           This function must be implemented if the menu item has subitems (because the UI Form class will call it
+        """
         # TODO consider incorporating selectedSubItem into the base class (using raise NotImplementedError)
         for subItem in self._subItems:
             if subItem.isMouseWithinBounds(mouse_pos):
                 return subItem
 
+    def hasSubItems(self):
+        """Return True if this item has subitems; False if not"""
+        return True
 
     def render(self, renderSurface):
         for subItem in self._subItems:
@@ -86,3 +100,30 @@ class MenuItemSpinner(menu_item_base.MenuItemBase):
         self.recalculateSubItems()
 
         # NOTE: It seems wasteful to create a new surface every time we change text... But I don't know a better way...
+
+    def doTopLevelClick(self):
+        """ Handle mouse clicks to determine where they fell, and what should happen"""
+        ## self._activeSubItem = uiItem['uiItem'].selectedSubItem(self._mousePos)    # activeSubItem is a variable that maybe can belong to a top-level UI manager object thingamajig. This came from the top-level form. Do we need it?
+        activeSubItem = self.selectedSubItem(self._mousePos)
+        if activeSubItem:
+            activeSubItem._onClickFunc()
+        # Because the spinner is initialized with a bound value, which is managed internally, onClickFunc does not need to pass in any parameters
+
+    def setMouseButtonState(self, buttonID, state, timestamp):
+        """Override setMouseButtonState from the base class"""
+        ##print "menu_item_base.setMouseButtonState({},{},{})".format(buttonID, state, timestamp)
+        self._mouseButtonState[buttonID]['state'] = state
+        self._mouseButtonState[buttonID]['timestamp'] = timestamp
+        
+        # Reset the elapsed time counter on mouseButtonUp (there's probably a better way to design this..)
+        if state == menu_item_base.UIItemState.mouseButtonUp:
+            self._mouseButtonState[buttonID]['elapsedTime'] - 0.0
+        ##print "Item {} mouseButtonState: {}".format(id(self), self._mouseButtonState)
+
+            # NOTE: because activeSubItem (used above) is local scope, we can't use it here. Instead, we "ask" the menu item for its subitems.
+            # TODO: Get rid of the activeSubItem note. Let's use function callbacks instead
+            # TODO: fix your busted design
+            if self._subItems:  # This test should always pass and actually should be removed (TODO)
+                # NOTE: This is janky - design a better way to track the state of subItems
+                for subItem in self._subItems:
+                    subItem.setMouseButtonState(buttonID, state, timestamp)
