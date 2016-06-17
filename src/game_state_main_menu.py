@@ -22,6 +22,11 @@ from display_msg import DisplayMessage
 from display_msg_manager import DisplayMessageManager
 from message_queue import MessageQueue
 
+import menu_form
+import menu_item_label  # TODO figure out the imports necessary to allow importing only menu_form, and getting all the related classes/imports automatically
+#import menu_item_spinner
+
+
 import game_state_base
 import game_state_playing
 import game_state_intro
@@ -61,25 +66,34 @@ class GameStateMainMenu(game_state_base.GameStateBase):
         # Register Command Listeners
         # Ditto
 
-        self.mm = DisplayMessageManager()
+        #self.mm = DisplayMessageManager()
 
-        self.menuOptions = [ { 'text': 'Fall Down', 'position': [30, 30] }
-                           , { 'text': 'Settings', 'position': [30, 35] }
-                           , { 'text': 'High Scores', 'position': [30, 40] }
-                           , { 'text': 'Credits', 'position': [30, 45] }
-                           , { 'text': 'Exit', 'position': [30, 50] }
-                           ]
-        self.displayMessages = []
-        for menuOpt in self.menuOptions:
-            self.displayMessages.append(DisplayMessage())
-            self.displayMessages[len(self.displayMessages) - 1].create(txtStr=menuOpt['text'], position=menuOpt['position'], color=(192,192,192))
+        ## self.menuOptions = [ { 'text': 'Fall Down', 'position': [30, 30] }
+        ##                    , { 'text': 'Settings', 'position': [30, 35] }
+        ##                    , { 'text': 'High Scores', 'position': [30, 40] }
+        ##                    , { 'text': 'Credits', 'position': [30, 45] }
+        ##                    , { 'text': 'Exit', 'position': [30, 50] }
+        ##                    ]
+        ## self.displayMessages = []
+        ## for menuOpt in self.menuOptions:
+        ##     self.displayMessages.append(DisplayMessage())
+        ##     self.displayMessages[len(self.displayMessages) - 1].create(txtStr=menuOpt['text'], position=menuOpt['position'], color=(192,192,192))
 
-        self.selection = 0
+        ## self.selection = 0
 
-        # TODO remove the self.menuOptions list o' dicts
-        #self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
-        #self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
-        #self.ui.addMenuItem( menu_item_label.MenuItemLabel([30, 30], self.ui._font, 'Fall Down', action="
+        # TODO remove the self.menuOptions list o' dicts and associated jank. Keep the ui object instead
+
+        self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
+        self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 300], self.ui._font, 'Fall Down'), kbSelectIdx=0, action="startFalldown" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 350], self.ui._font, 'Settings'), kbSelectIdx=1, action="gotoSettings" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 400], self.ui._font, 'High Scores'), kbSelectIdx=2, action="TODO" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 450], self.ui._font, 'Credits'), kbSelectIdx=3, action="TODO" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Exit'), kbSelectIdx=4, action="exitUI" )
+
+        self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
+        self.ui._maxKbSelection = 4 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
+
 
         #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
         self.title_mm = DisplayMessageManager()
@@ -124,31 +138,44 @@ class GameStateMainMenu(game_state_base.GameStateBase):
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):
-                    if self.selection == 0:
-                        # NOTE: Could make class name in all game state subclasses the same; that way, we could simply code the game to look in e.g. module name "game_state_" + whatever, and call the class' Instance() method
-                        # NOTE: Could also put the selection #s into the menu option definitions, so this if/else block wouldn't need to know which # matches up with which option; it could get that info from the menu option definition
-                        engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
-                    elif self.selection == 1:
-                        # Settings
-                        engineRef.changeState(game_state_settings.GameStateSettings.Instance())
-                    elif self.selection == 2:
-                        # High Scores
-                        pass
-                    elif self.selection == 3:
-                        # Credits
-                        pass
-                    elif self.selection == 4:
-                        engineRef.isRunning = False
+                ## if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):
+                ##     if self.selection == 0:
+                ##         # NOTE: Could make class name in all game state subclasses the same; that way, we could simply code the game to look in e.g. module name "game_state_" + whatever, and call the class' Instance() method
+                ##         # NOTE: Could also put the selection #s into the menu option definitions, so this if/else block wouldn't need to know which # matches up with which option; it could get that info from the menu option definition
+                ##         engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
+                ##     elif self.selection == 1:
+                ##         # Settings
+                ##         engineRef.changeState(game_state_settings.GameStateSettings.Instance())
+                ##     elif self.selection == 2:
+                ##         # High Scores
+                ##         pass
+                ##     elif self.selection == 3:
+                ##         # Credits
+                ##         pass
+                ##     elif self.selection == 4:
+                ##         engineRef.isRunning = False
 
-                elif (event.key == pygame.K_ESCAPE):
-                    engineRef.changeState(game_state_intro.GameStateIntro.Instance())
+                ## elif (event.key == pygame.K_ESCAPE):
+                ##     engineRef.changeState(game_state_intro.GameStateIntro.Instance())
 
-                elif event.key == pygame.K_DOWN:
-                    self.selection = (self.selection + 1) % len(self.displayMessages)
+                ## elif event.key == pygame.K_DOWN:
+                ##     self.selection = (self.selection + 1) % len(self.displayMessages)
 
-                elif event.key == pygame.K_UP:
-                    self.selection = (self.selection - 1) % len(self.displayMessages)
+                ## elif event.key == pygame.K_UP:
+                ##     self.selection = (self.selection - 1) % len(self.displayMessages)
+
+
+                action = self.ui.processKeyboardEvent(event, engineRef)
+
+                if action == 'startFalldown':
+                    engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
+                elif action == 'gotoSettings':
+                    engineRef.changeState(game_state_settings.GameStateSettings.Instance())
+                elif action == 'exitUI':
+                    engineRef.isRunning = False
+
+                    
+                    
 
     def ProcessCommands(self, engineRef):
         # No command processing needed here because this is a super-simple pause state
@@ -157,8 +184,7 @@ class GameStateMainMenu(game_state_base.GameStateBase):
 
 
     def Update(self, engineRef, dt_s, cell_size):
-        # No updates needed here
-        pass
+        self.ui.update(dt_s)
 
     def PreRenderScene(self, engineRef):
         pass
@@ -166,11 +192,13 @@ class GameStateMainMenu(game_state_base.GameStateBase):
     def RenderScene(self, engineRef):
         self.surface_bg.fill((0,0,0))
 
-        # Janky hardcoding here... TODO fix the jankiness
-        # NOTE: You can get away with calling getTextSurface only one time, as long as the text to be displayed doesn't change
-        for displayMsg in self.displayMessages:
-            textSurf = displayMsg.getTextSurface(self.mm._font)
-            self.surface_bg.blit(textSurf, (displayMsg._position[0] * self.cell_size[0], displayMsg._position[1] * self.cell_size[1] ))
+        ## # Janky hardcoding here... TODO fix the jankiness
+        ## # NOTE: You can get away with calling getTextSurface only one time, as long as the text to be displayed doesn't change
+        ## for displayMsg in self.displayMessages:
+        ##     textSurf = displayMsg.getTextSurface(self.mm._font)
+        ##     self.surface_bg.blit(textSurf, (displayMsg._position[0] * self.cell_size[0], displayMsg._position[1] * self.cell_size[1] ))
+
+        self.ui.render(self.surface_bg)
 
         textSurf = self.titleMsg.getTextSurface(self.title_mm._font)
         self.surface_bg.blit(textSurf, (self.titleMsg._position[0] * self.cell_size[0], self.titleMsg._position[1] * self.cell_size[1]))
@@ -180,16 +208,18 @@ class GameStateMainMenu(game_state_base.GameStateBase):
         # Draw a box around the selected menu item
         # NOTE: I could've put the box in the renderScene function, but the box is technically an "overlay". Also, whatever, who cares? :-D
 
-        dispMsgRef = self.displayMessages[self.selection]
+        ## # TODO perhaps make a function in the menuform class that draws the selection (and make it customizable?)
 
-        #TODO easy optimization: compute and store the font rendering size
-        selectRect = ( (dispMsgRef._position[0] - 1) * self.cell_size[0]
-                     , (dispMsgRef._position[1] - 1) * self.cell_size[1]
-                     , self.mm._font.size(dispMsgRef._text + "  ")[0]
-                     , self.mm._font.size(dispMsgRef._text)[1]
-                     )
+        ## dispMsgRef = self.displayMessages[self.selection]
 
-        pygame.draw.rect(self.surface_bg, (192,128,0), selectRect, 2)
+        ## #TODO easy optimization: compute and store the font rendering size
+        ## selectRect = ( (dispMsgRef._position[0] - 1) * self.cell_size[0]
+        ##              , (dispMsgRef._position[1] - 1) * self.cell_size[1]
+        ##              , self.mm._font.size(dispMsgRef._text + "  ")[0]
+        ##              , self.mm._font.size(dispMsgRef._text)[1]
+        ##              )
+
+        ## pygame.draw.rect(self.surface_bg, (192,128,0), selectRect, 2)
         # Flip the buffers
         pygame.display.flip()
 

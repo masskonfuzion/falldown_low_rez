@@ -221,6 +221,6 @@ class UIForm(object):
             uiItem['uiItem'].render(renderSurface)
 
             if uiItem['kbSelectIdx'] == self._kbSelection:
-                # TODO make this kb selection rectangle surround the item it's highlighting. I'm allowing jank in because I want to quickly test it.
+                # TODO make this kb selection rectangle surround the item it's highlighting (or make it customizable). I'm allowing jank in because I want to quickly test it.
                 pygame.draw.rect(renderSurface, (192,128,0), (10, uiItem['uiItem']._position[1], 30, 30), 2)
 
