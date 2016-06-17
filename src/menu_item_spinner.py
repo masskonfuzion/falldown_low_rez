@@ -1,3 +1,19 @@
+#############################################################################
+# Copyright 2016 Mass KonFuzion Games
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#############################################################################
+
 # Spinner = form control with a value, and a left/right (or also TODO up/down?) clickable arrows. Click the arrows to change the value
 
 import menu_item_base
@@ -6,7 +22,6 @@ import pygame
 
 class MenuItemSpinner(menu_item_base.MenuItemBase):
     def __init__(self, configDict, configKey, posList, fontObj, leftArrowImageSurf, rightArrowImageSurf):
-        # TODO make posX,posY a list/tuple? (to be consistent with the base class constructor?)
         super(MenuItemSpinner, self).__init__(pos=posList)
         # TODO fix stuff -- this class may need only to be a container class of MenuItemBase objects.. It may not need to BE a MenuItemBase derivative? I'm not sure. I suck at software design
 
@@ -20,8 +35,7 @@ class MenuItemSpinner(menu_item_base.MenuItemBase):
 
         self._subItems[0] = menu_item_base.MenuItemBase() #initialize left arrow
         self._subItems[0].setSurface( leftArrowImageSurf )
-        #self._subItems[0].setOnClickFunc( lambda boundVal: boundVal - 1 ) # TODO modify this function def as appropriate
-        self._subItems[0].setOnClickFunc( self.decrementBoundVal ) # TODO modify this function def as appropriate
+        self._subItems[0].setOnClickFunc( self.decrementBoundVal )
 
         self._subItems[1] = menu_item_base.MenuItemBase()
         self._subItems[1]._font = fontObj   # This assigns a reference to an already-existing font object
@@ -30,17 +44,12 @@ class MenuItemSpinner(menu_item_base.MenuItemBase):
 
         self._subItems[2] = menu_item_base.MenuItemBase()
         self._subItems[2].setSurface( rightArrowImageSurf )
-        #self._subItems[2].setOnClickFunc( lambda boundVal: boundVal + 1 ) # TODO modify this function def as appropriate
-        self._subItems[2].setOnClickFunc( self.incrementBoundVal ) # TODO modify this function def as appropriate
-
-        #TODO perhaps be a little smarter about how we compute the size of the parent spinner object?
+        self._subItems[2].setOnClickFunc( self.incrementBoundVal )
 
         self.recalculateSubItems()
 
         # Set this item's own onClickFunc
         self._onClickFunc = self.doTopLevelClick
-
-        # TODO: Make a class called ClickableBase, and also 2 subclasses: ClickableImage and ClickableText.  The classes will have functions to detect mousee clicks; the Text will be a text box (e.g., for the spinner value), and the image will have icons/images (for the arrow pictures, or whatever other form elements we want to support)
 
         # TODO: When making composite items (e.g. spinner, which has probably 3 image surfaces (2 for arrow images/icons, and 1 for text), the sub-items will be blitted onto the top-level item's surface, and then the top-level's surface will be blitted onto to the screen
 

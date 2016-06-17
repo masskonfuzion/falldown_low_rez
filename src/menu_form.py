@@ -1,3 +1,19 @@
+#############################################################################
+# Copyright 2016 Mass KonFuzion Games
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#############################################################################
+
 # Form is simply a list (or perhaps a dict)
 # Each item in the list (or dict) is a Menu Item
 ## Also with a location on the screen (eventually should be specifiable by percentages or something, to accommodate many screen resolutions)
@@ -9,6 +25,7 @@ import dot_access_dict
 import menu_item_base
 
 ## TODO Find a way to keep specific game state changes out of the menu class. This class should be state-agnostic
+## TODO also, probably make menu_form a base class, and then extend it for game-specific stuff.
 import game_state_base
 import game_state_main_menu
 
@@ -23,21 +40,26 @@ class UIForm(object):
            boundCfgFile contains the config options to be loaded/modified/written back
            menuDefFile contains layout/definition of the UI form
         """
-        if not boundCfgFile:
-            raise Exception("You must supply a config file (json) that is bound to this form")
+        # TODO -- Remove boundCfgFile? The UI form does not REQUIRE a bound config file
+        #if not boundCfgFile:
+        #    raise Exception("You must supply a config file (json) that is bound to this form")
 
         self._uiItems = []
-        self._configFile = boundCfgFile # The file name -- use this when reading and writing the file
+
         self._config = None         # The dict that holds the configuration that this menu is controlling
         self._activeMenuItem = None # The active menu item (e.g. a spinner, label, button, etc.)
         self._activeSubItem = None  # The active menu item's active sub-item (e.g. a spinner's left arrow)
         self._font = None           # Font object for the form TODO - use a list? Possibly move into a FormManager class? (e.g. a FontManager could contain many forms, for multi-screen menus; and also, could manage all the font objects and what not)
         self._fontColor = None
-        self._engineRef = engineRef
+        self._engineRef = engineRef # TODO delete this if we end up not using it; may be obviated by pass-through actions (pass the action instruction back to the calling scope instead of executing it here in this scope)
         self._kbSelection = None    # The index # of the item selected by keyboard input
         self._maxKbSelection = None
 
-        self.loadConfigFromFile()
+        if boundCfgFile:
+            self._configFile = boundCfgFile     # The file name -- use this when reading and writing the file
+            self.loadConfigFromFile()
+        else:
+            self._configFile = None
 
         if menuDefFile:
             # TODO implement this -- load menu definition from json (or otherwise, delete this whole block)
@@ -48,6 +70,7 @@ class UIForm(object):
             # NOTE: Right now, the menuDefFile is entirely unsed. And the menu items are defined outside the scope of this class
             pass
 
+    # TODO probably change loadConfigFromFile() to take in the filename, and remove the bound config file from the constructor. Or otherwise, keep the ctor as-is, and add an optional arg to the load function, to allow developer to choose
     def loadConfigFromFile(self):
         """Load config from the file specified in the constructor of this object"""
         with open(self._configFile, 'r+') as fd:
@@ -117,15 +140,11 @@ class UIForm(object):
                 # Confirm selection -- take action
                 uiItem = self.getKBActiveItem()
                 if uiItem:
+                    # TODO maybe rename this to "passThruAction" or something. We're going to simply pass the input value through as a return value, to allow the calling scope to execute an action
                     if uiItem['action']:
                         ## # Note: uiItem should be something.. It should not be None. If it's None, that means something bad happened
-                        ## # TODO make it possible to execute a series of commands?? I'm not sure.. But we need to be able to save the form and then change state.
-                        ## eval(uiItem['action'])
+                        return uiItem['action']
 
-                        # Or, is it better to have defined actions, like the following?
-                        if uiItem['action'] == 'exitUI':    # TODO could also use a dict, with key=actionName, val=fn ptr to execute
-                            self.saveConfigToFile()
-                            self._engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
             if event.key == pygame.K_ESCAPE:
                 self.saveConfigToFile()

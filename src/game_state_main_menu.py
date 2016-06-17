@@ -76,6 +76,11 @@ class GameStateMainMenu(game_state_base.GameStateBase):
 
         self.selection = 0
 
+        # TODO remove the self.menuOptions list o' dicts
+        #self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
+        #self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
+        #self.ui.addMenuItem( menu_item_label.MenuItemLabel([30, 30], self.ui._font, 'Fall Down', action="
+
         #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
         self.title_mm = DisplayMessageManager()
         self.title_mm._font = pygame.font.Font('../asset/font/ARCADE.TTF', 64)

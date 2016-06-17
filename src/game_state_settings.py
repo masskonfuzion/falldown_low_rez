@@ -64,6 +64,7 @@ class GameStateSettings(game_state_base.GameStateBase):
         # Register Command Listeners
         # Ditto
         
+        # NOTE could optimize images by loading UI graphics at a higher level than this, e.g. to make available to all menus: main menu, settings, in-game pause, etc.
         self.uiImgCache = { 'spinner':{ 'left': menu_item_base.MenuItemBase.createImage("../asset/image/back.png")
                                       , 'right': menu_item_base.MenuItemBase.createImage("../asset/image/forward.png")
                                       }
@@ -80,7 +81,7 @@ class GameStateSettings(game_state_base.GameStateBase):
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,450], self.ui._font, 'Return'), kbSelectIdx=3, action="exitUI" ) # TODO maybe make a set of possible actions and simplify this action definition
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
-        self.ui._maxKbSelection = 3 # Janky hack to know how many kb-interactive items are on the form
+        self.ui._maxKbSelection = 3 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
 
         # TODO possibly make the menu require the user to navigate to items, and then press "enter" or something to activate the selected item for editing?
 
@@ -127,7 +128,15 @@ class GameStateSettings(game_state_base.GameStateBase):
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                self.ui.processKeyboardEvent(event, engineRef)
+                # Note: processKeyboardEvent causes things to happen in the menu_form scope (e.g. increment/decrement values, etc).
+                # Here, the action variable contains further info/instructions to process in this scope
+                action = self.ui.processKeyboardEvent(event, engineRef)
+                if action == 'exitUI':
+                    # TODO Register actions with the menu_form? That way, the actions can be functions that belong to whatever.. the engine object, some other scope, whatever.. Then, simply call actions as needed
+                    # Or, is it better to have the actions defined outside the menu_form's scope, like the following?
+                    self.ui.saveConfigToFile()
+                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
+
 
             #TODO update the UI to be able to handle keyboard events, as well as mouse events
             elif event.type == pygame.MOUSEBUTTONDOWN:
