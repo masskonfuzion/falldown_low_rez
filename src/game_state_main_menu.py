@@ -167,15 +167,24 @@ class GameStateMainMenu(game_state_base.GameStateBase):
 
                 action = self.ui.processKeyboardEvent(event, engineRef)
 
+                # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
                 if action == 'startFalldown':
                     engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
                 elif action == 'gotoSettings':
                     engineRef.changeState(game_state_settings.GameStateSettings.Instance())
                 elif action == 'exitUI':
                     engineRef.isRunning = False
+            
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                action = self.ui.processMouseEvent(event, engineRef)
 
-                    
-                    
+                # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
+                if action == 'startFalldown':
+                    engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
+                elif action == 'gotoSettings':
+                    engineRef.changeState(game_state_settings.GameStateSettings.Instance())
+                elif action == 'exitUI':
+                    engineRef.isRunning = False
 
     def ProcessCommands(self, engineRef):
         # No command processing needed here because this is a super-simple pause state

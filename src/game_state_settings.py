@@ -132,18 +132,24 @@ class GameStateSettings(game_state_base.GameStateBase):
                 # Here, the action variable contains further info/instructions to process in this scope
                 action = self.ui.processKeyboardEvent(event, engineRef)
                 if action == 'exitUI':
-                    # TODO Register actions with the menu_form? That way, the actions can be functions that belong to whatever.. the engine object, some other scope, whatever.. Then, simply call actions as needed
-                    # Or, is it better to have the actions defined outside the menu_form's scope, like the following?
                     self.ui.saveConfigToFile()
                     engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
 
             #TODO update the UI to be able to handle keyboard events, as well as mouse events
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                self.ui.processMouseEvent(event, engineRef)
+                action = self.ui.processMouseEvent(event, engineRef)
+                # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
+                if action == 'exitUI':
+                    self.ui.saveConfigToFile()
+                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
             elif event.type == pygame.MOUSEBUTTONUP:
-                self.ui.processMouseEvent(event, engineRef)
+                action = self.ui.processMouseEvent(event, engineRef)
+                # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
+                if action == 'exitUI':
+                    self.ui.saveConfigToFile()
+                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
     def ProcessCommands(self, engineRef):
         # No command processing needed here because this is a super-simple pause state

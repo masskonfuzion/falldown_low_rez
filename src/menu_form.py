@@ -116,9 +116,15 @@ class UIForm(object):
                     self._activeMenuItem.setMouseButtonState(event.button - 1, menu_item_base.UIItemState.mouseButtonDown, pygame.time.get_ticks() / 1000.0)
                     self._activeMenuItem.setMousePosition(mousePos)
 
+                    # NOTE: onClickFunc is meant to be an internal action; e.g., for spinner UI items, onClickFunc should increment/decrement the bound value
                     if self._activeMenuItem._onClickFunc:
                         # TODO perhaps the clickFuncs should take in the mouse position and button states? Or otherwise, the onClickFuncs should NOT take those, but should USE them, after they've been set elsewhere (e.g. in setMouseButtonState, setMousePosition, etc)?
                         self._activeMenuItem._onClickFunc() 
+
+                    # NOTE: action is a pass-through action. It is not acted upon by the menu item itself, but rather it is passed back to the scope the owns thie UI item. That way, the scope can take the action (e.g. change game state or something like that)
+                    # TODO maybe rename this to "passThruAction" or something. We're going to simply pass the input value through as a return value, to allow the calling scope to execute an action
+                    if uiItem['action']:
+                        return uiItem['action']
 
             # TODO Detect that the user clicked e.g. in menu whitespace, and set self._activeMenuItem to None
             # TODO Detect that the user clicked e.g. in menu whitespace, and set self._activeSubItem to None
@@ -129,6 +135,8 @@ class UIForm(object):
                 # Unset whatever button was pressed (i.e. unset mouse tracking var of active menu item
                 self._activeMenuItem.setMouseButtonState(event.button - 1, menu_item_base.UIItemState.mouseButtonUp, pygame.time.get_ticks() / 1000.0)
 
+        return None
+
     def processKeyboardEvent(self, event, engineRef):
         """Process keyboard event
 
@@ -138,13 +146,11 @@ class UIForm(object):
         if event.type == pygame.KEYDOWN:
             if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):
                 # Confirm selection -- take action
-                uiItem = self.getKBActiveItem()
+                uiItem = self.getKBActiveItem() # TODO make it possible for the mouse/joystick to set the activeItem, as well, and get rid of the kb-specific tracking.
                 if uiItem:
                     # TODO maybe rename this to "passThruAction" or something. We're going to simply pass the input value through as a return value, to allow the calling scope to execute an action
                     if uiItem['action']:
-                        ## # Note: uiItem should be something.. It should not be None. If it's None, that means something bad happened
                         return uiItem['action']
-
 
             if event.key == pygame.K_ESCAPE:
                 self.saveConfigToFile()
@@ -194,6 +200,8 @@ class UIForm(object):
             ###         self.ui._kbSelection -= 1
             ###         if self.ui._kbSelection < 0:
             ###             self.ui._kbSelection = self.ui._maxKbSelection
+
+        return None
 
     def getKBActiveItem(self):
         for uiItem in self._uiItems:
