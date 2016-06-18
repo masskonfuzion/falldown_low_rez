@@ -107,6 +107,10 @@ class GameStateIntro(game_state_base.GameStateBase):
                 if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):
                     engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if pygame.mouse.get_pressed()[0]:   # Left mouse click
+                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
+
     def ProcessCommands(self, engineRef):
         # No command processing needed here because this is a super-simple pause state
         # However, in a more complex game, the pause menu could have more intricate controls and elements (e.g. settings menu or something), in which case command processing could be needed

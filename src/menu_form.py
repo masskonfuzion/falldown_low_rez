@@ -102,6 +102,7 @@ class UIForm(object):
                 # TODO - form controls should be in a list/array
                 # TODO add mouse-in-bounds test for label items. Even though they don't respond to mouse clicks, it might be useful (esp to make buttons, which are, essentially, labels with an action)
                 # TODO Have a function callback of some sort for each UI Item type, and call it. Spinners can have an internal subitem collision check; labels can execute a command; other items can do (or not do) actions, based on context.
+                # TODO test which mouse button is pressed before taking action
                 if uiItem['uiItem'].isMouseWithinBounds(mousePos): 
                     ##print "Mouse click button {} on object id:{}".format(event.button, id(uiItem))
                     # TODO perhaps separate the setting of the active item (during collection phase) from the handling (e.g. setting initial timer)/update
