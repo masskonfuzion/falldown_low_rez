@@ -20,8 +20,6 @@ from gameobj import GameObj
 from collision_aabb import CollisionAABB
 
 
-# TODO add a CollisionAABB to the row. And, for that matter to the ball
-
 class Row(GameObj):
     # Define some static vars that we'll use to initialize the collision geoms - types should be non-zero, because the CollisionAABB class initializes to 0
     COLLISION_TYPE_NONE = 0

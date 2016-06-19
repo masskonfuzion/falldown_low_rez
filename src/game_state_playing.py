@@ -35,21 +35,19 @@ import json
 
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
-# TODO put the scoring/difficulty/game state tracking vars into a game logic object. Make that logic object available to all of the playing state objects, e.g. row manager and all those.
 class GameplayStats(object):
     def __init__(self, configDict):
-        self.scoredFlag = False # Flag that tells whether player has scored or not # TODO make scorekeeping/game event management more robust
+        self.scoredFlag = False # Flag that tells whether player has scored or not
         self.score = 0
         self.GAP_SCORE = 10  # NOTE Scoring elements could be managed by a class/object. But whatever, no time!
         self.tries = configDict['numTries']   # We're calling them "tries" because "lives" doesn't make sense for a ball :-D
         self._gotCrushed = False
         self._gameState = "Playing"
         self.level = 1
-        # TODO perhaps count what "level" we're on, and pass that into the row manager / row class
         self._lastDifficultyIncreaseScore = 0
 
-        # TODO - change the 64 to be the screen size, which we should modify the program to take in as a configurable setting
-        self.initialRowUpdateDelay = float(configDict['difficulty.initialRowScreenClearTime']) / float(64)
+        # 64 is hardcoded here because the Low Rez Jam rules required a 64x64 grid. The update delay is calculated in terms of amt of time needed for a Falldown row to clear 64 grid rows
+        self.initialRowUpdateDelay = float(configDict['difficulty.initialRowScreenClearTime']) / float(64) 
         self.initialRowSpacing = configDict['difficulty.initialRowSpacing']
 
 
@@ -85,7 +83,6 @@ class GameStatePlaying(game_state_base.GameStateBase):
         self.vital_stats = GameplayStats(config)
         # TODO - Fix Gameplaystats. Right now, it's a patchwork object that takes some items that were loaded in from a cfg file, but others that are hard-coded. The patchwork is an artifact of the patchwork design/implementation of this game (I'm adding things as I figure out how to, heh)
 
-        # TODO add ball to a list of game objects. e.g. [ ball, [ rows ] ], or maybe even better: [ ball, row_mgr ] (where row_mgr contains rows)
         self.ball = Ball()
         self.ball._accumulator_s[1] = 0.0
         self.ball.setPosition(32, 0) # Position is given in coordinates on the 64x64 grid. Actual screen coordinates are calculated from grid coordinates
@@ -96,9 +93,6 @@ class GameStatePlaying(game_state_base.GameStateBase):
 
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
         self._eventQueue.Initialize(64)
-
-        #self._cmdQueue = MessageQueue() # Command queue, e.g. "Start moving left"
-        #self._cmdQueue.Initialize(64)
 
         self.mm = DisplayMessageManager()
 
@@ -210,7 +204,6 @@ class GameStatePlaying(game_state_base.GameStateBase):
                                                                }
                                                   }) # here, the call keyword says that the message payload is an instruction to call a function
 
-			# TODO make these other states into GameState instances
             elif self.vital_stats._gameState == "Crushed":
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_RETURN:
@@ -264,12 +257,8 @@ class GameStatePlaying(game_state_base.GameStateBase):
 
             msg = self._eventQueue.Dequeue()
 
-
-
     def Update(self, engineRef, dt_s, cell_size):
         # NOTE: How should we Update() and PreRender()? (Acceptable answers also include _not_distinguishing and simply making the PreRender() do what Update() does, and getting rid of Update())
-        # HORRENDOUS state mgmt style here. Use State Pattern instead
-		# TODO move this stuff into the playing state
         if self.vital_stats._gameState == "Playing":
             self.ball.update(dt_s, cell_size, self.vital_stats)
             self.rm.update(dt_s, cell_size, self.vital_stats)
@@ -323,17 +312,13 @@ class GameStatePlaying(game_state_base.GameStateBase):
             if self.ball._position[i] + self.ball._size[i] > 64:
                 self.ball._position[i] = 64 - self.ball._size[i]
 
-            # TODO Add a ball game state here? Right now, if the ball reaches the bottom of the screen, it's considered 'freefall' because there's nothing that sets the ball game state to anything else
-
-
+    
     def updateDifficulty(self):
         # Some hard-coded stuff here -- would like to make a more robust level management system, but I'm scrambling to meet the submission deadline for Low Rez Jam 2016. Maybe I'll update later
         if self.vital_stats.score % 100 == 0 and self.vital_stats._lastDifficultyIncreaseScore < self.vital_stats.score:
             self.vital_stats.level += 1
             self.vital_stats._lastDifficultyIncreaseScore = self.vital_stats.score
-            #self.rm.changeUpdateDelay(self.rm._updateDelay - 0.1)
             self.mm.setMessage("Level Up!".format(self.vital_stats.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ], (192, 64, 64), 8 )
-            #self.rm.reInitLevel(self.rm._rowSpacing - 1, self.rm._updateDelay - 0.1, self.cell_size) 
             self._eventQueue.Enqueue( { 'topic': 'Difficulty'
                                       , 'payload': { 'action': 'call_function'
                                                    , 'function_name': 'updateDifficulty'
@@ -357,7 +342,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
             # Test collisions
             for geom in row._collGeoms:
                 if geom:
-                    # NOTE: We need to test for collision with a gap first, then check for the row, because the ball can possibly be in contact with both the row and gap at the same time. That way, we can be sure that we're clearly on a gap if the ball is in contact with the gap but not the row at the same time.
+                    # NOTE: We need to test for collision with a gap first, then check for the row, because the ball can possibly be in contact with both the row and gap at the same time. That way, the test will indicate when the ball is in contact with the gap but not the row at the same time.
                     # TODO remove cell_size from the isColliding call
                     if geom.isColliding(self.ball._collGeoms[0], self.cell_size):
                         if geom._type == Row.COLLISION_TYPE_GAP:

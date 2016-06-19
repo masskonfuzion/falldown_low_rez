@@ -25,7 +25,7 @@ import dot_access_dict
 import menu_item_base
 
 ## TODO Find a way to keep specific game state changes out of the menu class. This class should be state-agnostic
-## TODO also, probably make menu_form a base class, and then extend it for game-specific stuff.
+## TODO also, possibly make menu_form a base class, and then extend it for game-specific stuff.
 import game_state_base
 import game_state_main_menu
 
@@ -40,10 +40,6 @@ class UIForm(object):
            boundCfgFile contains the config options to be loaded/modified/written back
            menuDefFile contains layout/definition of the UI form
         """
-        # TODO -- Remove boundCfgFile? The UI form does not REQUIRE a bound config file
-        #if not boundCfgFile:
-        #    raise Exception("You must supply a config file (json) that is bound to this form")
-
         self._uiItems = []
 
         self._config = None         # The dict that holds the configuration that this menu is controlling
@@ -89,7 +85,7 @@ class UIForm(object):
            Events are Pygame events
            engineRef is provided in case it is needed
         """
-        # TODO Make it possible for the UI to know where the "cursor" is, and to be able to move the cursor with the mouse, joystick, whatever. Also, the UI should respond to button presses on the keyboard, mouse, joystick, whatever
+        # TODO Make it possible for the UI to know where the cursor is, and to be able to move the cursor with the mouse, joystick, whatever. Also, the UI should respond to button presses on the keyboard, mouse, joystick, whatever
         # TODO update UI event handling to be more modular -- e.g. this UI form should call functions to handle a "button press" regardless of what input device generated the input
         if event.type == pygame.MOUSEBUTTONDOWN:
             for uiItem in self._uiItems:
@@ -99,9 +95,6 @@ class UIForm(object):
                 ##print "Clicked a button: {}, coord:{}, time:{}".format(pressedButtons, mousePos, timeStamp)
 
                 # NOTE: This is the composite spinner object (the item can be contained in a list of objects or whatever)
-                # TODO - form controls should be in a list/array
-                # TODO add mouse-in-bounds test for label items. Even though they don't respond to mouse clicks, it might be useful (esp to make buttons, which are, essentially, labels with an action)
-                # TODO Have a function callback of some sort for each UI Item type, and call it. Spinners can have an internal subitem collision check; labels can execute a command; other items can do (or not do) actions, based on context.
                 # TODO test which mouse button is pressed before taking action
                 if uiItem['uiItem'].isMouseWithinBounds(mousePos): 
                     ##print "Mouse click button {} on object id:{}".format(event.button, id(uiItem))
@@ -109,9 +102,6 @@ class UIForm(object):
                     # TODO send a key/button press to the object (perhaps the object can have a queue of timestamped inputs, to process and look for double-clicks, etc)
                     self._activeMenuItem = uiItem['uiItem']   # activeMenuItem is a variable that maybe can belong to a top-level UI manager object thingamajig
                     
-                    # TODO: implement the following function call; it should be the only function call in this scope (i.e., delete the stuff below it to the next elif block
-                    # self._activeMenuItem.processMouseEvent(mousePos) # This function should set a state, and/or execute a function
-
                     # ============= TODO Query the spinner for a subitem, to set the mouse state ==========
                     # TODO maybe we should change the onClickFuncs to take in the event, timestamp, etc
                     self._activeMenuItem.setMouseButtonState(event.button - 1, menu_item_base.UIItemState.mouseButtonDown, pygame.time.get_ticks() / 1000.0)
@@ -128,8 +118,6 @@ class UIForm(object):
                         return uiItem['action']
 
             # TODO Detect that the user clicked e.g. in menu whitespace, and set self._activeMenuItem to None
-            # TODO Detect that the user clicked e.g. in menu whitespace, and set self._activeSubItem to None
-            # OR... TODO do away with _activeSubItem? Really, the main form should not know about subitems; only top-level items. If a top-level item has subitems, it should handle them internally
 
         elif event.type == pygame.MOUSEBUTTONUP:
             if self._activeMenuItem:
@@ -167,41 +155,6 @@ class UIForm(object):
                 if self._kbSelection < 0:
                     self._kbSelection = self._maxKbSelection
 
-            ### if event.type == pygame.KEYDOWN:
-            ###     if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):
-            ###         if self.selection == 0:
-            ###             # NOTE: Could make class name in all game state subclasses the same; that way, we could simply code the game to look in e.g. module name "game_state_" + whatever, and call the class' Instance() method
-            ###             # NOTE: Could also put the selection #s into the menu option definitions, so this if/else block wouldn't need to know which # matches up with which option; it could get that info from the menu option definition
-            ###             # TODO 
-            ###             #engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
-            ###             pass
-            ###         elif self.selection == 1:
-            ###             # Screen size
-            ###             pass
-            ###         elif self.selection == 2:
-            ###             # Sound volume
-            ###             pass
-            ###         elif self.selection == 3:
-            ###             # Music volume
-            ###             pass
-            ###         elif self.selection == 4:
-            ###             engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
-
-            ###     elif (event.key == pygame.K_ESCAPE):
-            ###         self.ui.saveConfigToFile()
-            ###         engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
-
-            ###     elif event.key == pygame.K_DOWN:
-            ###         # TODO no sir... handle the key in the UI
-            ###         self.ui._kbSelection += 1
-            ###         if self.ui._kbSelection > self.ui._maxKbSelection:
-            ###             self.ui._kbSelection = 0
-            ###             
-            ###     elif event.key == pygame.K_UP:
-            ###         self.ui._kbSelection -= 1
-            ###         if self.ui._kbSelection < 0:
-            ###             self.ui._kbSelection = self.ui._maxKbSelection
-
         return None
 
     def getKBActiveItem(self):
@@ -213,15 +166,13 @@ class UIForm(object):
     def addMenuItem(self, uiItem, kbSelectIdx=None, action=None):
         """Add a UI menu item to this form's list of UI items
         """
-        # TODO -- make this a dict. Add a flag for keyboard-interactive (i.e., anything could theoretically respond to the mouse/joystick, , but we have to include info about what's interactive with the keyboard
         self._uiItems.append( {'uiItem': uiItem, 'kbSelectIdx': kbSelectIdx, 'action': action} )
         # kbSelectIdx tells the item how to interact with the keyboard. The index # is the number in the list of keyboard-interactive items
-        # Action is a function call -- it is used to make Labels have executable commands (but perhaps we should make a new type of UI item called CommandButton, and simplify labels
+        # Action is an instruction that ends up being passed back to the calling scope. That allows the UI to determine how the user interacted with it, but allow the calling scope to execute the necessary action.
 
     def update(self, dt_s):
         """Update
         """
-        #TODO (only update the active item? All items?)
         for uiItem in self._uiItems:
             uiItem['uiItem'].update(dt_s)
 

@@ -14,8 +14,6 @@
 # limitations under the License.
 #############################################################################
 
-# TODO add the Copyright stuff
-
 # Base class items should have:
 # Position (position on screen where to draw the item)
 # Value (var to store the value of the bound config option)

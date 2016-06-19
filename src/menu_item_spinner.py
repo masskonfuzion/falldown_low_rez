@@ -23,7 +23,6 @@ import pygame
 class MenuItemSpinner(menu_item_base.MenuItemBase):
     def __init__(self, configDict, configKey, posList, fontObj, leftArrowImageSurf, rightArrowImageSurf):
         super(MenuItemSpinner, self).__init__(pos=posList)
-        # TODO fix stuff -- this class may need only to be a container class of MenuItemBase objects.. It may not need to BE a MenuItemBase derivative? I'm not sure. I suck at software design
 
         self.bindTo(configDict, configKey) # bind to the supplied config dict
 
@@ -50,8 +49,6 @@ class MenuItemSpinner(menu_item_base.MenuItemBase):
 
         # Set this item's own onClickFunc
         self._onClickFunc = self.doTopLevelClick
-
-        # TODO: When making composite items (e.g. spinner, which has probably 3 image surfaces (2 for arrow images/icons, and 1 for text), the sub-items will be blitted onto the top-level item's surface, and then the top-level's surface will be blitted onto to the screen
 
 
     def recalculateSubItems(self):
@@ -97,8 +94,6 @@ class MenuItemSpinner(menu_item_base.MenuItemBase):
             subItem.update(dt_s)
 
     def decrementBoundVal(self):
-        # TODO: Make it possible to process deeper-level items in the config dict. e.g., You can use a loop or something. See your leftover stack overflow browser tabs/history
-
         self._boundObj[self._boundItemKey] -= 1
         self._subItems[1].setSurface( menu_item_base.MenuItemBase.createText(str(self._boundObj[self._boundItemKey]), self._subItems[1]._font, (255,255,255)) )
         self.recalculateSubItems()
@@ -129,8 +124,6 @@ class MenuItemSpinner(menu_item_base.MenuItemBase):
             self._mouseButtonState[buttonID]['elapsedTime'] - 0.0
         ##print "Item {} mouseButtonState: {}".format(id(self), self._mouseButtonState)
 
-            # NOTE: because activeSubItem (used above) is local scope, we can't use it here. Instead, we "ask" the menu item for its subitems.
-            # TODO: Get rid of the activeSubItem note. Let's use function callbacks instead
             # TODO: fix your busted design
             if self._subItems:  # This test should always pass and actually should be removed (TODO)
                 # NOTE: This is janky - design a better way to track the state of subItems

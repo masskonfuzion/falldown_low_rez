@@ -78,7 +78,7 @@ class GameStateSettings(game_state_base.GameStateBase):
         self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'difficulty.initialRowSpacing', [50,220], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=1 )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,280], self.ui._font, 'Initial Row Grid Travel Time (seconds)') )
         self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._config, 'difficulty.initialRowScreenClearTime', [50,320], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=2 )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,450], self.ui._font, 'Return'), kbSelectIdx=3, action="exitUI" ) # TODO maybe make a set of possible actions and simplify this action definition
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,450], self.ui._font, 'Return'), kbSelectIdx=3, action="exitUI" )
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
         self.ui._maxKbSelection = 3 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
@@ -111,14 +111,10 @@ class GameStateSettings(game_state_base.GameStateBase):
 
     # TODO Consider changing "pause" to "PushState" or something; doesn't HAVE to be 'pause'
     def Pause(self):
-        # TODO check your design - you may need a pointer/reference to the engine here, to be able to push onto the stack.
-        #print "GAMESTATE Settings State pausing"
         pass
 
     # TODO Consider changing "resume" to "PopState" or something; doesn't HAVE to be 'resume'
     def Resume(self):
-        # TODO check your design - you may need a pointer/reference to the engine here, to be able to pop from the stack
-        #print "GAMESTATE Settings State resume"
         pass
 
     def ProcessEvents(self, engineRef):
@@ -136,7 +132,6 @@ class GameStateSettings(game_state_base.GameStateBase):
                     engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
 
-            #TODO update the UI to be able to handle keyboard events, as well as mouse events
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 action = self.ui.processMouseEvent(event, engineRef)
                 # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
@@ -146,10 +141,6 @@ class GameStateSettings(game_state_base.GameStateBase):
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 action = self.ui.processMouseEvent(event, engineRef)
-                # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
-                if action == 'exitUI':
-                    self.ui.saveConfigToFile()
-                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
     def ProcessCommands(self, engineRef):
         # No command processing needed here because this is a super-simple pause state
@@ -165,11 +156,6 @@ class GameStateSettings(game_state_base.GameStateBase):
     def RenderScene(self, engineRef):
         self.surface_bg.fill((0,0,0))
 
-        ## # Janky hardcoding here... TODO fix the jankiness
-        ## for displayMsg in self.displayMessages:
-        ##     textSurf = displayMsg.getTextSurface(self.mm._font)
-        ##     self.surface_bg.blit(textSurf, (displayMsg._position[0] * self.cell_size[0], displayMsg._position[1] * self.cell_size[1] ))
-
         # Render the title text surface
         textSurf = self.titleMsg.getTextSurface(self.title_mm._font)
         self.surface_bg.blit(textSurf, (self.titleMsg._position[0] * self.cell_size[0], self.titleMsg._position[1] * self.cell_size[1]))
@@ -178,20 +164,7 @@ class GameStateSettings(game_state_base.GameStateBase):
         self.ui.render(self.surface_bg)
 
     def PostRenderScene(self, engineRef):
-        # Draw a box around the selected menu item
-        # NOTE: I could've put the box in the renderScene function, but the box is technically an "overlay". Also, whatever, who cares? :-D
-
-        ## dispMsgRef = self.displayMessages[self.selection]
-
-        ## #TODO easy optimization: compute and store the font rendering size
-        ## selectRect = ( (dispMsgRef._position[0] - 1) * self.cell_size[0]
-        ##              , (dispMsgRef._position[1] - 1) * self.cell_size[1]
-        ##              , self.mm._font.size(dispMsgRef._text + "  ")[0]
-        ##              , self.mm._font.size(dispMsgRef._text)[1]
-        ##              )
-
-        ## pygame.draw.rect(self.surface_bg, (192,128,0), selectRect, 2)
+        # TODO Draw a box around the selected menu item
         # Flip the buffers
-
         pygame.display.flip()
 

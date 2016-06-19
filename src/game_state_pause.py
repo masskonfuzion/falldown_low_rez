@@ -23,7 +23,6 @@ from display_msg_manager import DisplayMessageManager
 from message_queue import MessageQueue
 
 import game_state_base
-#import game_state_intro # TODO make an intro state that's dope
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
 class GameStatePause(game_state_base.GameStateBase):
@@ -83,14 +82,10 @@ class GameStatePause(game_state_base.GameStateBase):
 
     # TODO Consider changing "pause" to "PushState" or something; doesn't HAVE to be 'pause'
     def Pause(self):
-        # TODO check your design - you may need a pointer/reference to the engine here, to be able to push onto the stack.
-        #print "GAMESTATE Pause State pausing"
         pass
 
     # TODO Consider changing "resume" to "PopState" or something; doesn't HAVE to be 'resume'
     def Resume(self):
-        # TODO check your design - you may need a pointer/reference to the engine here, to be able to pop from the stack
-        #print "GAMESTATE Pause State resume"
         pass
 
     def ProcessEvents(self, engineRef):
@@ -101,8 +96,8 @@ class GameStatePause(game_state_base.GameStateBase):
 
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_ESCAPE or event.key == pygame.K_p):
-                    engineRef.getState().Cleanup() # TODO determine - should this happen here?
-                    engineRef.popState() # NOTE: PopState() returns the state to the program; however, we don't care because we're not going to use it for anything
+                    engineRef.getState().Cleanup()
+                    engineRef.popState() # NOTE: PopState() returns the state to the program; however, we don't assign it, because we don't care, because we're not going to use it for anything
 
     def ProcessCommands(self, engineRef):
         # No command processing needed here because this is a super-simple pause state
