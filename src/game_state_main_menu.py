@@ -32,6 +32,7 @@ import game_state_playing
 import game_state_intro
 import game_state_settings
 import game_state_high_scores
+import game_state_credits
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
 class GameStateMainMenu(game_state_base.GameStateBase):
@@ -62,7 +63,7 @@ class GameStateMainMenu(game_state_base.GameStateBase):
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 300], self.ui._font, 'Fall Down'), kbSelectIdx=0, action="startFalldown" )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 350], self.ui._font, 'Settings'), kbSelectIdx=1, action="gotoSettings" )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 400], self.ui._font, 'High Scores'), kbSelectIdx=2, action="gotoHighScores" )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 450], self.ui._font, 'Credits'), kbSelectIdx=3, action="TODO" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 450], self.ui._font, 'Credits'), kbSelectIdx=3, action="gotoCredits" )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Exit'), kbSelectIdx=4, action="exitUI" )
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
@@ -117,6 +118,8 @@ class GameStateMainMenu(game_state_base.GameStateBase):
                     engineRef.changeState(game_state_settings.GameStateSettings.Instance())
                 elif action == 'gotoHighScores':
                     engineRef.changeState(game_state_high_scores.GameStateHighScores.Instance())
+                elif action == 'gotoCredits':
+                    engineRef.changeState(game_state_credits.GameStateCredits.Instance())
                 elif action == 'exitUI':
                     engineRef.isRunning = False
             
@@ -128,6 +131,10 @@ class GameStateMainMenu(game_state_base.GameStateBase):
                     engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
                 elif action == 'gotoSettings':
                     engineRef.changeState(game_state_settings.GameStateSettings.Instance())
+                elif action == 'gotoHighScores':
+                    engineRef.changeState(game_state_high_scores.GameStateHighScores.Instance())
+                elif action == 'gotoCredits':
+                    engineRef.changeState(game_state_credits.GameStateCredits.Instance())
                 elif action == 'exitUI':
                     engineRef.isRunning = False
 

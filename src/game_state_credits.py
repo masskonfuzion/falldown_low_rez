@@ -30,7 +30,7 @@ import game_state_base
 import game_state_main_menu
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
-class GameStateHighScores(game_state_base.GameStateBase):
+class GameStateCredits(game_state_base.GameStateBase):
     __instance = None
 
     def __new__(cls):
@@ -65,7 +65,7 @@ class GameStateHighScores(game_state_base.GameStateBase):
         self.title_mm._font = pygame.font.Font('../asset/font/ARCADE.TTF', 64)
 
         self.titleMsg = DisplayMessage()
-        self.titleMsg.create(txtStr='High Scores', position=[1,1], color=(192,192,192))
+        self.titleMsg.create(txtStr='Credits', position=[1,1], color=(192,192,192))
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
@@ -77,11 +77,11 @@ class GameStateHighScores(game_state_base.GameStateBase):
            
            This method is a static method because it does not use any object
         """
-        if GameStateHighScores.__instance is None:
-            GameStateHighScores.__instance = super(GameStateHighScores, GameStateHighScores).__new__(GameStateHighScores)
-            GameStateHighScores.__instance.__init__()
-            GameStateHighScores.__instance.SetName("HighScores State")
-        return GameStateHighScores.__instance
+        if GameStateCredits.__instance is None:
+            GameStateCredits.__instance = super(GameStateCredits, GameStateCredits).__new__(GameStateCredits)
+            GameStateCredits.__instance.__init__()
+            GameStateCredits.__instance.SetName("Credits State")
+        return GameStateCredits.__instance
         
 
     # TODO Consider changing "pause" to "PushState" or something; doesn't HAVE to be 'pause'
