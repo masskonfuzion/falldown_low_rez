@@ -25,7 +25,7 @@ from message_queue import MessageQueue
 import game_state_base
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
-class GameStatePause(game_state_base.GameStateBase):
+class GameStateImpl(game_state_base.GameStateBase):
     __instance = None
 
     def __new__(cls):
@@ -73,11 +73,11 @@ class GameStatePause(game_state_base.GameStateBase):
            
            This method is a static method because it does not use any object
         """
-        if GameStatePause.__instance is None:
-            GameStatePause.__instance = super(GameStatePause, GameStatePause).__new__(GameStatePause)
-            GameStatePause.__instance.__init__()
-            GameStatePause.__instance.SetName("Pause State")
-        return GameStatePause.__instance
+        if GameStateImpl.__instance is None:
+            GameStateImpl.__instance = super(GameStateImpl, GameStateImpl).__new__(GameStateImpl)
+            GameStateImpl.__instance.__init__()
+            GameStateImpl.__instance.SetName("Pause State")
+        return GameStateImpl.__instance
         
 
     # TODO Consider changing "pause" to "PushState" or something; doesn't HAVE to be 'pause'

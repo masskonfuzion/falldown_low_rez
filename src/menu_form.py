@@ -143,7 +143,7 @@ class UIForm(object):
 
             if event.key == pygame.K_ESCAPE:
                 self.saveConfigToFile()
-                self._engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
+                self._engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
 
             elif event.key == pygame.K_DOWN:
                 self._kbSelection += 1

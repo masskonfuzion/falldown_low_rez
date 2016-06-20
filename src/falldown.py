@@ -30,7 +30,7 @@ def main():
 
     game = GameApplication()
 
-    game.changeState(game_state_intro.GameStateIntro.Instance())
+    game.changeState(game_state_intro.GameStateImpl.Instance())
 
     # NOTE timer should be part of application class, too, but this is hack'n'slash.. No time to fix it!!
     prev_time = pygame.time.get_ticks()

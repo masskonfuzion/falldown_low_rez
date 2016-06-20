@@ -32,7 +32,7 @@ import menu_form
 
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
-class GameStateSettings(game_state_base.GameStateBase):
+class GameStateImpl(game_state_base.GameStateBase):
     __instance = None
 
     def __new__(cls):
@@ -102,11 +102,11 @@ class GameStateSettings(game_state_base.GameStateBase):
            
            This method is a static method because it does not use any object
         """
-        if GameStateSettings.__instance is None:
-            GameStateSettings.__instance = super(GameStateSettings, GameStateSettings).__new__(GameStateSettings)
-            GameStateSettings.__instance.__init__()
-            GameStateSettings.__instance.SetName("Settings State")
-        return GameStateSettings.__instance
+        if GameStateImpl.__instance is None:
+            GameStateImpl.__instance = super(GameStateImpl, GameStateImpl).__new__(GameStateImpl)
+            GameStateImpl.__instance.__init__()
+            GameStateImpl.__instance.SetName("Settings State")
+        return GameStateImpl.__instance
         
 
     # TODO Consider changing "pause" to "PushState" or something; doesn't HAVE to be 'pause'
@@ -129,7 +129,7 @@ class GameStateSettings(game_state_base.GameStateBase):
                 action = self.ui.processKeyboardEvent(event, engineRef)
                 if action == 'exitUI':
                     self.ui.saveConfigToFile()
-                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
+                    engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
 
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -137,7 +137,7 @@ class GameStateSettings(game_state_base.GameStateBase):
                 # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
                 if action == 'exitUI':
                     self.ui.saveConfigToFile()
-                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
+                    engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 action = self.ui.processMouseEvent(event, engineRef)

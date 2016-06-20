@@ -30,7 +30,7 @@ import game_state_base
 import game_state_main_menu
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
-class GameStateHighScores(game_state_base.GameStateBase):
+class GameStateImpl(game_state_base.GameStateBase):
     __instance = None
 
     def __new__(cls):
@@ -77,11 +77,11 @@ class GameStateHighScores(game_state_base.GameStateBase):
            
            This method is a static method because it does not use any object
         """
-        if GameStateHighScores.__instance is None:
-            GameStateHighScores.__instance = super(GameStateHighScores, GameStateHighScores).__new__(GameStateHighScores)
-            GameStateHighScores.__instance.__init__()
-            GameStateHighScores.__instance.SetName("HighScores State")
-        return GameStateHighScores.__instance
+        if GameStateImpl.__instance is None:
+            GameStateImpl.__instance = super(GameStateImpl, GameStateImpl).__new__(GameStateImpl)
+            GameStateImpl.__instance.__init__()
+            GameStateImpl.__instance.SetName("HighScores State")
+        return GameStateImpl.__instance
         
 
     # TODO Consider changing "pause" to "PushState" or something; doesn't HAVE to be 'pause'
@@ -103,14 +103,14 @@ class GameStateHighScores(game_state_base.GameStateBase):
 
                 # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
                 if action == 'exitUI':
-                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
+                    engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 action = self.ui.processMouseEvent(event, engineRef)
 
                 # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
                 if action == 'exitUI':
-                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
+                    engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
 
     def ProcessCommands(self, engineRef):
         # No command processing needed here because this is a super-simple pause state

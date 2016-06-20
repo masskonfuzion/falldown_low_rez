@@ -35,7 +35,7 @@ import game_state_high_scores
 import game_state_credits
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
-class GameStateMainMenu(game_state_base.GameStateBase):
+class GameStateImpl(game_state_base.GameStateBase):
     __instance = None
 
     def __new__(cls):
@@ -87,11 +87,11 @@ class GameStateMainMenu(game_state_base.GameStateBase):
            
            This method is a static method because it does not use any object
         """
-        if GameStateMainMenu.__instance is None:
-            GameStateMainMenu.__instance = super(GameStateMainMenu, GameStateMainMenu).__new__(GameStateMainMenu)
-            GameStateMainMenu.__instance.__init__()
-            GameStateMainMenu.__instance.SetName("MainMenu State")
-        return GameStateMainMenu.__instance
+        if GameStateImpl.__instance is None:
+            GameStateImpl.__instance = super(GameStateImpl, GameStateImpl).__new__(GameStateImpl)
+            GameStateImpl.__instance.__init__()
+            GameStateImpl.__instance.SetName("MainMenu State")
+        return GameStateImpl.__instance
         
 
     # TODO Consider changing "pause" to "PushState" or something; doesn't HAVE to be 'pause'
@@ -113,13 +113,13 @@ class GameStateMainMenu(game_state_base.GameStateBase):
 
                 # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
                 if action == 'startFalldown':
-                    engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
+                    engineRef.changeState(game_state_playing.GameStateImpl.Instance())
                 elif action == 'gotoSettings':
-                    engineRef.changeState(game_state_settings.GameStateSettings.Instance())
+                    engineRef.changeState(game_state_settings.GameStateImpl.Instance())
                 elif action == 'gotoHighScores':
-                    engineRef.changeState(game_state_high_scores.GameStateHighScores.Instance())
+                    engineRef.changeState(game_state_high_scores.GameStateImpl.Instance())
                 elif action == 'gotoCredits':
-                    engineRef.changeState(game_state_credits.GameStateCredits.Instance())
+                    engineRef.changeState(game_state_credits.GameStateImpl.Instance())
                 elif action == 'exitUI':
                     engineRef.isRunning = False
             
@@ -128,13 +128,13 @@ class GameStateMainMenu(game_state_base.GameStateBase):
 
                 # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
                 if action == 'startFalldown':
-                    engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
+                    engineRef.changeState(game_state_playing.GameStateImpl.Instance())
                 elif action == 'gotoSettings':
-                    engineRef.changeState(game_state_settings.GameStateSettings.Instance())
+                    engineRef.changeState(game_state_settings.GameStateImpl.Instance())
                 elif action == 'gotoHighScores':
-                    engineRef.changeState(game_state_high_scores.GameStateHighScores.Instance())
+                    engineRef.changeState(game_state_high_scores.GameStateImpl.Instance())
                 elif action == 'gotoCredits':
-                    engineRef.changeState(game_state_credits.GameStateCredits.Instance())
+                    engineRef.changeState(game_state_credits.GameStateImpl.Instance())
                 elif action == 'exitUI':
                     engineRef.isRunning = False
 

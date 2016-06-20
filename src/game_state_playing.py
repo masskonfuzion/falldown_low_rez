@@ -51,7 +51,7 @@ class GameplayStats(object):
         self.initialRowSpacing = configDict['difficulty.initialRowSpacing']
 
 
-class GameStatePlaying(game_state_base.GameStateBase):
+class GameStateImpl(game_state_base.GameStateBase):
     __instance = None
 
     def __new__(cls):
@@ -60,7 +60,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
 
     def __init__(self):
         """ This shouldn't run.. We call __init__ on the __instance member"""
-        #super(GameStatePlaying, self).__init__()
+        #super(GameStateImpl, self).__init__()
         #self.SetName("Playing State")
         #print "GAMESTATE Playing State __init__ running (creating data members and method functions)"
         pass
@@ -132,14 +132,14 @@ class GameStatePlaying(game_state_base.GameStateBase):
            
            This method is a static method because it does not use any object
         """
-        if GameStatePlaying.__instance is None:
-            GameStatePlaying.__instance = super(GameStatePlaying, GameStatePlaying).__new__(GameStatePlaying)
-            GameStatePlaying.__instance.__init__()
-            GameStatePlaying.__instance.SetName("Playing State")
-            #print "GAMESTATE Playing State creating __instance object {}".format(GameStatePlaying.__instance)
+        if GameStateImpl.__instance is None:
+            GameStateImpl.__instance = super(GameStateImpl, GameStateImpl).__new__(GameStateImpl)
+            GameStateImpl.__instance.__init__()
+            GameStateImpl.__instance.SetName("Playing State")
+            #print "GAMESTATE Playing State creating __instance object {}".format(GameStateImpl.__instance)
 
-        #print "GAMESTATE Playing State getting __instance {}".format(GameStatePlaying.__instance)
-        return GameStatePlaying.__instance
+        #print "GAMESTATE Playing State getting __instance {}".format(GameStateImpl.__instance)
+        return GameStateImpl.__instance
         
 
     # TODO Consider changing "pause" to "PushState" or something; doesn't HAVE to be 'pause'
@@ -184,7 +184,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
                                                                }
                                                   }) # here, the call keyword says that the message payload is an instruction to call a function
                     elif (event.key == pygame.K_p):
-                        engineRef.pushState(game_state_pause.GameStatePause.Instance())
+                        engineRef.pushState(game_state_pause.GameStateImpl.Instance())
 
                 elif event.type == pygame.KEYUP:
                     if (event.key == pygame.K_LEFT or event.key == pygame.K_j):
@@ -235,7 +235,7 @@ class GameStatePlaying(game_state_base.GameStateBase):
             elif self.vital_stats._gameState == "GameOver":
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
-                        engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
+                        engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
 
     def ProcessCommands(self, engineRef):
         msg = self._eventQueue.Dequeue()
