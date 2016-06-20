@@ -26,15 +26,11 @@ import menu_form
 import menu_item_label  # TODO figure out the imports necessary to allow importing only menu_form, and getting all the related classes/imports automatically
 #import menu_item_spinner
 
-
 import game_state_base
-import game_state_playing
-import game_state_intro
-import game_state_settings
-import game_state_high_scores
+import game_state_main_menu
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
-class GameStateMainMenu(game_state_base.GameStateBase):
+class GameStateHighScores(game_state_base.GameStateBase):
     __instance = None
 
     def __new__(cls):
@@ -53,28 +49,23 @@ class GameStateMainMenu(game_state_base.GameStateBase):
         self.surface_bg = engineRef.surface_bg
         self.bg_col = engineRef.bg_col
 
-
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
         self._eventQueue.Initialize(64)
 
         self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 300], self.ui._font, 'Fall Down'), kbSelectIdx=0, action="startFalldown" )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 350], self.ui._font, 'Settings'), kbSelectIdx=1, action="gotoSettings" )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 400], self.ui._font, 'High Scores'), kbSelectIdx=2, action="gotoHighScores" )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 450], self.ui._font, 'Credits'), kbSelectIdx=3, action="TODO" )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Exit'), kbSelectIdx=4, action="exitUI" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 300], self.ui._font, 'Under Construction! (sorry :-D)'), kbSelectIdx=0 )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Return'), kbSelectIdx=1, action="exitUI" )
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
-        self.ui._maxKbSelection = 4 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
-
+        self.ui._maxKbSelection = 1 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
 
         #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
         self.title_mm = DisplayMessageManager()
         self.title_mm._font = pygame.font.Font('../asset/font/ARCADE.TTF', 64)
 
         self.titleMsg = DisplayMessage()
-        self.titleMsg.create(txtStr='Falldown x64', position=[1,1], color=(192,192,192))
+        self.titleMsg.create(txtStr='Settings', position=[1,1], color=(192,192,192))
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
@@ -86,11 +77,11 @@ class GameStateMainMenu(game_state_base.GameStateBase):
            
            This method is a static method because it does not use any object
         """
-        if GameStateMainMenu.__instance is None:
-            GameStateMainMenu.__instance = super(GameStateMainMenu, GameStateMainMenu).__new__(GameStateMainMenu)
-            GameStateMainMenu.__instance.__init__()
-            GameStateMainMenu.__instance.SetName("MainMenu State")
-        return GameStateMainMenu.__instance
+        if GameStateHighScores.__instance is None:
+            GameStateHighScores.__instance = super(GameStateHighScores, GameStateHighScores).__new__(GameStateHighScores)
+            GameStateHighScores.__instance.__init__()
+            GameStateHighScores.__instance.SetName("HighScores State")
+        return GameStateHighScores.__instance
         
 
     # TODO Consider changing "pause" to "PushState" or something; doesn't HAVE to be 'pause'
@@ -111,25 +102,15 @@ class GameStateMainMenu(game_state_base.GameStateBase):
                 action = self.ui.processKeyboardEvent(event, engineRef)
 
                 # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
-                if action == 'startFalldown':
-                    engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
-                elif action == 'gotoSettings':
-                    engineRef.changeState(game_state_settings.GameStateSettings.Instance())
-                elif action == 'gotoHighScores':
-                    engineRef.changeState(game_state_high_scores.GameStateHighScores.Instance())
-                elif action == 'exitUI':
-                    engineRef.isRunning = False
+                if action == 'exitUI':
+                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 action = self.ui.processMouseEvent(event, engineRef)
 
                 # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
-                if action == 'startFalldown':
-                    engineRef.changeState(game_state_playing.GameStatePlaying.Instance())
-                elif action == 'gotoSettings':
-                    engineRef.changeState(game_state_settings.GameStateSettings.Instance())
-                elif action == 'exitUI':
-                    engineRef.isRunning = False
+                if action == 'exitUI':
+                    engineRef.changeState(game_state_main_menu.GameStateMainMenu.Instance())
 
     def ProcessCommands(self, engineRef):
         # No command processing needed here because this is a super-simple pause state
@@ -160,6 +141,5 @@ class GameStateMainMenu(game_state_base.GameStateBase):
 
         # Flip the buffers
         pygame.display.flip()
-
 
 
