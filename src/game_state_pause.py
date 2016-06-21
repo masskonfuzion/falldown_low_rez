@@ -45,18 +45,8 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.game_viewport = engineRef.game_viewport
         self.bg_col = engineRef.bg_col
 
-
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
         self._eventQueue.Initialize(64)
-
-        #self._cmdQueue = MessageQueue() # Command queue, e.g. "Start moving left"
-        #self._cmdQueue.Initialize(64)
-
-        # Register Event Listeners
-        # Haha, psych! There are none
-
-        # Register Command Listeners
-        # Ditto
 
         self.mm = DisplayMessageManager()
 

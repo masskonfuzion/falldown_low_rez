@@ -55,15 +55,6 @@ class GameStateImpl(game_state_base.GameStateBase):
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
         self._eventQueue.Initialize(64)
 
-        #self._cmdQueue = MessageQueue() # Command queue, e.g. "Start moving left"
-        #self._cmdQueue.Initialize(64)
-
-        # Register Event Listeners
-        # Haha, psych! There are none
-
-        # Register Command Listeners
-        # Ditto
-
         self.mm = DisplayMessageManager()
 
         self.splash_screen_threshold = 5 # num of seconds to keep up a splash screen

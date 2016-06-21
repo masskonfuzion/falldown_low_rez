@@ -173,7 +173,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                                                                , 'params' : ''
                                                                }
                                                   } ) # here, the call keyword says that the message payload is an instruction to call a function
-                        # TODO Maybe make the params a string of key=value pairs - split on '='
+                        # TODO Maybe make the params a comma-separated string of key=value pairs. Split first on "," to get the pairs, then split on '=' to get the key/value pairs.
                     # Right arrow key
                     elif (event.key == pygame.K_RIGHT or event.key == pygame.K_l):
                     #self.ball.controlState.setRightKeyPressedTrue()
@@ -223,7 +223,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                         self.ball.controlState.reset(engineRef)
                         self.ball.changeGameState(BallGameState.FREEFALL)
 
-                        # TODO find a way to somehow reuse the memory space used by the original queue Initialize() call (called during initialization of the Playing State). Right now, we're discarding the old and freshly allocating new space.
+                        # TODO find a way to reuse the memory space used by the original queue Initialize() call (called during initialization of the Playing State). Right now, we're discarding the old and freshly allocating new space.
                         self._eventQueue.Clear()
                         self._eventQueue.Initialize(64)
 

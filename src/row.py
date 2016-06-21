@@ -34,15 +34,13 @@ class Row(GameObj):
         self._position[1] = yPosition # We really only care about the row's y position on the grid (x defaults to 0)
         self._drawRects = [None, None]
         self._collGeoms = [None, None, None] # geom[0] is the gap (used for scorekeeping), geom[1] is row block 1, geom[2] is row block 2 (if applicable)
-        self._blockWidth = 64 / self._numBlocks # block width in terms of grid cells
-        self._blockHeight = 2
 
         self.setGap(gap)
 
         self._updateDelay = 0.0
         self.setUpdateDelay(updateDelay) # Update delay in seconds
 
-        self.setSize(64 / self._numBlocks, 2) # NOTE: Size here is PER BLOCK, in terms of grid cells. (TODO: You can probably delete blockWidth and blockHeight
+        self.setSize(64 / self._numBlocks, 2) # NOTE: Size here is PER BLOCK, in terms of grid cells.
 
 
     def draw(self, screen, cell_size):

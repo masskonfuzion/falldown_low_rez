@@ -58,6 +58,7 @@ class RowManager(GameObj):
 
     def reInitRow(self):
         # TODO call reinit on rows; probably need to update the function signature here, to take in a row, gap, and position (et. al.?)
+        # TODO orrrrr delete reInitRow(), because it's not used? Clean up your code, foo!
         pass
 
     

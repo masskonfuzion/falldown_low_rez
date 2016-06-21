@@ -51,16 +51,8 @@ class Ball(GameObj):
         self._lastRowTouched = -1
         self._lastRowScored = -1
         
-        #self._update_delay_dict = [ {'init': 0.06, 'inc': 0.0, 'max': 0.06, 'dec': 0.00, 'floor': 0.06 }
-        #                          , {'init': 0.03, 'inc': 0.0, 'max': 0.03, 'dec': 0.01, 'floor': 0.01 }
-        #                          ]
-
-        ## Cross the screen in 2 seconds
-        #self._update_delay_dict = [ {'init': 0.03125, 'inc': 0.0, 'max': 0.03125, 'dec': 0.00, 'floor': 0.03125 }
-        #                          , {'init': 0.03, 'inc': 0.0, 'max': 0.03, 'dec': 0.01, 'floor': 0.01 }
-        #                          ]
-
         # Cross the screen in 3 seconds
+        # TODO maybe name update_delay_dict better? It contains the values of update_delay that pertain to different situations (ball states). But, I don't think it's used. We can load it from a config instead
         self._update_delay_dict = [ {'init': 0.046875, 'inc': 0.0, 'max': 0.046875, 'dec': 0.00, 'floor': 0.046875 }
                                   , {'init': 0.03, 'inc': 0.0, 'max': 0.03, 'dec': 0.01, 'floor': 0.01 }
                                   ]
