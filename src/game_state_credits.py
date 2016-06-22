@@ -113,8 +113,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                     engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
 
     def ProcessCommands(self, engineRef):
-        # No command processing needed here because this is a super-simple pause state
-        # However, in a more complex game, the pause menu could have more intricate controls and elements (e.g. settings menu or something), in which case command processing could be needed
+        # No command processing needed here because this is a super-simple game state
         pass
 
 

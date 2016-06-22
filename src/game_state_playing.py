@@ -118,9 +118,6 @@ class GameStateImpl(game_state_base.GameStateBase):
         self._eventQueue.RegisterListener('ball', self.ball.controlState, 'PlayerControl')
         self._eventQueue.RegisterListener('rowmgr', self.rm, 'Difficulty')
 
-        # Register Command Listeners
-        #self._cmdQueue.RegisterListener('ball', self.ball, 'PlayerControl')
-
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
         #print "GAMESTATE Playing State cleaning up."
@@ -253,7 +250,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                     #args = msg['params'].split('=') # NOTE the params should be a comma-separated list of = separated key/vals, e.g. params = "a=1,b=2,c=3,..."
 
                     # TODO add parameters to the function call
-                    fn_ptr(self)
+                    fn_ptr(self)    # NOTE: We pass self in as the engineRef for the function that's called
 
             msg = self._eventQueue.Dequeue()
 
