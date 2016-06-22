@@ -50,7 +50,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.bg_col = engineRef.bg_col
 
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
-        self._eventQueue.Initialize(64)
+        self._eventQueue.Initialize(16)
 
         self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
@@ -66,6 +66,9 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         self.titleMsg = DisplayMessage()
         self.titleMsg.create(txtStr='Credits', position=[1,1], color=(192,192,192))
+
+        # Register Event Listeners
+        self._eventQueue.RegisterListener('self', self, 'UIControl')    # Register "myself" as an event listener
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
@@ -92,6 +95,31 @@ class GameStateImpl(game_state_base.GameStateBase):
     def Resume(self):
         pass
 
+    def EnqueueUICommandMessage(self, action):
+        """Enqueue a UI command message for handling
+
+           # NOTE: Every message must have an 'action' key/val. The message parser will look for the 'action' in order to know what to do
+        """
+        self._eventQueue.Enqueue( { 'topic': 'UIControl',
+                                    'payload': { 'action': 'call_function'
+                                               , 'function_name': 'DoUICommand'
+                                               , 'params' : 'uiCommand="{}"'.format(action)
+                                               }
+                                  } ) # here, the call keyword says that the message payload is an instruction to call a function
+
+    def DoUICommand(self, engineRef, argsDict):
+        """
+           NOTE: This function assumes argsDict has one key only: uiCommand. The value of that key dictates what to do
+        """
+        # TODO process the args and figure out what to do
+        try:
+            if argsDict['uiCommand'] == 'exitUI':
+                engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
+        except KeyError as e:
+            # if there is no uiCommand defined, don't do anything
+            # (could have also tested if argsDict['uiCommand'] exists, without exception handling, but I like the way the code looks here)
+            pass
+
     def ProcessEvents(self, engineRef):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -101,20 +129,35 @@ class GameStateImpl(game_state_base.GameStateBase):
             if event.type == pygame.KEYDOWN:
                 action = self.ui.processKeyboardEvent(event, engineRef)
 
-                # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
-                if action == 'exitUI':
-                    engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
+                if action:
+                    self.EnqueueUICommandMessage(action)
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 action = self.ui.processMouseEvent(event, engineRef)
 
-                # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
-                if action == 'exitUI':
-                    engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
+                if action:
+                    self.EnqueueUICommandMessage(action)
 
     def ProcessCommands(self, engineRef):
-        # No command processing needed here because this is a super-simple game state
-        pass
+        msg = self._eventQueue.Dequeue()
+        while msg:
+            #print "DEBUG Dequeued message: {}".format(msg)
+            topic = msg['topic']
+            for listener_obj_dict in self._eventQueue.RegisteredListeners(topic):
+                #print "DEBUG Registered Listener {} processing message {}".format(listener_obj_dict['name'], msg['payload'])
+
+                # Evaluate the 'action' key to know what to do. The action dictates what other information is required to be in the message
+                if msg['payload']['action'] == 'call_function':
+                    # The registered listener had better have the function call available heh... otherwise, kaboom
+                    objRef = listener_obj_dict['ref']
+                    fn_ptr = getattr(objRef, msg['payload']['function_name'])
+
+                    argsDict = eval("dict({})".format(msg['payload']['params']))
+
+                    # NOTE: Slight cheat here: because this menu is its own event listener, and it's the only one, we pass in engineRef (the application object reference), instead of passing self (as we do in other game states). fn_ptr already points to self.DoUICommand. Admittedly, this is probably over-complicated, but it works..
+                    fn_ptr(engineRef, argsDict)
+
+            msg = self._eventQueue.Dequeue()
 
 
     def Update(self, engineRef, dt_s, cell_size):

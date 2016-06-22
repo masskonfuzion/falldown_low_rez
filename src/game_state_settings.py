@@ -179,7 +179,6 @@ class GameStateImpl(game_state_base.GameStateBase):
                     fn_ptr(engineRef, argsDict)
 
             msg = self._eventQueue.Dequeue()
-        pass
 
     def Update(self, engineRef, dt_s, cell_size):
         self.ui.update(dt_s)
