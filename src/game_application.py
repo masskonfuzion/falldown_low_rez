@@ -29,7 +29,8 @@ class GameApplication(object):
         self.game_size = [640, 640]
         self.screen_size = [854, 640] # The playable area will be a 640 x 640 square.
         self.cell_size = [self.game_size[0] / 64, self.game_size[1] / 64] # cell size (starts off as 10px x 10px. recompute this if screen size changes)
-        self.surface_bg = pygame.display.set_mode(self.screen_size)
+        #self.surface_bg = pygame.display.set_mode(self.screen_size)
+        self.surface_bg = pygame.display.set_mode(self.screen_size, pygame.DOUBLEBUF, 32)
         self.game_viewport = pygame.Surface((640, 640))
 
         self.bg_col = 255,255,255
@@ -92,7 +93,7 @@ class GameApplication(object):
         '''
         """Call PreRender on state at top of stack"""
         #self.getState().RenderScene(self)
-        
+
         # Draw all states on the stack (this allows for one state to overlay on another, e.g. a pause menu overlaid on the game playing screen))
         for state in self._states:
             state.RenderScene(self)
