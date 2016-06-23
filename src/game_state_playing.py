@@ -235,6 +235,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                         engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
 
     def ProcessCommands(self, engineRef):
+        # TODO maybe put this command extraction logic into a function at the application class level (or base gamestate level). We're reusing the logic in every gamestate instance
         msg = self._eventQueue.Dequeue()
         while msg:
             #print "DEBUG Dequeued message: {}".format(msg)

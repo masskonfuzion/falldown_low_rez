@@ -135,15 +135,18 @@ class UIForm(object):
         if event.type == pygame.KEYDOWN:
             if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):
                 # Confirm selection -- take action
+                # TODO make action trigger keys/buttons configurable
                 uiItem = self.getKBActiveItem() # TODO make it possible for the mouse/joystick to set the activeItem, as well, and get rid of the kb-specific tracking.
                 if uiItem:
                     # TODO maybe rename this to "passThruAction" or something. We're going to simply pass the input value through as a return value, to allow the calling scope to execute an action
                     if uiItem['action']:
                         return uiItem['action']
 
-            if event.key == pygame.K_ESCAPE:
-                self.saveConfigToFile()
-                self._engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
+            # TODO Be smarter about which keys activate an action (allow other objs to define action triggers?). E.g., on some forms, ESC should do something; on others, it shouldn't. Same for ENTER, SPACE, etc.
+            # TODO Remove state changes from here. This form should not control any game logic, as it is designed to be an object that belongs to other classes (e.g. gamestates). Those states should control the logic
+            #if event.key == pygame.K_ESCAPE:
+            #    self.saveConfigToFile()
+            #    self._engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
 
             elif event.key == pygame.K_DOWN:
                 self._kbSelection += 1

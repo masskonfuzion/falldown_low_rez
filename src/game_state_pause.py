@@ -23,6 +23,11 @@ from display_msg_manager import DisplayMessageManager
 from message_queue import MessageQueue
 
 import game_state_base
+
+import menu_item_base
+import menu_item_spinner
+import menu_item_label
+import menu_form
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
 class GameStateImpl(game_state_base.GameStateBase):
@@ -41,17 +46,35 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.game_size = engineRef.game_size
         self.screen_size = engineRef.screen_size
         self.cell_size = engineRef.cell_size
-        self.surface_bg = engineRef.surface_bg
-        self.game_viewport = engineRef.game_viewport
+        self.surface_bg = engineRef.surface_bg          # Possibly won't use this surface for the pause menu. We want to overlay our own surface on top of this one
+        self.game_viewport = engineRef.game_viewport    # Possibly won't use this surface for the pause menu. We want to overlay our own surface on top of this one
         self.bg_col = engineRef.bg_col
 
-        self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
-        self._eventQueue.Initialize(64)
+        # TODO pick up from here -- make a surface to overlay on the game
+        self.surface_overlay = pygame.Surface((640, 480))
 
+        self.blit_center = ( self.surface_bg.get_size()[0] / 2 - self.surface_overlay.get_size()[0] / 2, self.surface_bg.get_size()[1] / 2 - self.surface_overlay.get_size()[1] / 2 )
+
+        self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
+        self._eventQueue.Initialize(16)
+
+        # TODO remove self.mm and self.displayMsgScore (which doesn't hold the score.. That's an artifact of copy/paste rushing when trying to submit to low-rez-jam
         self.mm = DisplayMessageManager()
 
         self.displayMsgScore = DisplayMessage()
         self.displayMsgScore.create(txtStr="Pause", position=[66, 5], color=(192,192,192))
+
+        # TODO Allow customization of text colors in the UI
+        self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
+        self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)   # TODO maybe load one font obj at a higher-level scope than any menu or game state; then pass it in, instead of constructing one at each state change
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 200], self.ui._font, 'Paused'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 300], self.ui._font, 'Resume'), kbSelectIdx=0, action="exitUI" )
+
+        self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
+        self.ui._maxKbSelection = 0 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
+
+        # Register Event Listeners
+        self._eventQueue.RegisterListener('self', self, 'UIControl')    # Register "myself" as an event listener
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
@@ -78,6 +101,32 @@ class GameStateImpl(game_state_base.GameStateBase):
     def Resume(self):
         pass
 
+    def EnqueueUICommandMessage(self, action):
+        """Enqueue a UI command message for handling
+
+           # NOTE: Every message must have an 'action' key/val. The message parser will look for the 'action' in order to know what to do
+        """
+        self._eventQueue.Enqueue( { 'topic': 'UIControl',
+                                    'payload': { 'action': 'call_function'
+                                               , 'function_name': 'DoUICommand'
+                                               , 'params' : 'uiCommand="{}"'.format(action)
+                                               }
+                                  } ) # here, the call keyword says that the message payload is an instruction to call a function
+
+    def DoUICommand(self, engineRef, argsDict):
+        """
+           NOTE: This function assumes argsDict has one key only: uiCommand. The value of that key dictates what to do
+        """
+        # TODO process the args and figure out what to do
+        try:
+            if argsDict['uiCommand'] == 'exitUI':
+                engineRef.getState().Cleanup()
+                engineRef.popState() # NOTE: PopState() returns the state to the program; however, we don't assign it, because we don't care, because we're not going to use it for anything
+        except KeyError as e:
+            # if there is no uiCommand defined, don't do anything
+            # (could have also tested if argsDict['uiCommand'] exists, without exception handling, but I like the way the code looks here)
+            pass
+
     def ProcessEvents(self, engineRef):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -85,15 +134,36 @@ class GameStateImpl(game_state_base.GameStateBase):
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                if (event.key == pygame.K_ESCAPE or event.key == pygame.K_p):
-                    engineRef.getState().Cleanup()
-                    engineRef.popState() # NOTE: PopState() returns the state to the program; however, we don't assign it, because we don't care, because we're not going to use it for anything
+                # TODO Perhaps add to the UI a way to determine what the "action activator buttons" should be. e.g., some menus should respond to ESC key, others only ENTER, SPACE, etc. The pause menu should respond to "p"
+                action = self.ui.processKeyboardEvent(event, engineRef)
+                if action:
+                    self.EnqueueUICommandMessage(action)
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                action = self.ui.processMouseEvent(event, engineRef)
+                if action:
+                    self.EnqueueUICommandMessage(action)
 
     def ProcessCommands(self, engineRef):
-        # No command processing needed here because this is a super-simple pause state
-        # However, in a more complex game, the pause menu could have more intricate controls and elements (e.g. settings menu or something), in which case command processing could be needed
-        pass
+        msg = self._eventQueue.Dequeue()
+        while msg:
+            #print "DEBUG Dequeued message: {}".format(msg)
+            topic = msg['topic']
+            for listener_obj_dict in self._eventQueue.RegisteredListeners(topic):
+                #print "DEBUG Registered Listener {} processing message {}".format(listener_obj_dict['name'], msg['payload'])
 
+                # Evaluate the 'action' key to know what to do. The action dictates what other information is required to be in the message
+                if msg['payload']['action'] == 'call_function':
+                    # The registered listener had better have the function call available heh... otherwise, kaboom
+                    objRef = listener_obj_dict['ref']
+                    fn_ptr = getattr(objRef, msg['payload']['function_name'])
+
+                    argsDict = eval("dict({})".format(msg['payload']['params']))
+
+                    # NOTE: Slight cheat here: because this menu is its own event listener, and it's the only one, we pass in engineRef (the application object reference), instead of passing self (as we do in other game states). fn_ptr already points to self.DoUICommand. Admittedly, this is probably over-complicated, but it works..
+                    fn_ptr(engineRef, argsDict)
+
+            msg = self._eventQueue.Dequeue()
 
     def Update(self, engineRef, dt_s, cell_size):
         # No updates needed here
@@ -103,13 +173,16 @@ class GameStateImpl(game_state_base.GameStateBase):
         pass
 
     def RenderScene(self, engineRef):
-        self.surface_bg.fill((0,0,0))
-        self.game_viewport.fill(self.bg_col)
+        #self.surface_bg.fill((0,0,0))
+        self.surface_overlay.fill((64,64,64))
         
+        # Render the UI
+        self.ui.render(self.surface_overlay)
 
     def PostRenderScene(self, engineRef):
-        self.displayGameStats()
-        self.surface_bg.blit(self.game_viewport, (0, 0))    # blit the game viewport onto the bigger surface_bg
+        self.displayGameStats() # TODO remove this jank. There are no game stats to display in the pause state (or, otherwise, display the actual game stats: # of tries, level, etc)
+
+        self.surface_bg.blit(self.surface_overlay, self.blit_center)
         pygame.display.flip()
 
 

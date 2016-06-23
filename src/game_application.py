@@ -91,7 +91,11 @@ class GameApplication(object):
             NOTE render() does not 'write' to the screen.
         '''
         """Call PreRender on state at top of stack"""
-        self.getState().RenderScene(self)
+        #self.getState().RenderScene(self)
+        
+        # Draw all states on the stack (this allows for one state to overlay on another, e.g. a pause menu overlaid on the game playing screen))
+        for state in self._states:
+            state.RenderScene(self)
 
     def postRenderScene(self):
         """Call PreRender on state at top of stack"""
