@@ -232,7 +232,7 @@ class GameStateImpl(game_state_base.GameStateBase):
             elif self.vital_stats._gameState == "GameOver":
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
-                        engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
+                        engineRef.changeState( game_state_main_menu.GameStateImpl.Instance() )
 
     def ProcessCommands(self, engineRef):
         # TODO maybe put this command extraction logic into a function at the application class level (or base gamestate level). We're reusing the logic in every gamestate instance

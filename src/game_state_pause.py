@@ -23,6 +23,7 @@ from display_msg_manager import DisplayMessageManager
 from message_queue import MessageQueue
 
 import game_state_base
+import game_state_main_menu
 
 import menu_item_base
 import menu_item_spinner
@@ -68,10 +69,11 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)   # TODO maybe load one font obj at a higher-level scope than any menu or game state; then pass it in, instead of constructing one at each state change
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 200], self.ui._font, 'Paused'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 300], self.ui._font, 'Resume'), kbSelectIdx=0, action="exitUI" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 250], self.ui._font, 'Resume Game'), kbSelectIdx=0, action="resumeGame" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 300], self.ui._font, 'Back to Main Menu'), kbSelectIdx=1, action="exitUI" )
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
-        self.ui._maxKbSelection = 0 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
+        self.ui._maxKbSelection = 1 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
 
         # Register Event Listeners
         self._eventQueue.RegisterListener('self', self, 'UIControl')    # Register "myself" as an event listener
@@ -119,9 +121,11 @@ class GameStateImpl(game_state_base.GameStateBase):
         """
         # TODO process the args and figure out what to do
         try:
-            if argsDict['uiCommand'] == 'exitUI':
+            if argsDict['uiCommand'] == 'resumeGame':
                 engineRef.getState().Cleanup()
                 engineRef.popState() # NOTE: PopState() returns the state to the program; however, we don't assign it, because we don't care, because we're not going to use it for anything
+            elif argsDict['uiCommand'] == 'exitUI':
+                engineRef.changeState( game_state_main_menu.GameStateImpl.Instance() )
         except KeyError as e:
             # if there is no uiCommand defined, don't do anything
             # (could have also tested if argsDict['uiCommand'] exists, without exception handling, but I like the way the code looks here)
@@ -173,16 +177,18 @@ class GameStateImpl(game_state_base.GameStateBase):
         pass
 
     def RenderScene(self, engineRef):
-        #self.surface_bg.fill((0,0,0))
-        self.surface_overlay.fill((64,64,64))
+        #self.surface_bg.fill((0,0,0))          # I think we want to NOT fill, so we can overlay.
+        #self.game_viewport.fill(self.bg_col)
+        self.surface_overlay.fill((64,64,64))   # TODO: Make this whole surface translucent
         
         # Render the UI
         self.ui.render(self.surface_overlay)
 
     def PostRenderScene(self, engineRef):
-        self.displayGameStats() # TODO remove this jank. There are no game stats to display in the pause state (or, otherwise, display the actual game stats: # of tries, level, etc)
+        #self.displayGameStats() # TODO remove this jank. There are no game stats to display in the pause state (or, otherwise, display the actual game stats: # of tries, level, etc)
 
-        self.surface_bg.blit(self.surface_overlay, self.blit_center)
+        self.game_viewport.blit(self.surface_overlay, self.blit_center)
+        self.surface_bg.blit(self.game_viewport, (0, 0))
         pygame.display.flip()
 
 
