@@ -51,8 +51,9 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.game_viewport = engineRef.game_viewport    # Possibly won't use this surface for the pause menu. We want to overlay our own surface on top of this one
         self.bg_col = engineRef.bg_col
 
-        # TODO pick up from here -- make a surface to overlay on the game
         self.surface_overlay = pygame.Surface((640, 480))
+        #self.surface_overlay.set_colorkey((64,64,64))   # NOTE: To get a transparency effect, this colorkey value has to be the same as the fill color used during rendering this surface
+        self.surface_overlay.set_colorkey((0,0,0))   # NOTE: To get a transparency effect, this colorkey value has to be the same as the fill color used during rendering this surface
 
         self.blit_center = ( self.surface_bg.get_size()[0] / 2 - self.surface_overlay.get_size()[0] / 2, self.surface_bg.get_size()[1] / 2 - self.surface_overlay.get_size()[1] / 2 )
 
@@ -179,7 +180,7 @@ class GameStateImpl(game_state_base.GameStateBase):
     def RenderScene(self, engineRef):
         #self.surface_bg.fill((0,0,0))          # I think we want to NOT fill, so we can overlay.
         #self.game_viewport.fill(self.bg_col)
-        self.surface_overlay.fill((64,64,64))   # TODO: Make this whole surface translucent
+        self.surface_overlay.fill((0,0,0))  # This is one way to do transparency...: above, the colorkey for this surface is (0,0,0). That causes Pygame to NOT blit any pixels colored (0,0,0), thus causing anything NOT colored (0,0,0) on this surface to not be rendered, making this surface look transparent.
         
         # Render the UI
         self.ui.render(self.surface_overlay)

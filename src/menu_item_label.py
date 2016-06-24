@@ -23,7 +23,8 @@ class MenuItemLabel(menu_item_base.MenuItemBase):
     def __init__(self, posList, fontObj, text):
         super(MenuItemLabel, self).__init__(pos=posList)
         self._font = fontObj    # This assigns a reference to an already-existing font object
-        self.setSurface( menu_item_base.MenuItemBase.createText(text , self._font, (255,255,255)) )
+        #self.setSurface( menu_item_base.MenuItemBase.createText(text , self._font, (255,255,255)) ) # TODO: Font color should be customizable
+        self.setSurface( menu_item_base.MenuItemBase.createText(text , self._font, (60,190,30)) ) # TODO: Font color should be customizable
 
     def render(self, renderSurface):
         renderSurface.blit(self._surface, (self._position[0], self._position[1]))

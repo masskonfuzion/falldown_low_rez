@@ -85,6 +85,7 @@ class GameApplication(object):
 
     def preRenderScene(self):
         """Call PreRender on state at top of stack"""
+        # TODO Also pre-render all states?
         self.getState().PreRenderScene(self)
 
     def renderScene(self):
@@ -92,8 +93,6 @@ class GameApplication(object):
             NOTE render() does not 'write' to the screen.
         '''
         """Call PreRender on state at top of stack"""
-        #self.getState().RenderScene(self)
-
         # Draw all states on the stack (this allows for one state to overlay on another, e.g. a pause menu overlaid on the game playing screen))
         for state in self._states:
             state.RenderScene(self)

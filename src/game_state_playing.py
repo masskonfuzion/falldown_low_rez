@@ -313,7 +313,7 @@ class GameStateImpl(game_state_base.GameStateBase):
     
     def updateDifficulty(self):
         # Some hard-coded stuff here -- would like to make a more robust level management system, but I'm scrambling to meet the submission deadline for Low Rez Jam 2016. Maybe I'll update later
-        if self.vital_stats.score % 100 == 0 and self.vital_stats._lastDifficultyIncreaseScore < self.vital_stats.score:
+        if self.vital_stats.score % 200 == 0 and self.vital_stats._lastDifficultyIncreaseScore < self.vital_stats.score:
             self.vital_stats.level += 1
             self.vital_stats._lastDifficultyIncreaseScore = self.vital_stats.score
             self.mm.setMessage("Level Up!".format(self.vital_stats.GAP_SCORE), [ self.ball._position[0], self.ball._position[1] - self.ball._size[1] ], (192, 64, 64), 8 )
