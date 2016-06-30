@@ -24,6 +24,7 @@ from message_queue import MessageQueue
 
 import menu_form
 import menu_item_label  # TODO figure out the imports necessary to allow importing only menu_form, and getting all the related classes/imports automatically
+import menu_item_textbox
 #import menu_item_spinner
 
 import game_state_base
@@ -52,13 +53,26 @@ class GameStateImpl(game_state_base.GameStateBase):
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
         self._eventQueue.Initialize(16)
 
-        self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
+        # TODO Pick up from here: Model this UI after the settings state
+        self.ui = menu_form.UIForm('../data/scores/highscores.json', engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
+        # TODO -- figure out why the "Loaded high scores" message popeed up twice. It seems as though the changeState() function call is being done twice?
+        print "Loaded high scores:\n{}".format(self.ui._boundObj)
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 300], self.ui._font, 'Under Construction! (sorry :-D)'), kbSelectIdx=0 )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Return'), kbSelectIdx=1, action="exitUI" )
+
+        # TODO The high scores display should either use labels (which are read-only, and which means you need to bind the label text value to a config item); or, you can lock the form so that the read/write textboxes are temporarily read-only when _viewing_ the high scores, but _read/write_ when the player achieves a high score.
+
+        # NOTE: The high scores file has strings with numeric values, because Python (or maybe the json module, or maybe the dot access dict) tripped over loading int values of 0 from the file. I don't know..
+        for i in range(0,10):
+            self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,80 + 40*i], self.ui._font, '{}.'.format(str(i+1))), kbSelectIdx=None )
+            ##print "Adding UI item keyed to {}, value: {}".format('{}.name'.format(str(i)), self.ui._boundObj['{}.name'.format(str(i))])
+            self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox(self.ui._boundObj, '{}.name'.format(str(i)), [100,80 + 40*i], self.ui._font), kbSelectIdx=None )
+            ##print "Adding UI item keyed to {}, value: {}".format('{}.score'.format(str(i)), self.ui._boundObj['{}.score'.format(str(i))])
+            self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox(self.ui._boundObj, '{}.score'.format(str(i)), [200,80 + 40*i], self.ui._font), kbSelectIdx=None )
+
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Return'), kbSelectIdx=0, action="exitUI" )
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
-        self.ui._maxKbSelection = 1 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
+        self.ui._maxKbSelection = 0 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
 
         #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
         self.title_mm = DisplayMessageManager()
@@ -127,10 +141,16 @@ class GameStateImpl(game_state_base.GameStateBase):
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
+                # TODO add some logic here to determine what key the user hit. If the user has an active textbox, then alphanumeric keypresses should register as editing the textbox contents; enter confirms; shift + arrows/home/end highlights text (fancy), or otherwise some key (maybe ctrl + something) clear the textbox; etc.
                 action = self.ui.processKeyboardEvent(event, engineRef)
 
                 if action:
                     self.EnqueueUICommandMessage(action)
+                else:
+                    # NOTE: the menu_form object returns None if the key pressed is not an "action" key. We can use that property here to determine which keypresses actually edit the contents of the textbox, rather than confirming/canceling a selection
+                    # TODO determine which textbox on the form/menu is active, and update its contents
+                    print "keycode:{} scancode:{}, translated value:{}".format(event.key, event.scancode, event.unicode)
+                    pass
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 action = self.ui.processMouseEvent(event, engineRef)

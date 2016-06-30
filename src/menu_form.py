@@ -34,15 +34,15 @@ class UIForm(object):
     def createFontObject(fontPath, fontSize):
         return pygame.font.Font(fontPath, fontSize)
 
-    def __init__(self, boundCfgFile=None, menuDefFile=None, engineRef=None):
+    def __init__(self, boundFile=None, menuDefFile=None, engineRef=None):
         """Create a form object that is bound to the given config file
             
-           boundCfgFile contains the config options to be loaded/modified/written back
+           boundFile contains the file with the objet to be loaded/modified/written back (can be configs, high scores, etc.)
            menuDefFile contains layout/definition of the UI form
         """
         self._uiItems = []
 
-        self._config = None         # The dict that holds the configuration that this menu is controlling
+        self._boundObj = None         # The dict that holds the configuration that this menu is controlling
         self._activeMenuItem = None # The active menu item (e.g. a spinner, label, button, etc.)
         self._activeSubItem = None  # The active menu item's active sub-item (e.g. a spinner's left arrow)
         self._font = None           # Font object for the form TODO - use a list? Possibly move into a FormManager class? (e.g. a FontManager could contain many forms, for multi-screen menus; and also, could manage all the font objects and what not)
@@ -51,11 +51,11 @@ class UIForm(object):
         self._kbSelection = None    # The index # of the item selected by keyboard input
         self._maxKbSelection = None
 
-        if boundCfgFile:
-            self._configFile = boundCfgFile     # The file name -- use this when reading and writing the file
-            self.loadConfigFromFile()
+        if boundFile:
+            self._boundFile = boundFile     # The file name -- use this when reading and writing the file
+            self.loadObjectFromFile()
         else:
-            self._configFile = None
+            self._boundFile = None
 
         if menuDefFile:
             # TODO implement this -- load menu definition from json (or otherwise, delete this whole block)
@@ -66,18 +66,18 @@ class UIForm(object):
             # NOTE: Right now, the menuDefFile is entirely unsed. And the menu items are defined outside the scope of this class
             pass
 
-    # TODO probably change loadConfigFromFile() to take in the filename, and remove the bound config file from the constructor. Or otherwise, keep the ctor as-is, and add an optional arg to the load function, to allow developer to choose
-    def loadConfigFromFile(self):
+    # TODO probably change loadObjectFromFile() to take in the filename, and remove the bound config file from the constructor. Or otherwise, keep the ctor as-is, and add an optional arg to the load function, to allow developer to choose
+    def loadObjectFromFile(self):
         """Load config from the file specified in the constructor of this object"""
-        with open(self._configFile, 'r+') as fd:
+        with open(self._boundFile, 'r+') as fd:
             # TODO add error checking (e.g. IOError)?
             tmpDict = json.load(fd)
-            self._config = dot_access_dict.DotAccessDict(tmpDict)
+            self._boundObj = dot_access_dict.DotAccessDict(tmpDict)
 
     def saveConfigToFile(self):
         """Save config back to file specified in the constructor of this object"""
-        with open(self._configFile, 'w') as fd:
-            json.dump(self._config, fd)
+        with open(self._boundFile, 'w') as fd:
+            json.dump(self._boundObj, fd)
 
     def processMouseEvent(self, event, engineRef):
         """Process mouse event
@@ -133,10 +133,10 @@ class UIForm(object):
            engineRef is provided in case it is needed
         """
         if event.type == pygame.KEYDOWN:
-            if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):
+            if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN): # TODO make the keys that confirm/cancel customizable
                 # Confirm selection -- take action
                 # TODO make action trigger keys/buttons configurable
-                uiItem = self.getKBActiveItem() # TODO make it possible for the mouse/joystick to set the activeItem, as well, and get rid of the kb-specific tracking.
+                uiItem = self.getKBActiveItem()
                 if uiItem:
                     # TODO maybe rename this to "passThruAction" or something. We're going to simply pass the input value through as a return value, to allow the calling scope to execute an action
                     if uiItem['action']:

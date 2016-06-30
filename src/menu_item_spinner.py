@@ -21,10 +21,10 @@ import pygame
 
 
 class MenuItemSpinner(menu_item_base.MenuItemBase):
-    def __init__(self, configDict, configKey, posList, fontObj, leftArrowImageSurf, rightArrowImageSurf):
+    def __init__(self, targetObj, keyPath, posList, fontObj, leftArrowImageSurf, rightArrowImageSurf):
         super(MenuItemSpinner, self).__init__(pos=posList)
 
-        self.bindTo(configDict, configKey) # bind to the supplied config dict
+        self.bindTo(targetObj, keyPath) # bind to the supplied config dict
 
         self._subItems = [] # To be filled: [0] = left arror; [1] = text; [2] = right arrow
 
