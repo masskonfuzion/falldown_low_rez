@@ -25,12 +25,14 @@ class DotAccessDict(dict):
         else:
             keys = [ keyString ]
 
+        print "DotAccessDict: key={}".format(keys)
+
         sourceData = self
         for key in keys:
             #print "Searching for {} in {}".format(key, sourceData)
             sourceData = sourceData.get(key)
         if not sourceData:
-            raise KeyError("No key {} found in dict")
+            raise KeyError("No key, \"{}\", found in dict".format(key))
         return sourceData
 
     def __setitem__(self, keyString, data):
