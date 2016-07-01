@@ -67,7 +67,7 @@ class GameStateImpl(game_state_base.GameStateBase):
             ##print "Adding UI item keyed to {}, value: {}".format('{}.name'.format(str(i)), self.ui._boundObj['{}.name'.format(str(i))])
             self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox(self.ui._boundObj, '{}.name'.format(str(i)), [100,80 + 40*i], self.ui._font), kbSelectIdx=None )
             ##print "Adding UI item keyed to {}, value: {}".format('{}.score'.format(str(i)), self.ui._boundObj['{}.score'.format(str(i))])
-            self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox(self.ui._boundObj, '{}.score'.format(str(i)), [200,80 + 40*i], self.ui._font), kbSelectIdx=None )
+            self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox(self.ui._boundObj, '{}.score'.format(str(i)), [600,80 + 40*i], self.ui._font), kbSelectIdx=None )
 
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Return'), kbSelectIdx=0, action="exitUI" )
 

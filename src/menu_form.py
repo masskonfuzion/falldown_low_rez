@@ -86,7 +86,6 @@ class UIForm(object):
            engineRef is provided in case it is needed
         """
         # TODO Make it possible for the UI to know where the cursor is, and to be able to move the cursor with the mouse, joystick, whatever. Also, the UI should respond to button presses on the keyboard, mouse, joystick, whatever
-        # TODO update UI event handling to be more modular -- e.g. this UI form should call functions to handle a "button press" regardless of what input device generated the input
         if event.type == pygame.MOUSEBUTTONDOWN:
             for uiItem in self._uiItems:
                 mousePos = pygame.mouse.get_pos()
@@ -94,16 +93,21 @@ class UIForm(object):
                 timeStamp = pygame.time.get_ticks() / 1000.0 # get timestamp; convert to seconds
                 ##print "Clicked a button: {}, coord:{}, time:{}".format(pressedButtons, mousePos, timeStamp)
 
-                # NOTE: This is the composite spinner object (the item can be contained in a list of objects or whatever)
                 # TODO test which mouse button is pressed before taking action
                 if uiItem['uiItem'].isMouseWithinBounds(mousePos): 
                     ##print "Mouse click button {} on object id:{}".format(event.button, id(uiItem))
                     # TODO perhaps separate the setting of the active item (during collection phase) from the handling (e.g. setting initial timer)/update
-                    # TODO send a key/button press to the object (perhaps the object can have a queue of timestamped inputs, to process and look for double-clicks, etc)
+
+                    # Before setting the active item, ensure that the currently active item (if there is one) is deactivated and taken out of editMode (if applicable, e.g. textboxes)
+                    if self._activeMenuItem:
+                        try:
+                           self._activeMenuItem._editMode = 0
+                        except AttributeError as e:
+                            # If we're here, that means the object doesn't have an editMode attribute. No issue; just keep trucking along
+                            # TODO: Perhaps replace try/except paradigm here with a method (e.g., disableEditMode()) in the base/subclass model? I suspect that may be faster (but I admit I haven't researched it)
+                            pass
                     self._activeMenuItem = uiItem['uiItem']   # activeMenuItem is a variable that maybe can belong to a top-level UI manager object thingamajig
                     
-                    # ============= TODO Query the spinner for a subitem, to set the mouse state ==========
-                    # TODO maybe we should change the onClickFuncs to take in the event, timestamp, etc
                     self._activeMenuItem.setMouseButtonState(event.button - 1, menu_item_base.UIItemState.mouseButtonDown, pygame.time.get_ticks() / 1000.0)
                     self._activeMenuItem.setMousePosition(mousePos)
 
