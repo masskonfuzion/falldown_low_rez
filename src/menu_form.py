@@ -133,7 +133,9 @@ class UIForm(object):
            engineRef is provided in case it is needed
         """
         if event.type == pygame.KEYDOWN:
-            if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN): # TODO make the keys that confirm/cancel customizable
+            # TODO make the keys that confirm/cancel customizable. Also, distinguish between e.g. space bar pressed while editing textbox, vs space bar used to confirm entry (or maybe just remove the space bar from this list)
+            #if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):  # Confirm selections with SPACE or ENTER
+            if event.key == pygame.K_RETURN:                                    # Confirm selections with ENTER only
                 # Confirm selection -- take action
                 # TODO make action trigger keys/buttons configurable
                 uiItem = self.getKBActiveItem()
@@ -157,6 +159,11 @@ class UIForm(object):
                 self._kbSelection -= 1
                 if self._kbSelection < 0:
                     self._kbSelection = self._maxKbSelection
+
+            else:
+                # TODO insert some logic here to determine whether or not to process keypresses that aren't the "confirm/cancel" keys
+                if self._activeMenuItem and self._activeMenuItem._onKeyFunc:
+                    self._activeMenuItem._onKeyFunc(event)
 
         return None
 

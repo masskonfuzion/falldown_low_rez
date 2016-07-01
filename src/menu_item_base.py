@@ -41,6 +41,7 @@ class MenuItemBase(object):
     doubleTapInterval = 0.2 # Time interval (in seconds) in which to look for a 2nd key/button press
     longPressDelay = 0.4    # Amt of time (in sec) with key/button down, to consider interaction a "long press"
     retriggerDelay = 0.2    # Amt of time (in sec), with key/button down, in "long press" state, to wait before retriggering action
+    validTextboxKeycodes = [8,9,13] + [x for x in range(32, 128) ]  # valid keycodes for textbox text entry
 
     @staticmethod
     def createText(textStr, fontObj=None, fontColor=None, surfSize=None):
@@ -75,7 +76,8 @@ class MenuItemBase(object):
         self._boundObj = None       # Reference to config obj (e.g. dict)
         self._boundItemKey = ''     # String containing key/path of item to be controlled by this UI item
         self._surface = surface     # Pygame/SDL surface for, e.g., image/icon/text rendering
-        self._onClickFunc = None
+        self._onClickFunc = None    # TODO consider making skeleton function defs here? (so that the developer can know what the function signatures for the on-whatever-event functions should look like)
+        self._onKeyFunc = None
 
         # mouseButtonState is the instantaneous state (not considering history)
         self._mouseButtonState = [ { "state": UIItemState.mouseButtonUp, "timestamp": 0.0, "elapsedTime": 0.0 } # left button

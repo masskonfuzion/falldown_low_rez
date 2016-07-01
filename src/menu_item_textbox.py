@@ -35,6 +35,7 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
         self.setSurface( menu_item_base.MenuItemBase.createText(str(self._boundObj[self._boundItemKey]), self._font, (60,190,30)) ) # TODO: Font color should be customizable
 
         self._onClickFunc = self.doTopLevelClick
+        self._onKeyFunc = self.processKeyboardInput
 
 
         # TODO The textbox should have:
@@ -49,6 +50,12 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
 
     def render(self, renderSurface):
         renderSurface.blit(self._surface, (self._position[0], self._position[1]))
+        if self._editMode:
+            hlSize = self._surface.get_size()
+            margin = 10
+            hlRect = ( self._position[0] - margin, self._position[1] - margin, hlSize[0] + margin, hlSize[1] + margin )
+
+            pygame.draw.rect(renderSurface, (0, 64, 128), hlRect, 2)
 
     def hasSubItems(self):
         """Return True if this item has subitems; False if not"""
@@ -61,6 +68,22 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
         else:
             self._editMode = 1
         print "Textbox {} _editMode = {}".format(hex(id(self)), self._editMode)
+
+    def processKeyboardInput(self, event):
+        """Process keyboard event
+
+           event is a pygame keyboard event (passed in by the caller)
+        """
+        if self._editMode == 1:
+            print "TODO Replace this: Textbox {} key pressed was keycode:{} scancode:{} unicode:{}".format(hex(id(self)), event.key, event.scancode, event.unicode)
+            if event.key == pygame.K_BACKSPACE:
+                self._boundObj[self._boundItemKey] = self._boundObj[self._boundItemKey][:len(self._boundObj[self._boundItemKey]) - 1]   # Take the slice of the string that's 1 less than its length (this assumes text data; won't work if, for some reason, this textbox is bound to a non-string item)
+            elif event.key in menu_item_base.MenuItemBase.validTextboxKeycodes:
+                self._boundObj[self._boundItemKey] += event.unicode     # Append the typed char to the string (NOTE: assumes string data)
+            self.setSurface( menu_item_base.MenuItemBase.createText(str(self._boundObj[self._boundItemKey]), self._font, (60,190,30)) ) # TODO: Font color should be customizable; TODO: make a bs spacer surface? (to keep the drawn box/highlights/whatever the same size, not dependent on the contents of the textbox)
+
+        else:
+            print "Textbox not in edit mode. Go away :-D"
 
     # TODO Make it possible to click off the textbox (e.g. on the form) and deactivate the textbox (this comment probably belongs in the form class)
 

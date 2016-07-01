@@ -129,6 +129,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         try:
             if argsDict['uiCommand'] == 'exitUI':
                 engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
+
         except KeyError as e:
             # if there is no uiCommand defined, don't do anything
             # (could have also tested if argsDict['uiCommand'] exists, without exception handling, but I like the way the code looks here)
@@ -146,11 +147,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
                 if action:
                     self.EnqueueUICommandMessage(action)
-                else:
-                    # NOTE: the menu_form object returns None if the key pressed is not an "action" key. We can use that property here to determine which keypresses actually edit the contents of the textbox, rather than confirming/canceling a selection
-                    # TODO determine which textbox on the form/menu is active, and update its contents
-                    print "keycode:{} scancode:{}, translated value:{}".format(event.key, event.scancode, event.unicode)
-                    pass
+
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 action = self.ui.processMouseEvent(event, engineRef)
