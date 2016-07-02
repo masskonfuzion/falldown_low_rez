@@ -146,6 +146,7 @@ class UIForm(object):
                 if uiItem:
                     # TODO maybe rename this to "passThruAction" or something. We're going to simply pass the input value through as a return value, to allow the calling scope to execute an action
                     if uiItem['action']:
+                        print "menu_form: Processing user keypress of RETURN key. action = {}".format(uiItem['action'])
                         return uiItem['action']
 
             # TODO Be smarter about which keys activate an action (allow other objs to define action triggers?). E.g., on some forms, ESC should do something; on others, it shouldn't. Same for ENTER, SPACE, etc.

@@ -19,23 +19,27 @@ class DotAccessDict(dict):
         super(DotAccessDict, self).__init__(dictObj)
 
     def __getitem__(self, keyString):
+        #print "DotAccessDict: running __getitem__({})".format(keyString)
         keys = []
         if '.' in keyString:
             keys = keyString.split('.')
         else:
             keys = [ keyString ]
 
-        print "DotAccessDict: key={}".format(keys)
+        #print "DotAccessDict: key={}".format(keys)
 
         sourceData = self
         for key in keys:
-            #print "Searching for {} in {}".format(key, sourceData)
+            #print "Searching for key, \"{}\", in obj: {}".format(key, sourceData)
             sourceData = sourceData.get(key)
-        if not sourceData:
-            raise KeyError("No key, \"{}\", found in dict".format(key))
+            if sourceData == None:  # Compare explicitly against None; Don't simply test "if sourceData", because sourceData may be an empty string, which evaluates to False. But an empty string is a valid result to return
+                raise KeyError("No key, \"{}\", found in object: {}".format(key, sourceData))
+            #print "Found {}".format(sourceData)
+        #print "DotAccessDict: got item: {}".format(sourceData)
         return sourceData
 
     def __setitem__(self, keyString, data):
+        #print "DotAccessDict: Calling __setitem__({}) <- {}".format(keyString, data)
         # Find the dict that contains the node to be edited, and set its value
         # i.e. we want to go to the 2nd-to-last level, so if the key is a.b.c, we need to get a.b and modify its [c] item
         if '.' in keyString:
@@ -43,10 +47,16 @@ class DotAccessDict(dict):
             indexToUpdate = keyListToLastMutableObj.pop()
             keyStrToLastMutableObj = '.'.join(keyListToLastMutableObj)
 
+            #print "\tDotAccessDict: NOTE - here, DotAccessDict calls __getitem__() to get the object to update"
             mutableObjToChange = self.__getitem__(keyStrToLastMutableObj)
-            mutableObjToChange[indexToUpdate] = data    # I believe this also calls self.__getitem__()
+
+            #mutableObjToChange[indexToUpdate] = data    # I believe this also calls self.__getitem__()
+            newVal = {indexToUpdate: data}
+            #print "\tDotAccessDict: updating key:{} to {}. Obj = {}".format(keyString, data, newVal)
+            mutableObjToChange.update(newVal)
             # The code above works.. but why??
             # Because I've overloaded __getitem__, which allows me to retrieve the object at key.subkey.blah..
-            # But because the item retrieved by __getitem__ (or by []) is mutable, I can modify it here
+            # Because the item retrieved by __getitem__ (or by []) is mutable, I can modify it here
+            # (this is kinda cheating.. I _should_ write setitem to locate the mutable obj the same way that getitem does it)
         else:
             self.update({keyString: data})

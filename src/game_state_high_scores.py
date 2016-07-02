@@ -56,7 +56,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         # TODO Pick up from here: Model this UI after the settings state
         self.ui = menu_form.UIForm('../data/scores/highscores.json', engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
         # TODO -- figure out why the "Loaded high scores" message popeed up twice. It seems as though the changeState() function call is being done twice?
-        print "Loaded high scores:\n{}".format(self.ui._boundObj)
+        #print "Loaded high scores:\n{}".format(self.ui._boundObj)
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
 
         # TODO The high scores display should either use labels (which are read-only, and which means you need to bind the label text value to a config item); or, you can lock the form so that the read/write textboxes are temporarily read-only when _viewing_ the high scores, but _read/write_ when the player achieves a high score.
@@ -114,6 +114,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
            # NOTE: Every message must have an 'action' key/val. The message parser will look for the 'action' in order to know what to do
         """
+        #print "game_state_high_scores: Enqueued action={} into command queue".format(action)
         self._eventQueue.Enqueue( { 'topic': 'UIControl',
                                     'payload': { 'action': 'call_function'
                                                , 'function_name': 'DoUICommand'
@@ -143,9 +144,11 @@ class GameStateImpl(game_state_base.GameStateBase):
 
             if event.type == pygame.KEYDOWN:
                 # TODO add some logic here to determine what key the user hit. If the user has an active textbox, then alphanumeric keypresses should register as editing the textbox contents; enter confirms; shift + arrows/home/end highlights text (fancy), or otherwise some key (maybe ctrl + something) clear the textbox; etc.
+                #print "game_state_high_scores: User pressed key. Event = {}".format(event)
                 action = self.ui.processKeyboardEvent(event, engineRef)
 
                 if action:
+                    #print "game_state_high_scores: UI returned action: {}. Enqueueing into command queue".format(action)
                     self.EnqueueUICommandMessage(action)
 
             
@@ -161,7 +164,7 @@ class GameStateImpl(game_state_base.GameStateBase):
             #print "DEBUG Dequeued message: {}".format(msg)
             topic = msg['topic']
             for listener_obj_dict in self._eventQueue.RegisteredListeners(topic):
-                #print "DEBUG Registered Listener {} processing message {}".format(listener_obj_dict['name'], msg['payload'])
+                #print "game_state_high_scores: Registered Listener {} processing message {}".format(listener_obj_dict['name'], msg['payload'])
 
                 # Evaluate the 'action' key to know what to do. The action dictates what other information is required to be in the message
                 if msg['payload']['action'] == 'call_function':

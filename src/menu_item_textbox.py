@@ -75,12 +75,26 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
            event is a pygame keyboard event (passed in by the caller)
         """
         if self._editMode == 1:
-            print "TODO Replace this: Textbox {} key pressed was keycode:{} scancode:{} unicode:{}".format(hex(id(self)), event.key, event.scancode, event.unicode)
+            #print "Textbox {} key pressed was keycode:{} scancode:{} unicode:{}".format(hex(id(self)), event.key, event.scancode, event.unicode)
+
             if event.key == pygame.K_BACKSPACE:
-                self._boundObj[self._boundItemKey] = self._boundObj[self._boundItemKey][:len(self._boundObj[self._boundItemKey]) - 1]   # Take the slice of the string that's 1 less than its length (this assumes text data; won't work if, for some reason, this textbox is bound to a non-string item)
+                boundObjVal = self._boundObj[self._boundItemKey]    # Use this var to reduce the # of calls to self._boundObj.__getitem__
+                #print "menu_item_textbox: Removing a char (makes 1 call to __getitem__ and 1 call to __setitem__)"
+                self._boundObj[self._boundItemKey] = unicode(boundObjVal[:len(boundObjVal) - 1])   # Take the slice of the string that's 1 less than its length (this assumes text data; won't work if, for some reason, this textbox is bound to a non-string item)
             elif event.key in menu_item_base.MenuItemBase.validTextboxKeycodes:
+                #print "menu_item_textbox: Adding {} to bound value".format(event.unicode)
                 self._boundObj[self._boundItemKey] += event.unicode     # Append the typed char to the string (NOTE: assumes string data)
-            self.setSurface( menu_item_base.MenuItemBase.createText(str(self._boundObj[self._boundItemKey]), self._font, (60,190,30)) ) # TODO: Font color should be customizable; TODO: make a bs spacer surface? (to keep the drawn box/highlights/whatever the same size, not dependent on the contents of the textbox)
+
+            #print "menu_item_textbox: boundObj (BEFORE surface update) = {}".format(self._boundObj)
+            #print "menu_item_textbox: Updating the textbox surface"
+
+            # TODO: Font color should be customizable; TODO - BS spacer size should be customized by a property of the form or something.
+            # Note: the call to font.size('A') simply gets the height of a character, to create the spacer surface. We use a spacer so that the createText() call does not attempt to call size() on a potentially empty string. Doing so seems mess things up.
+            #newSurf = menu_item_base.MenuItemBase.createText( str(self._boundObj[self._boundItemKey]), fontObj=self._font, fontColor=(60,190,30), surfSize=(400, self._font.size('A')[1]) )
+            newSurf = menu_item_base.MenuItemBase.createText( str(self._boundObj[self._boundItemKey]), fontObj=self._font, fontColor=(60,190,30) ) # This version auto-sizes the textbox. Works, but can look bad if you outline the box
+            self.setSurface( newSurf )
+
+            #print "menu_item_textbox: boundObj (AFTER surface update) = {}".format(self._boundObj)
 
         else:
             print "Textbox not in edit mode. Go away :-D"
