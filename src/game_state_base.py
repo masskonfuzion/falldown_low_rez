@@ -29,7 +29,7 @@ class GameStateBase(object):
         """Set the state's name (used primarily for debugging)"""
         self._name = stateName
 
-    def Init(self, engineRef):
+    def Init(self, engineRef, takeWith=None):
         raise NotImplementedError("Init() must be implemented by a subclass")
 
     def Cleanup(self):

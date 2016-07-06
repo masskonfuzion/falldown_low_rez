@@ -22,12 +22,14 @@ from display_msg import DisplayMessage
 from display_msg_manager import DisplayMessageManager
 from message_queue import MessageQueue
 
-import menu_form
-import menu_item_label  # TODO figure out the imports necessary to allow importing only menu_form, and getting all the related classes/imports automatically
-#import menu_item_spinner
-
 import game_state_base
-import game_state_main_menu
+import game_state_high_scores
+
+import menu_item_base
+import menu_item_spinner
+import menu_item_label
+import menu_item_textbox
+import menu_form
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
 class GameStateImpl(game_state_base.GameStateBase):
@@ -42,30 +44,41 @@ class GameStateImpl(game_state_base.GameStateBase):
         pass
 
     def Init(self, engineRef, takeWith=None):
+        """Initialize state
+
+           takeWith is an obj that was passed in by the state that transitioned into this state. It should be a mutable object (i.e. a list or dict)
+        """
+        #print "{} state Init()".format(self._name)
+
 		# Snag some vital object refs from the engine object
         self.game_size = engineRef.game_size
         self.screen_size = engineRef.screen_size
         self.cell_size = engineRef.cell_size
-        self.surface_bg = engineRef.surface_bg
+        self.surface_bg = engineRef.surface_bg          # Possibly won't use this surface for the new high score menu. We want to overlay our own surface on top of this one
+        self.game_viewport = engineRef.game_viewport    # Possibly won't use this surface for the new high score menu. We want to overlay our own surface on top of this one
         self.bg_col = engineRef.bg_col
+        self.shared_ref = takeWith                      # TODO Maybe name this better. This is the object passed in by the last state that transitioned to this state
+        print "TODO remove this: passed into new high score state: takeWith = {}. shared_ref = {}".format(takeWith, self.shared_ref)
+
+        self.surface_overlay = pygame.Surface((640, 480))
+
+        self.blit_center = ( self.surface_bg.get_size()[0] / 2 - self.surface_overlay.get_size()[0] / 2, self.surface_bg.get_size()[1] / 2 - self.surface_overlay.get_size()[1] / 2 )
 
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
         self._eventQueue.Initialize(16)
 
-        self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
-        self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 300], self.ui._font, 'Under Construction! (sorry :-D)'), kbSelectIdx=0 )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Return'), kbSelectIdx=1, action="exitUI" )
+        self.displayMsgScore = DisplayMessage()
+        self.displayMsgScore.create(txtStr="New High!!", position=[66, 5], color=(192,192,192))
+
+        # TODO Allow customization of text colors in the UI
+        self.ui = menu_form.UIForm('../data/scores/highscores.json', engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
+        self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)   # TODO maybe load one font obj at a higher-level scope than any menu or game state; then pass it in, instead of constructing one at each state change
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 200], self.ui._font, 'New High Score!'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox( self.ui._boundObj, '3', [200, 250], self.ui._font, 'Resume Game'), kbSelectIdx=0, action="resumeGame" ) # TODO don't hardcode the data key (right now, it's '3')
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 300], self.ui._font, 'View High Scores'), kbSelectIdx=1, action="exitUI" )
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
         self.ui._maxKbSelection = 1 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
-
-        #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
-        self.title_mm = DisplayMessageManager()
-        self.title_mm._font = pygame.font.Font('../asset/font/ARCADE.TTF', 64)
-
-        self.titleMsg = DisplayMessage()
-        self.titleMsg.create(txtStr='Credits', position=[1,1], color=(192,192,192))
 
         # Register Event Listeners
         self._eventQueue.RegisterListener('self', self, 'UIControl')    # Register "myself" as an event listener
@@ -83,7 +96,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         if GameStateImpl.__instance is None:
             GameStateImpl.__instance = super(GameStateImpl, GameStateImpl).__new__(GameStateImpl)
             GameStateImpl.__instance.__init__()
-            GameStateImpl.__instance.SetName("Credits State")
+            GameStateImpl.__instance.SetName("New High Score State")
         return GameStateImpl.__instance
         
 
@@ -113,8 +126,11 @@ class GameStateImpl(game_state_base.GameStateBase):
         """
         # TODO process the args and figure out what to do
         try:
-            if argsDict['uiCommand'] == 'exitUI':
-                engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
+            if argsDict['uiCommand'] == 'resumeGame':
+                engineRef.getState().Cleanup()
+                engineRef.popState() # NOTE: PopState() returns the state to the program; however, we don't assign it, because we don't care, because we're not going to use it for anything
+            elif argsDict['uiCommand'] == 'exitUI':
+                engineRef.changeState( game_state_high_scores.GameStateImpl.Instance() )
         except KeyError as e:
             # if there is no uiCommand defined, don't do anything
             # (could have also tested if argsDict['uiCommand'] exists, without exception handling, but I like the way the code looks here)
@@ -127,14 +143,13 @@ class GameStateImpl(game_state_base.GameStateBase):
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
+                # TODO Perhaps add to the UI a way to determine what the "action activator buttons" should be. e.g., some menus should respond to ESC key, others only ENTER, SPACE, etc. The pause menu should respond to "p"
                 action = self.ui.processKeyboardEvent(event, engineRef)
-
                 if action:
                     self.EnqueueUICommandMessage(action)
-            
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 action = self.ui.processMouseEvent(event, engineRef)
-
                 if action:
                     self.EnqueueUICommandMessage(action)
 
@@ -159,29 +174,30 @@ class GameStateImpl(game_state_base.GameStateBase):
 
             msg = self._eventQueue.Dequeue()
 
-
     def Update(self, engineRef, dt_s, cell_size):
-        self.ui.update(dt_s)
+        # No updates needed here
+        pass
 
     def PreRenderScene(self, engineRef):
         pass
 
     def RenderScene(self, engineRef):
-        self.surface_bg.fill((0,0,0))
-
-        self.ui.render(self.surface_bg)
-
-        textSurf = self.titleMsg.getTextSurface(self.title_mm._font)
-        self.surface_bg.blit(textSurf, (self.titleMsg._position[0] * self.cell_size[0], self.titleMsg._position[1] * self.cell_size[1]))
+        #self.surface_bg.fill((0,0,0))          # I think we want to NOT fill, so we can overlay.
+        #self.game_viewport.fill(self.bg_col)
+        self.surface_overlay.fill((0,0,0))  # This is one way to do transparency...: above, the colorkey for this surface is (0,0,0). That causes Pygame to NOT blit any pixels colored (0,0,0), thus causing anything NOT colored (0,0,0) on this surface to not be rendered, making this surface look transparent.
         
+        # Render the UI
+        self.ui.render(self.surface_overlay)
 
     def PostRenderScene(self, engineRef):
-        # Draw a box around the selected menu item
-        # NOTE: I could've put the box in the renderScene function, but the box is technically an "overlay". Also, whatever, who cares? :-D
-
-        ## # TODO perhaps make a function in the menuform class that draws the selection (and make it customizable?)
-
-        # Flip the buffers
+        self.game_viewport.blit(self.surface_overlay, self.blit_center)
+        self.surface_bg.blit(self.game_viewport, (0, 0))
         pygame.display.flip()
 
+
+    def displayGameStats(self):
+        # Janky hardcoding here... TODO fix the jankiness
+        self.displayMsgScore.changeText("New High Score!")
+        textSurfaceScore = self.displayMsgScore.getTextSurface(self.ui._font)
+        self.surface_bg.blit(textSurfaceScore, (self.displayMsgScore._position[0] * self.cell_size[0], self.displayMsgScore._position[1] * self.cell_size[1] ))
 

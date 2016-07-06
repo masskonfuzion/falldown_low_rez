@@ -21,8 +21,9 @@ import pygame
 
 
 class MenuItemSpinner(menu_item_base.MenuItemBase):
-    def __init__(self, targetObj, keyPath, posList, fontObj, leftArrowImageSurf, rightArrowImageSurf):
+    def __init__(self, targetObj, keyPath, posList, fontObj, leftArrowImageSurf, rightArrowImageSurf, locked=False):
         super(MenuItemSpinner, self).__init__(pos=posList)
+        self._locked = locked   # By default, a spinner is unlocked.
 
         self.bindTo(targetObj, keyPath) # bind to the supplied config dict
 

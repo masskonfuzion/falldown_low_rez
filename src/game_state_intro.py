@@ -37,7 +37,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         """ This shouldn't run.. We call __init__ on the __instance member"""
         pass
 
-    def Init(self, engineRef):
+    def Init(self, engineRef, takeWith=None):
 		# Snag some vital object refs from the engine object
         self.game_size = engineRef.game_size
         self.screen_size = engineRef.screen_size

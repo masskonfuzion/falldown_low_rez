@@ -40,14 +40,16 @@ class GameApplication(object):
     def cleanup(self):
         pass
 
-    def changeState(self, toState):
-        """Change State to toState"""
+    def changeState(self, toState, takeWith=None):
+        """Change State to toState
+
+           takeWith is an object (likely a list or dict) of objects to transfer into to the toState
+        """
         fromState = self.popState() # Get the current state and then pop it off the stack
         if fromState:
             fromState.Cleanup()
 
-        self.pushState(toState)
-        self.getState().Init(self)
+        self.pushState(toState, takeWith)
 
     def getState(self):
         """Return a reference to the state at the top of the stack"""
@@ -56,10 +58,10 @@ class GameApplication(object):
         else:
             return None
 
-    def pushState(self, toState):
+    def pushState(self, toState, takeWith=None):
         """Push toState onto the stack"""
         self._states.append(toState)
-        self.getState().Init(self)
+        self.getState().Init(self, takeWith)
 
     def popState(self):
         """Remove state from the stack, and return it"""

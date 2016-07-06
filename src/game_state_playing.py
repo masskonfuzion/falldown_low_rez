@@ -29,14 +29,16 @@ from message_queue import MessageQueue
 import game_state_base
 import game_state_pause
 import game_state_main_menu
+import game_state_new_high_score
 
 import dot_access_dict
 import json
+import collections
 
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
 class GameplayStats(object):
-    def __init__(self, configDict):
+    def __init__(self, configDict, highScoresDict):
         self.scoredFlag = False # Flag that tells whether player has scored or not
         self.score = 0
         self.GAP_SCORE = 10  # NOTE Scoring elements could be managed by a class/object. But whatever, no time!
@@ -49,6 +51,9 @@ class GameplayStats(object):
         # 64 is hardcoded here because the Low Rez Jam rules required a 64x64 grid. The update delay is calculated in terms of amt of time needed for a Falldown row to clear 64 grid rows
         self.initialRowUpdateDelay = float(configDict['difficulty.initialRowScreenClearTime']) / float(64) 
         self.initialRowSpacing = configDict['difficulty.initialRowSpacing']
+        self.achievedHighScore = False
+        self._newHighScore = None
+        self.highScores = highScoresDict
 
 
 class GameStateImpl(game_state_base.GameStateBase):
@@ -65,7 +70,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         #print "GAMESTATE Playing State __init__ running (creating data members and method functions)"
         pass
 
-    def Init(self, engineRef):
+    def Init(self, engineRef, takeWith=None):
 		# Snag some vital object refs from the engine object
         self.game_size = engineRef.game_size
         self.screen_size = engineRef.screen_size
@@ -80,7 +85,10 @@ class GameStateImpl(game_state_base.GameStateBase):
             cfgFromFile = json.load(fd)
         config = dot_access_dict.DotAccessDict(cfgFromFile)
 
-        self.vital_stats = GameplayStats(config)
+        with open('../data/scores/highscores.json', 'r') as fd:
+            highScores = json.load(fd)
+
+        self.vital_stats = GameplayStats(config, highScores)
         # TODO - Fix Gameplaystats. Right now, it's a patchwork object that takes some items that were loaded in from a cfg file, but others that are hard-coded. The patchwork is an artifact of the patchwork design/implementation of this game (I'm adding things as I figure out how to, heh)
 
         self.ball = Ball()
@@ -209,6 +217,17 @@ class GameStateImpl(game_state_base.GameStateBase):
                             self.vital_stats._gameState = "Playing"
                         else:
                             self.vital_stats._gameState = "GameOver"
+                            # TODO move high score check into a function
+                            # Note that for large dicts, keys() is sloowwww.. But here, we only have 10 high scores
+                            for rank in sorted(self.vital_stats.highScores.keys()):
+                                if self.vital_stats.score > self.vital_stats.highScores[rank]['score']:
+                                    self.vital_stats.achievedHighScore = True
+                                    self.vital_stats._newHighScore = { 'rank': rank, 'score': self.vital_stats.score }  # create the new high score obj as part of vital_stats, so it belongs to a scope outside this function (to make doubly sure it still exists when this function exits (though it shouldn't matter, because all Python objs are created on the heap, no?))
+                                    print "TODO remove: newHighScore = {}".format(self.vital_stats._newHighScore)
+                                    break
+                                    ## TODO ========================= Pick up from here ===============================
+                                    ## Use the newly minted "takeWith" parameter to place the vital_stats obj in memory to be transferred into the new_high_score state. Make a dict, key=whateverYouWant, value=vital_stats obj. Pass that dict into changeState(). From inside the new_high_score state, access the whateverYouWant key to get the vital_stats obj, which has the info (likely the rank) needed to allow the user to modify the high scores table
+
 
                         self.vital_stats._gotCrushed = False
 
@@ -232,7 +251,15 @@ class GameStateImpl(game_state_base.GameStateBase):
             elif self.vital_stats._gameState == "GameOver":
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
-                        engineRef.changeState( game_state_main_menu.GameStateImpl.Instance() )
+                        print "PlayingState: GameOver KEYUP"
+                        if self.vital_stats.achievedHighScore:
+                            print "You reached a high score!! Better than rank #{}".format(int(self.vital_stats._newHighScore['rank'])+1) # rank is stored as a string repr of an int, zero-based.
+                            print "Passing in newHighScore object {} to changeState()".format(self.vital_stats._newHighScore)
+
+                            # Transition to the state that allows the user to enter a new high score. NOTE We may need to keep that in this data scope, rather than switching to a stand-alone state)
+                            engineRef.changeState( game_state_new_high_score.GameStateImpl.Instance(), takeWith=self.vital_stats._newHighScore )
+                        else:
+                            engineRef.changeState( game_state_main_menu.GameStateImpl.Instance() )
 
     def ProcessCommands(self, engineRef):
         # TODO maybe put this command extraction logic into a function at the application class level (or base gamestate level). We're reusing the logic in every gamestate instance

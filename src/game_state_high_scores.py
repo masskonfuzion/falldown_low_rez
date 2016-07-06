@@ -42,7 +42,9 @@ class GameStateImpl(game_state_base.GameStateBase):
         """ This shouldn't run.. We call __init__ on the __instance member"""
         pass
 
-    def Init(self, engineRef):
+    def Init(self, engineRef, takeWith=None):
+        #print "{} state Init()".format(self._name)
+
 		# Snag some vital object refs from the engine object
         self.game_size = engineRef.game_size
         self.screen_size = engineRef.screen_size
@@ -65,9 +67,10 @@ class GameStateImpl(game_state_base.GameStateBase):
         for i in range(0,10):
             self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,80 + 40*i], self.ui._font, '{}.'.format(str(i+1))), kbSelectIdx=None )
             ##print "Adding UI item keyed to {}, value: {}".format('{}.name'.format(str(i)), self.ui._boundObj['{}.name'.format(str(i))])
-            self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox(self.ui._boundObj, '{}.name'.format(str(i)), [100,80 + 40*i], self.ui._font), kbSelectIdx=None )
+            # Note: Here we're hacking a textbox to behave like a label. TODO get rid of the label item? (It's redundant with a locked textbox)
+            self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox(self.ui._boundObj, '{}.name'.format(str(i)), [100,80 + 40*i], self.ui._font, locked=True), kbSelectIdx=None )
             ##print "Adding UI item keyed to {}, value: {}".format('{}.score'.format(str(i)), self.ui._boundObj['{}.score'.format(str(i))])
-            self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox(self.ui._boundObj, '{}.score'.format(str(i)), [600,80 + 40*i], self.ui._font), kbSelectIdx=None )
+            self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox(self.ui._boundObj, '{}.score'.format(str(i)), [600,80 + 40*i], self.ui._font, locked=True), kbSelectIdx=None )
 
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Return'), kbSelectIdx=0, action="exitUI" )
 

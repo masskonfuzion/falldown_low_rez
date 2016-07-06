@@ -78,6 +78,7 @@ class MenuItemBase(object):
         self._surface = surface     # Pygame/SDL surface for, e.g., image/icon/text rendering
         self._onClickFunc = None    # TODO consider making skeleton function defs here? (so that the developer can know what the function signatures for the on-whatever-event functions should look like)
         self._onKeyFunc = None
+        self._locked = True         # Locked for editing (Note: this property is overridden by the constructors of subclasses)
 
         # mouseButtonState is the instantaneous state (not considering history)
         self._mouseButtonState = [ { "state": UIItemState.mouseButtonUp, "timestamp": 0.0, "elapsedTime": 0.0 } # left button

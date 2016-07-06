@@ -24,10 +24,12 @@ import pygame
 import dot_access_dict
 import menu_item_base
 
-## TODO Find a way to keep specific game state changes out of the menu class. This class should be state-agnostic
 ## TODO also, possibly make menu_form a base class, and then extend it for game-specific stuff.
 import game_state_base
 import game_state_main_menu
+
+
+# TODO: Make it possible for the form to start off with an item unlocked, and then lock it (e.g. high scores entry: unlock 1 textbox (name entry), until user presses enter
 
 class UIForm(object):
     @staticmethod
@@ -101,7 +103,7 @@ class UIForm(object):
                     # Before setting the active item, ensure that the currently active item (if there is one) is deactivated and taken out of editMode (if applicable, e.g. textboxes)
                     if self._activeMenuItem:
                         try:
-                           self._activeMenuItem._editMode = 0
+                            self._activeMenuItem._editMode = 0
                         except AttributeError as e:
                             # If we're here, that means the object doesn't have an editMode attribute. No issue; just keep trucking along
                             # TODO: Perhaps replace try/except paradigm here with a method (e.g., disableEditMode()) in the base/subclass model? I suspect that may be faster (but I admit I haven't researched it)
@@ -146,14 +148,8 @@ class UIForm(object):
                 if uiItem:
                     # TODO maybe rename this to "passThruAction" or something. We're going to simply pass the input value through as a return value, to allow the calling scope to execute an action
                     if uiItem['action']:
-                        print "menu_form: Processing user keypress of RETURN key. action = {}".format(uiItem['action'])
+                        #print "menu_form: Processing user keypress of RETURN key. action = {}".format(uiItem['action'])
                         return uiItem['action']
-
-            # TODO Be smarter about which keys activate an action (allow other objs to define action triggers?). E.g., on some forms, ESC should do something; on others, it shouldn't. Same for ENTER, SPACE, etc.
-            # TODO Remove state changes from here. This form should not control any game logic, as it is designed to be an object that belongs to other classes (e.g. gamestates). Those states should control the logic
-            #if event.key == pygame.K_ESCAPE:
-            #    self.saveConfigToFile()
-            #    self._engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
 
             elif event.key == pygame.K_DOWN:
                 self._kbSelection += 1

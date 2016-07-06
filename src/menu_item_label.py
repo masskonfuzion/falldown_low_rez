@@ -19,12 +19,14 @@
 import menu_item_base
 import pygame
 
+# TODO: Note, now that we've added the _locked property to the base menu item (on 7/3/2016), the label is probably redundant. A locked textbox is functionally equivalent
 class MenuItemLabel(menu_item_base.MenuItemBase):
-    def __init__(self, posList, fontObj, text):
+    def __init__(self, posList, fontObj, text, locked=True):
         super(MenuItemLabel, self).__init__(pos=posList)
         self._font = fontObj    # This assigns a reference to an already-existing font object
         #self.setSurface( menu_item_base.MenuItemBase.createText(text , self._font, (255,255,255)) ) # TODO: Font color should be customizable
         self.setSurface( menu_item_base.MenuItemBase.createText(text , self._font, (60,190,30)) ) # TODO: Font color should be customizable
+        self._locked = locked
 
     def render(self, renderSurface):
         renderSurface.blit(self._surface, (self._position[0], self._position[1]))

@@ -20,7 +20,7 @@ import menu_item_base
 import pygame
 
 class MenuItemTextbox(menu_item_base.MenuItemBase):
-    def __init__(self, targetObj, keyPath, posList, fontObj):
+    def __init__(self, targetObj, keyPath, posList, fontObj, locked=False):
         """Create a textbox UI object
 
            Textboxes are bound to config dict objects. Textboxes accept a bound config obj (the config item that contains the value to be changed) and the key (the key used to access the bound data)
@@ -30,6 +30,7 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
 
         self._font = fontObj    # This assigns a reference to an already-existing font object
         self._editMode = 0      # Bool - if textbox is in edit mode, its text can be edited.
+        self._locked = locked
 
         # TODO Make it possible to edit the bound value (i.e. implement the textbox functionality)
         self.setSurface( menu_item_base.MenuItemBase.createText(str(self._boundObj[self._boundItemKey]), self._font, (60,190,30)) ) # TODO: Font color should be customizable
@@ -63,17 +64,21 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
 
     def doTopLevelClick(self):
         # TODO make this function do useful stuff
-        if self._editMode == 1:
-            self._editMode = 0
-        else:
-            self._editMode = 1
-        print "Textbox {} _editMode = {}".format(hex(id(self)), self._editMode)
+        if not self._locked:
+            if self._editMode == 1:
+                self._editMode = 0
+            else:
+                self._editMode = 1
+        #print "Textbox {} _editMode = {}".format(hex(id(self)), self._editMode)
 
     def processKeyboardInput(self, event):
         """Process keyboard event
 
            event is a pygame keyboard event (passed in by the caller)
         """
+        if self._locked:
+            return
+
         if self._editMode == 1:
             #print "Textbox {} key pressed was keycode:{} scancode:{} unicode:{}".format(hex(id(self)), event.key, event.scancode, event.unicode)
 
@@ -97,7 +102,8 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
             #print "menu_item_textbox: boundObj (AFTER surface update) = {}".format(self._boundObj)
 
         else:
-            print "Textbox not in edit mode. Go away :-D"
+            #print "Textbox not in edit mode. Go away :-D"
+            pass
 
     # TODO Make it possible to click off the textbox (e.g. on the form) and deactivate the textbox (this comment probably belongs in the form class)
 
