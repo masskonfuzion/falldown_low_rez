@@ -222,12 +222,9 @@ class GameStateImpl(game_state_base.GameStateBase):
                             for rank in sorted(self.vital_stats.highScores.keys()):
                                 if self.vital_stats.score > self.vital_stats.highScores[rank]['score']:
                                     self.vital_stats.achievedHighScore = True
-                                    self.vital_stats._newHighScore = { 'rank': rank, 'score': self.vital_stats.score }  # create the new high score obj as part of vital_stats, so it belongs to a scope outside this function (to make doubly sure it still exists when this function exits (though it shouldn't matter, because all Python objs are created on the heap, no?))
+                                    self.vital_stats._newHighScore = { 'rank': rank, 'score': self.vital_stats.score, 'name':'AAA' }  # create the new high score obj as part of vital_stats, so it belongs to a scope outside this function (to make doubly sure it still exists when this function exits (though it shouldn't matter, because all Python objs are created on the heap, no?))
                                     print "TODO remove: newHighScore = {}".format(self.vital_stats._newHighScore)
                                     break
-                                    ## TODO ========================= Pick up from here ===============================
-                                    ## Use the newly minted "takeWith" parameter to place the vital_stats obj in memory to be transferred into the new_high_score state. Make a dict, key=whateverYouWant, value=vital_stats obj. Pass that dict into changeState(). From inside the new_high_score state, access the whateverYouWant key to get the vital_stats obj, which has the info (likely the rank) needed to allow the user to modify the high scores table
-
 
                         self.vital_stats._gotCrushed = False
 

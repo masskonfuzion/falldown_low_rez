@@ -47,8 +47,6 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
         # - render style (e.g. highlight selected text)
         # - mouse-enabled text selection (e.g. highlight the text, delete all of it; insert before other characters, etc)
 
-        # TODO maybe set this object's onClickFunc to toggle edit/non-edit mode.
-
     def render(self, renderSurface):
         renderSurface.blit(self._surface, (self._position[0], self._position[1]))
         if self._editMode:
@@ -63,13 +61,9 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
         return False
 
     def doTopLevelClick(self):
-        # TODO make this function do useful stuff
         if not self._locked:
-            if self._editMode == 1:
-                self._editMode = 0
-            else:
-                self._editMode = 1
-        #print "Textbox {} _editMode = {}".format(hex(id(self)), self._editMode)
+            self._editMode = (self._editMode + 1) % 2
+        print "Textbox {} _editMode = {}".format(hex(id(self)), self._editMode)
 
     def processKeyboardInput(self, event):
         """Process keyboard event
@@ -80,7 +74,7 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
             return
 
         if self._editMode == 1:
-            #print "Textbox {} key pressed was keycode:{} scancode:{} unicode:{}".format(hex(id(self)), event.key, event.scancode, event.unicode)
+            print "Textbox {} key pressed was keycode:{} scancode:{} unicode:{}".format(hex(id(self)), event.key, event.scancode, event.unicode)
 
             if event.key == pygame.K_BACKSPACE:
                 boundObjVal = self._boundObj[self._boundItemKey]    # Use this var to reduce the # of calls to self._boundObj.__getitem__
@@ -99,7 +93,7 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
             newSurf = menu_item_base.MenuItemBase.createText( str(self._boundObj[self._boundItemKey]), fontObj=self._font, fontColor=(60,190,30) ) # This version auto-sizes the textbox. Works, but can look bad if you outline the box
             self.setSurface( newSurf )
 
-            #print "menu_item_textbox: boundObj (AFTER surface update) = {}".format(self._boundObj)
+            print "menu_item_textbox: boundObj (AFTER surface update) = {}".format(self._boundObj)
 
         else:
             #print "Textbox not in edit mode. Go away :-D"

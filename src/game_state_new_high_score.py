@@ -30,6 +30,9 @@ import menu_item_spinner
 import menu_item_label
 import menu_item_textbox
 import menu_form
+
+import json
+
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
 class GameStateImpl(game_state_base.GameStateBase):
@@ -71,17 +74,26 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.displayMsgScore.create(txtStr="New High!!", position=[66, 5], color=(192,192,192))
 
         # TODO Allow customization of text colors in the UI
-        self.ui = menu_form.UIForm('../data/scores/highscores.json', engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
+        self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)   # TODO maybe load one font obj at a higher-level scope than any menu or game state; then pass it in, instead of constructing one at each state change
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 200], self.ui._font, 'New High Score!'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox( self.ui._boundObj, '3', [200, 250], self.ui._font, 'Resume Game'), kbSelectIdx=0, action="resumeGame" ) # TODO don't hardcode the data key (right now, it's '3')
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 300], self.ui._font, 'View High Scores'), kbSelectIdx=1, action="exitUI" )
+        self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox( self.shared_ref, 'name', [200, 250], self.ui._font, locked=False), kbSelectIdx=0 )
+        self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox( self.shared_ref, 'score', [200, 300], self.ui._font, locked=True), kbSelectIdx=None, action=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 350], self.ui._font, 'View High Scores'), kbSelectIdx=1, action="exitUI" )
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
         self.ui._maxKbSelection = 1 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
 
         # Register Event Listeners
         self._eventQueue.RegisterListener('self', self, 'UIControl')    # Register "myself" as an event listener
+
+
+        self._highScoresFilePath = '../data/scores/highscores.json'
+        # TODO move high score loading into a function
+        with open(self._highScoresFilePath, 'r') as fd:
+            self._highScores = json.load(fd)
+            print "game_state_new_high_score: loaded high scores: {}".format(self._highScores)
+
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
@@ -126,10 +138,15 @@ class GameStateImpl(game_state_base.GameStateBase):
         """
         # TODO process the args and figure out what to do
         try:
-            if argsDict['uiCommand'] == 'resumeGame':
-                engineRef.getState().Cleanup()
-                engineRef.popState() # NOTE: PopState() returns the state to the program; however, we don't assign it, because we don't care, because we're not going to use it for anything
-            elif argsDict['uiCommand'] == 'exitUI':
+            if argsDict['uiCommand'] == 'exitUI':
+                # TODO put highscores file rewrite into a function
+                for rank in range( int(self.shared_ref['rank'])+1, 9+1 ):   # TODO un-hardcode the max of 9 if you intend to keep more than 10 high scores (currenly 0-index, from 0 - 9)
+                    self._highScores[str(rank)] = self._highScores[str(rank - 1)]
+                self._highScores[self.shared_ref['rank']] = { 'score': self.shared_ref['score'], 'name': self.shared_ref['name'] }
+                print "Going to write new highscores file: {}".format(self._highScores)
+                with open(self._highScoresFilePath, 'w') as fd:
+                    json.dump(self._highScores, fd)
+
                 engineRef.changeState( game_state_high_scores.GameStateImpl.Instance() )
         except KeyError as e:
             # if there is no uiCommand defined, don't do anything
@@ -143,12 +160,14 @@ class GameStateImpl(game_state_base.GameStateBase):
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
+                print "game_state_new_high_score: KEYDOWN event: {}".format(event)
                 # TODO Perhaps add to the UI a way to determine what the "action activator buttons" should be. e.g., some menus should respond to ESC key, others only ENTER, SPACE, etc. The pause menu should respond to "p"
                 action = self.ui.processKeyboardEvent(event, engineRef)
                 if action:
                     self.EnqueueUICommandMessage(action)
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                print "game_state_new_high_score: MOUSEBUTTONDOWN event: {}".format(event)
                 action = self.ui.processMouseEvent(event, engineRef)
                 if action:
                     self.EnqueueUICommandMessage(action)
@@ -175,8 +194,7 @@ class GameStateImpl(game_state_base.GameStateBase):
             msg = self._eventQueue.Dequeue()
 
     def Update(self, engineRef, dt_s, cell_size):
-        # No updates needed here
-        pass
+        self.ui.update(dt_s)
 
     def PreRenderScene(self, engineRef):
         pass

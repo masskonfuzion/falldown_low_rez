@@ -89,19 +89,19 @@ class UIForm(object):
         """
         # TODO Make it possible for the UI to know where the cursor is, and to be able to move the cursor with the mouse, joystick, whatever. Also, the UI should respond to button presses on the keyboard, mouse, joystick, whatever
         if event.type == pygame.MOUSEBUTTONDOWN:
-            for uiItem in self._uiItems:
-                mousePos = pygame.mouse.get_pos()
-                pressedButtons = pygame.mouse.get_pressed() # [0] = left; [1] = middle; [2] = right
-                timeStamp = pygame.time.get_ticks() / 1000.0 # get timestamp; convert to seconds
-                ##print "Clicked a button: {}, coord:{}, time:{}".format(pressedButtons, mousePos, timeStamp)
+            mousePos = pygame.mouse.get_pos()
+            pressedButtons = pygame.mouse.get_pressed() # [0] = left; [1] = middle; [2] = right
+            timeStamp = pygame.time.get_ticks() / 1000.0 # get timestamp; convert to seconds
+            print "menu_form: captured mouse click: {}, coord:{}, time:{}".format(pressedButtons, mousePos, timeStamp)
 
+            for uiItem in self._uiItems:
                 # TODO test which mouse button is pressed before taking action
                 if uiItem['uiItem'].isMouseWithinBounds(mousePos): 
-                    ##print "Mouse click button {} on object id:{}".format(event.button, id(uiItem))
+                    print "menu_form: Mouse click button {} in bounds of object id:{}".format(event.button, id(uiItem))
                     # TODO perhaps separate the setting of the active item (during collection phase) from the handling (e.g. setting initial timer)/update
 
                     # Before setting the active item, ensure that the currently active item (if there is one) is deactivated and taken out of editMode (if applicable, e.g. textboxes)
-                    if self._activeMenuItem:
+                    if self._activeMenuItem and id(self._activeMenuItem) != id(uiItem):
                         try:
                             self._activeMenuItem._editMode = 0
                         except AttributeError as e:
