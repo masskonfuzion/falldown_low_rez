@@ -80,6 +80,9 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
                 boundObjVal = self._boundObj[self._boundItemKey]    # Use this var to reduce the # of calls to self._boundObj.__getitem__
                 #print "menu_item_textbox: Removing a char (makes 1 call to __getitem__ and 1 call to __setitem__)"
                 self._boundObj[self._boundItemKey] = unicode(boundObjVal[:len(boundObjVal) - 1])   # Take the slice of the string that's 1 less than its length (this assumes text data; won't work if, for some reason, this textbox is bound to a non-string item)
+            elif event.key == pygame.K_RETURN:  # TODO fix this: the return key processing seems to be conflicting with menu_form's return key processing.. So it's not properly deactivating edit mode
+                if self._editMode == 1:
+                    self._editMode = 0
             elif event.key in menu_item_base.MenuItemBase.validTextboxKeycodes:
                 #print "menu_item_textbox: Adding {} to bound value".format(event.unicode)
                 self._boundObj[self._boundItemKey] += event.unicode     # Append the typed char to the string (NOTE: assumes string data)
