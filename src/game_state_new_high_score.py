@@ -57,8 +57,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.game_size = engineRef.game_size
         self.screen_size = engineRef.screen_size
         self.cell_size = engineRef.cell_size
-        self.surface_bg = engineRef.surface_bg          # Possibly won't use this surface for the new high score menu. We want to overlay our own surface on top of this one
-        self.game_viewport = engineRef.game_viewport    # Possibly won't use this surface for the new high score menu. We want to overlay our own surface on top of this one
+        self.surface_bg = engineRef.surface_bg
         self.bg_col = engineRef.bg_col
         self.shared_ref = takeWith                      # TODO Maybe name this better. This is the object passed in by the last state that transitioned to this state
         print "TODO remove this: passed into new high score state: takeWith = {}. shared_ref = {}".format(takeWith, self.shared_ref)
@@ -200,22 +199,13 @@ class GameStateImpl(game_state_base.GameStateBase):
         pass
 
     def RenderScene(self, engineRef):
-        #self.surface_bg.fill((0,0,0))          # I think we want to NOT fill, so we can overlay.
-        #self.game_viewport.fill(self.bg_col)
-        self.surface_overlay.fill((0,0,0))  # This is one way to do transparency...: above, the colorkey for this surface is (0,0,0). That causes Pygame to NOT blit any pixels colored (0,0,0), thus causing anything NOT colored (0,0,0) on this surface to not be rendered, making this surface look transparent.
+        self.surface_bg.fill((0,0,0))          # I think we want to NOT fill, so we can overlay.
         
         # Render the UI
-        self.ui.render(self.surface_overlay)
+        self.ui.render(self.surface_bg)
 
     def PostRenderScene(self, engineRef):
-        self.game_viewport.blit(self.surface_overlay, self.blit_center)
-        self.surface_bg.blit(self.game_viewport, (0, 0))
         pygame.display.flip()
 
 
-    def displayGameStats(self):
-        # Janky hardcoding here... TODO fix the jankiness
-        self.displayMsgScore.changeText("New High Score!")
-        textSurfaceScore = self.displayMsgScore.getTextSurface(self.ui._font)
-        self.surface_bg.blit(textSurfaceScore, (self.displayMsgScore._position[0] * self.cell_size[0], self.displayMsgScore._position[1] * self.cell_size[1] ))
 
