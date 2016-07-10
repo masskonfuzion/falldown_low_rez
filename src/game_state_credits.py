@@ -54,11 +54,14 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 300], self.ui._font, 'Under Construction! (sorry :-D)'), kbSelectIdx=0 )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Return'), kbSelectIdx=1, action="exitUI" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 200], self.ui._font, 'Game Design: Mass KonFuzion'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 260], self.ui._font, 'Game Programming: Mass KonFuzion'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 320], self.ui._font, 'Art Design (ha!): Mass KonFuzion'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 380], self.ui._font, 'Game Engine: Mass KonFuzion'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 500], self.ui._font, 'Return'), kbSelectIdx=0, action="exitUI" )
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
-        self.ui._maxKbSelection = 1 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
+        self.ui._maxKbSelection = 0 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
 
         #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
         self.title_mm = DisplayMessageManager()
