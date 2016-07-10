@@ -140,7 +140,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         try:
             if argsDict['uiCommand'] == 'exitUI':
                 # TODO put highscores file rewrite into a function
-                for rank in range( int(self.shared_ref['rank'])+1, 9+1 ):   # TODO un-hardcode the max of 9 if you intend to keep more than 10 high scores (currenly 0-index, from 0 - 9)
+                for rank in range( 9, int(self.shared_ref['rank']), -1):   # TODO un-hardcode the max of 9 if you intend to keep more than 10 high scores (currenly 0-index, from 0 - 9)
                     self._highScores[str(rank)] = self._highScores[str(rank - 1)]
                 self._highScores[self.shared_ref['rank']] = { 'score': self.shared_ref['score'], 'name': self.shared_ref['name'] }
                 print "Going to write new highscores file: {}".format(self._highScores)
