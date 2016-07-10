@@ -223,7 +223,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                                 if self.vital_stats.score > self.vital_stats.highScores[rank]['score']:
                                     self.vital_stats.achievedHighScore = True
                                     self.vital_stats._newHighScore = { 'rank': rank, 'score': self.vital_stats.score, 'name':'AAA' }  # create the new high score obj as part of vital_stats, so it belongs to a scope outside this function (to make doubly sure it still exists when this function exits (though it shouldn't matter, because all Python objs are created on the heap, no?))
-                                    print "TODO remove: newHighScore = {}".format(self.vital_stats._newHighScore)
+                                    #print "TODO remove: newHighScore = {}".format(self.vital_stats._newHighScore)
                                     break
 
                         self.vital_stats._gotCrushed = False
@@ -248,10 +248,10 @@ class GameStateImpl(game_state_base.GameStateBase):
             elif self.vital_stats._gameState == "GameOver":
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
-                        print "PlayingState: GameOver KEYUP"
+                        #print "PlayingState: GameOver KEYUP"
                         if self.vital_stats.achievedHighScore:
-                            print "You reached a high score!! Better than rank #{}".format(int(self.vital_stats._newHighScore['rank'])+1) # rank is stored as a string repr of an int, zero-based.
-                            print "Passing in newHighScore object {} to changeState()".format(self.vital_stats._newHighScore)
+                            #print "You reached a high score!! Better than rank #{}".format(int(self.vital_stats._newHighScore['rank'])+1) # rank is stored as a string repr of an int, zero-based.
+                            #print "Passing in newHighScore object {} to changeState()".format(self.vital_stats._newHighScore)
 
                             # Transition to the state that allows the user to enter a new high score. NOTE We may need to keep that in this data scope, rather than switching to a stand-alone state)
                             engineRef.changeState( game_state_new_high_score.GameStateImpl.Instance(), takeWith=self.vital_stats._newHighScore )

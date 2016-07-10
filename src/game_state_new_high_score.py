@@ -60,7 +60,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.surface_bg = engineRef.surface_bg
         self.bg_col = engineRef.bg_col
         self.shared_ref = takeWith                      # TODO Maybe name this better. This is the object passed in by the last state that transitioned to this state
-        print "TODO remove this: passed into new high score state: takeWith = {}. shared_ref = {}".format(takeWith, self.shared_ref)
+        #print "TODO remove this: passed into new high score state: takeWith = {}. shared_ref = {}".format(takeWith, self.shared_ref)
 
         self.surface_overlay = pygame.Surface((640, 480))
 
@@ -91,7 +91,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         # TODO move high score loading into a function
         with open(self._highScoresFilePath, 'r') as fd:
             self._highScores = json.load(fd)
-            print "game_state_new_high_score: loaded high scores: {}".format(self._highScores)
+            #print "game_state_new_high_score: loaded high scores: {}".format(self._highScores)
 
 
     def Cleanup(self):
@@ -142,7 +142,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                 for rank in range( 9, int(self.shared_ref['rank']), -1):   # TODO un-hardcode the max of 9 if you intend to keep more than 10 high scores (currenly 0-index, from 0 - 9)
                     self._highScores[str(rank)] = self._highScores[str(rank - 1)]
                 self._highScores[self.shared_ref['rank']] = { 'score': self.shared_ref['score'], 'name': self.shared_ref['name'] }
-                print "Going to write new highscores file: {}".format(self._highScores)
+                #print "Going to write new highscores file: {}".format(self._highScores)
                 with open(self._highScoresFilePath, 'w') as fd:
                     json.dump(self._highScores, fd)
 
@@ -159,14 +159,14 @@ class GameStateImpl(game_state_base.GameStateBase):
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                print "game_state_new_high_score: KEYDOWN event: {}".format(event)
+                #print "game_state_new_high_score: KEYDOWN event: {}".format(event)
                 # TODO Perhaps add to the UI a way to determine what the "action activator buttons" should be. e.g., some menus should respond to ESC key, others only ENTER, SPACE, etc. The pause menu should respond to "p"
                 action = self.ui.processKeyboardEvent(event, engineRef)
                 if action:
                     self.EnqueueUICommandMessage(action)
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                print "game_state_new_high_score: MOUSEBUTTONDOWN event: {}".format(event)
+                #print "game_state_new_high_score: MOUSEBUTTONDOWN event: {}".format(event)
                 action = self.ui.processMouseEvent(event, engineRef)
                 if action:
                     self.EnqueueUICommandMessage(action)

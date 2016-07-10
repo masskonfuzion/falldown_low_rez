@@ -92,12 +92,12 @@ class UIForm(object):
             mousePos = pygame.mouse.get_pos()
             pressedButtons = pygame.mouse.get_pressed() # [0] = left; [1] = middle; [2] = right
             timeStamp = pygame.time.get_ticks() / 1000.0 # get timestamp; convert to seconds
-            print "menu_form: captured mouse click: {}, coord:{}, time:{}".format(pressedButtons, mousePos, timeStamp)
+            #print "menu_form: captured mouse click: {}, coord:{}, time:{}".format(pressedButtons, mousePos, timeStamp)
 
             for uiItem in self._uiItems:
                 # TODO test which mouse button is pressed before taking action
                 if uiItem['uiItem'].isMouseWithinBounds(mousePos): 
-                    print "menu_form: Mouse click button {} in bounds of object id:{}".format(event.button, id(uiItem))
+                    #print "menu_form: Mouse click button {} in bounds of object id:{}".format(event.button, id(uiItem))
                     # TODO perhaps separate the setting of the active item (during collection phase) from the handling (e.g. setting initial timer)/update
 
                     # Before setting the active item, ensure that the currently active item (if there is one) is deactivated and taken out of editMode (if applicable, e.g. textboxes)
