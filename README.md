@@ -33,7 +33,7 @@ Falldown depends on the following Python modules:
 Yes, I know that Pygame is a bit outdated. But it's still functional, easy, and familiar to me. (Low Rez Jam lasted 2 weeks, and I needed to be able to make a game from scratch in that time frame).
 
 ## What About Binaries?
-Binaries aren't available on GitHub yet. Once the game is a bit more complete, I will also make available stand-alone binary packages (no installation necessary; just unpack and play)
+Binaries are available at https://masskonfuzion.itch.io/falldown-x64.  Note that the binary releases may (read: likely will) lag behind the source snapshots.
 
 ## Some Other Notes
 * Falldown is kinda incomplete...
