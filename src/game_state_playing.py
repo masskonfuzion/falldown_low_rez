@@ -31,6 +31,8 @@ import game_state_pause
 import game_state_main_menu
 import game_state_new_high_score
 
+import sound_and_music
+
 import dot_access_dict
 import json
 import collections
@@ -130,9 +132,19 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         # Initialize sound effects
         # TODO make a class or some other smarter way to manage loading the sound effects
-        self.mixer.addSfxFileToMap('gap', '../asset/audio/gap.wav')
+        self.mixer.addSfxFileToMap('gap'        , '../asset/audio/gap.wav')
+        self.mixer.addSfxFileToMap('crushed'    , '../asset/audio/explosion2.wav')
+        self.mixer.addSfxFileToMap('levelUp'    , '../asset/audio/powerup2.wav')
 
         self.mixer.loadSfxFiles()
+
+        # Add music files to mapping
+        # NOTE: We could have initialized the playing state music files in the main menu (along with the main menu music), because the mixer object is shared across all gamestates. But, we're initializing them here because they logically belong to this gamestate
+        self.mixer.addMusicFileToMap('level'    , '../asset/audio/ambient_lights-royalty_free.ogg')     # TODO replace this song. It's a placeholder until you get some MKF beats in here
+        self.mixer.addMusicFileToMap('gameOver' , '../asset/audio/gameover.ogg')
+
+        self.mixer.loadMusicFile('level')
+        self.mixer.playMusic(repeatMode=sound_and_music.SoundNMusicMixer.REPEAT_TRACK)   # TODO revisit music playback. Maybe make a few songs to randomly shuffle?
 
 
     def Cleanup(self):
@@ -235,6 +247,10 @@ class GameStateImpl(game_state_base.GameStateBase):
                                     #print "TODO remove: newHighScore = {}".format(self.vital_stats._newHighScore)
                                     break
 
+                            # NOTE: Here, we are not enqueuing the play music function call as a message because the Pygame music mixer is already asynchronous. We can simply call playMusic(), and Pygame handles the rest
+                            self.mixer.loadMusicFile('gameOver')
+                            self.mixer.playMusic()
+
                         self.vital_stats._gotCrushed = False
 
                         # Super janky way of resetting the ball. Running out of time
@@ -283,7 +299,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                     fn_ptr = getattr(objRef, msg['payload']['function_name'])
                     argsDict = eval("dict({})".format(msg['payload']['params']))    # params should be a comma-separated list of key=value pairs, e.g. "a = 5, b = 3"
 
-                    print "function args: {}".format(argsDict)
+                    #print "function args: {}".format(argsDict)
                     if argsDict:
                         # In this particular gamestate, we want an argsdict to translate to kwargs. This is because the mixer class is written with kwargs (other classes in other gamestates use dicts, in which case, we pass in argsDict as-is))
                         fn_ptr(self, **argsDict)
@@ -344,6 +360,14 @@ class GameStateImpl(game_state_base.GameStateBase):
                     self.vital_stats._gameState = "Crushed"
                     self.vital_stats.tries -= 1
 
+                    self._eventQueue.Enqueue( { 'topic': 'PlaySfx'
+                                              , 'payload': { 'action': 'call_function'
+                                                           , 'function_name': 'playSfx'
+                                                           , 'params': 'nameId="crushed"'
+                                                           }
+                                              }
+                                            )
+
             if self.ball._position[i] + self.ball._size[i] > 64:
                 self.ball._position[i] = 64 - self.ball._size[i]
 
@@ -364,7 +388,7 @@ class GameStateImpl(game_state_base.GameStateBase):
             self._eventQueue.Enqueue( { 'topic': 'PlaySfx'
                                       , 'payload': { 'action': 'call_function'
                                                    , 'function_name': 'playSfx'
-                                                   , 'params': 'nameId="gap"'     # TODO make a different sound effect. We don't want gap here...
+                                                   , 'params': 'nameId="levelUp"'
                                                    }
                                       }
                                     )

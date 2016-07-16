@@ -2,6 +2,9 @@ import pygame
 import sys
 
 class SoundNMusicMixer:
+    REPEAT_TRACK = -1
+    SONG_END_EVENT = pygame.USEREVENT + 1
+
     def __init__(self):
         """ Initialize sound / music mixer class """
         self._sfxFiles = {}
@@ -80,7 +83,7 @@ class SoundNMusicMixer:
            NOTE: We use kwargs here because the event queue/message system takes advantage of kwargs
            NOTE: We pass in engineRef because the application class calls this function, and the design calls for the application to pass a reference to itself to this function, in case we want/need it
         """
-        print "Playing sound {}".format(nameId)
+        #print "Playing sound {}".format(nameId)
         self._sfxFiles[nameId]['obj'].play()
 
     def loadMusicFile(self, nameId=''):
@@ -94,14 +97,14 @@ class SoundNMusicMixer:
         # TODO add exception handling here
         pygame.mixer.music.load(self._musicFiles[nameId])
 
-    def playMusic(self, engineRef=None):
+    def playMusic(self, engineRef=None, repeatMode=0):
         """Play loaded music file
 
            NOTE: Assumes a music file is already loaded
            NOTE: We pass in engineRef because the application class calls this function, and the design calls for the application to pass a reference to itself to this function, in case we want/need it
         """
         # TODO error checking -- what happens if we try to play music before loading a file? (use pygame.mixer.music.get_busy())
-        pygame.mixer.music.play()
+        pygame.mixer.music.play(repeatMode)
 
     def togglePauseMusic(self):
         """Pause loaded music file
