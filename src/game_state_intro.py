@@ -92,15 +92,26 @@ class GameStateImpl(game_state_base.GameStateBase):
     def ProcessEvents(self, engineRef):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                # TODO Create a quit request message, and add it to the Messaging Handler. Oh yeah, also make a Messaging Handler
+                # TODO Create a quit request message, and add it to the Messaging Handler.
                 sys.exit()
 
+            # TODO Create a request message to change states, and add it to the Messaging Handler.
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):
+                    # Music # TODO along with the request to change states, make a request to start the music. This redundant, bifurcated logic is crap
+                    self.mixer.addMusicFileToMap('Theme', '../asset/audio/falldown_theme.ogg')
+                    self.mixer.loadMusicFile('Theme')
+                    self.mixer.playMusic()  # Play loaded music file
+                                            # TODO add better management of loaded music files; as usual, we're hack'n'slashing
                     engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed()[0]:   # Left mouse click
+                    # Music # TODO along with the request to change states, make a request to start the music. This redundant, bifurcated logic is crap
+                    self.mixer.addMusicFileToMap('Theme', '../asset/audio/falldown_theme.ogg')
+                    self.mixer.loadMusicFile('Theme')
+                    self.mixer.playMusic()  # Play loaded music file
+                                            # TODO add better management of loaded music files; as usual, we're hack'n'slashing
                     engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
 
     def ProcessCommands(self, engineRef):

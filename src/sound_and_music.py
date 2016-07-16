@@ -13,6 +13,8 @@ class SoundNMusicMixer:
         self._musicVol = 1.0    # A value between 0.0 and 1.0
         self._musicPaused = 0
 
+        pygame.mixer.music.set_endevent(SoundNMusicMixer.SONG_END_EVENT)
+
     def addSfxFileToMap(self, nameId, filePath):
         """Add sound effect file to internal mapping
         

@@ -33,6 +33,8 @@ import game_state_intro
 import game_state_settings
 import game_state_high_scores
 import game_state_credits
+
+import sound_and_music
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
 class GameStateImpl(game_state_base.GameStateBase):
@@ -78,11 +80,6 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.titleMsg = DisplayMessage()
         self.titleMsg.create(txtStr='Falldown x64', position=[1,1], color=(192,192,192))
 
-        # Music
-        self.mixer.addMusicFileToMap('Theme', '../asset/audio/falldown_theme.ogg')
-        self.mixer.loadMusicFile('Theme')
-        self.mixer.playMusic()  # Play loaded music file
-                                # TODO add better management of loaded music files; as usual, we're hack'n'slashing
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
@@ -145,6 +142,11 @@ class GameStateImpl(game_state_base.GameStateBase):
                     engineRef.changeState(game_state_credits.GameStateImpl.Instance())
                 elif action == 'exitUI':
                     engineRef.isRunning = False
+
+            elif event.type == sound_and_music.SoundNMusicMixer.SONG_END_EVENT:
+                self.mixer.loadMusicFile('Theme')
+                self.mixer.playMusic()  # No matter what song was playing, load up the theme song next and play it
+                                        # TODO add config options for music on/off; obey those settings.
 
     def ProcessCommands(self, engineRef):
         # No command processing needed here because this is a super-simple menu state

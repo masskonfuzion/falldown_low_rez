@@ -127,6 +127,11 @@ class GameStateImpl(game_state_base.GameStateBase):
                 engineRef.getState().Cleanup()
                 engineRef.popState() # NOTE: PopState() returns the state to the program; however, we don't assign it, because we don't care, because we're not going to use it for anything
             elif argsDict['uiCommand'] == 'exitUI':
+                # Music # TODO along with the request to change states, make a request to start the music. This redundant, bifurcated logic is crap
+                self.mixer.addMusicFileToMap('Theme', '../asset/audio/falldown_theme.ogg')
+                self.mixer.loadMusicFile('Theme')
+                self.mixer.playMusic()  # Play loaded music file
+                                        # TODO add better management of loaded music files; as usual, we're hack'n'slashing
                 engineRef.changeState( game_state_main_menu.GameStateImpl.Instance() )
         except KeyError as e:
             # if there is no uiCommand defined, don't do anything

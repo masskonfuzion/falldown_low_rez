@@ -30,6 +30,8 @@ import menu_item_spinner
 import menu_item_label
 import menu_form
 
+import sound_and_music
+
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
 class GameStateImpl(game_state_base.GameStateBase):
@@ -161,6 +163,13 @@ class GameStateImpl(game_state_base.GameStateBase):
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 action = self.ui.processMouseEvent(event, engineRef)
+
+            elif event.type == sound_and_music.SoundNMusicMixer.SONG_END_EVENT:
+                # Music # TODO along with the request to change states, make a request to start the music. This redundant, bifurcated logic is crap
+                self.mixer.addMusicFileToMap('Theme', '../asset/audio/falldown_theme.ogg')
+                self.mixer.loadMusicFile('Theme')
+                self.mixer.playMusic()  # Play loaded music file
+                                        # TODO add better management of loaded music files; as usual, we're hack'n'slashing
 
     def ProcessCommands(self, engineRef):
         msg = self._eventQueue.Dequeue()
