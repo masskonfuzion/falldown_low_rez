@@ -50,6 +50,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.surface_bg = engineRef.surface_bg          # Possibly won't use this surface for the pause menu. We want to overlay our own surface on top of this one
         self.game_viewport = engineRef.game_viewport    # Possibly won't use this surface for the pause menu. We want to overlay our own surface on top of this one
         self.bg_col = engineRef.bg_col
+        self.mixer = engineRef.mixer
 
         self.surface_overlay = pygame.Surface((640, 480))
         #self.surface_overlay.set_colorkey((64,64,64))   # NOTE: To get a transparency effect, this colorkey value has to be the same as the fill color used during rendering this surface

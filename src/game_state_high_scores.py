@@ -51,6 +51,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.cell_size = engineRef.cell_size
         self.surface_bg = engineRef.surface_bg
         self.bg_col = engineRef.bg_col
+        self.mixer = engineRef.mixer
 
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
         self._eventQueue.Initialize(16)

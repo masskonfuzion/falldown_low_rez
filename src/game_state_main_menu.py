@@ -53,6 +53,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.cell_size = engineRef.cell_size
         self.surface_bg = engineRef.surface_bg
         self.bg_col = engineRef.bg_col
+        self.mixer = engineRef.mixer
 
 
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
@@ -76,6 +77,12 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         self.titleMsg = DisplayMessage()
         self.titleMsg.create(txtStr='Falldown x64', position=[1,1], color=(192,192,192))
+
+        # Music
+        self.mixer.addMusicFileToMap('Theme', '../asset/audio/falldown_theme.ogg')
+        self.mixer.loadMusicFile('Theme')
+        self.mixer.playMusic()  # Play loaded music file
+                                # TODO add better management of loaded music files; as usual, we're hack'n'slashing
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
@@ -113,6 +120,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
                 # TODO perhaps put this logic into ProcessCommands, so it can be triggered via keyboard, mouse, joystick, whatever
                 if action == 'startFalldown':
+                    self.mixer.stopMusic()
                     engineRef.changeState(game_state_playing.GameStateImpl.Instance())
                 elif action == 'gotoSettings':
                     engineRef.changeState(game_state_settings.GameStateImpl.Instance())

@@ -78,6 +78,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.surface_bg = engineRef.surface_bg
         self.game_viewport = engineRef.game_viewport
         self.bg_col = engineRef.bg_col
+        self.mixer = engineRef.mixer
 
         # TODO perhaps move the loading of this config to the main game engine. Then, simply pass a reference to the config object into this function, rather than doing the loading here
         # Load config file
@@ -125,6 +126,14 @@ class GameStateImpl(game_state_base.GameStateBase):
         # Register Event Listeners
         self._eventQueue.RegisterListener('ball', self.ball.controlState, 'PlayerControl')
         self._eventQueue.RegisterListener('rowmgr', self.rm, 'Difficulty')
+        self._eventQueue.RegisterListener('mixer', self.mixer, 'PlaySfx')
+
+        # Initialize sound effects
+        # TODO make a class or some other smarter way to manage loading the sound effects
+        self.mixer.addSfxFileToMap('gap', '../asset/audio/gap.wav')
+
+        self.mixer.loadSfxFiles()
+
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness
@@ -272,10 +281,14 @@ class GameStateImpl(game_state_base.GameStateBase):
                     # The registered listener had better have the function call available heh... otherwise, kaboom
                     objRef = listener_obj_dict['ref']
                     fn_ptr = getattr(objRef, msg['payload']['function_name'])
-                    #args = msg['params'].split('=') # NOTE the params should be a comma-separated list of = separated key/vals, e.g. params = "a=1,b=2,c=3,..."
+                    argsDict = eval("dict({})".format(msg['payload']['params']))    # params should be a comma-separated list of key=value pairs, e.g. "a = 5, b = 3"
 
-                    # TODO add parameters to the function call
-                    fn_ptr(self)    # NOTE: We pass self in as the engineRef for the function that's called
+                    print "function args: {}".format(argsDict)
+                    if argsDict:
+                        # In this particular gamestate, we want an argsdict to translate to kwargs. This is because the mixer class is written with kwargs (other classes in other gamestates use dicts, in which case, we pass in argsDict as-is))
+                        fn_ptr(self, **argsDict)
+                    else:
+                        fn_ptr(self)
 
             msg = self._eventQueue.Dequeue()
 
@@ -348,6 +361,13 @@ class GameStateImpl(game_state_base.GameStateBase):
                                                    }
                                       }
                                     )
+            self._eventQueue.Enqueue( { 'topic': 'PlaySfx'
+                                      , 'payload': { 'action': 'call_function'
+                                                   , 'function_name': 'playSfx'
+                                                   , 'params': 'nameId="gap"'     # TODO make a different sound effect. We don't want gap here...
+                                                   }
+                                      }
+                                    )
 
 
     def doCollisions(self):
@@ -376,6 +396,13 @@ class GameStateImpl(game_state_base.GameStateBase):
                             if self.ball._lastRowScored != i: 
                                 self.ball._lastRowScored = i 
                                 self.vital_stats.scoredFlag = True # This flag could also be handled as a message from the ball or row or whatever, to the game logic (in a better designed game), to trigger the game logic's score handler
+                                self._eventQueue.Enqueue( { 'topic': 'PlaySfx'
+                                                          , 'payload': { 'action': 'call_function'
+                                                                       , 'function_name': 'playSfx'
+                                                                       , 'params': 'nameId="gap"'     # TODO make a different sound effect. We don't want gap here...
+                                                                       }
+                                                          }
+                                                        )
 
                         elif geom._type == Row.COLLISION_TYPE_ROW:
                             #print "\t\tDEBUG row collision! ball geom={} row geom={}".format(row._collGeoms[0], geom)

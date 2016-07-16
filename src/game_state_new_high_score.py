@@ -60,6 +60,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.surface_bg = engineRef.surface_bg
         self.bg_col = engineRef.bg_col
         self.shared_ref = takeWith                      # TODO Maybe name this better. This is the object passed in by the last state that transitioned to this state
+        self.mixer = engineRef.mixer
         #print "TODO remove this: passed into new high score state: takeWith = {}. shared_ref = {}".format(takeWith, self.shared_ref)
 
         self.surface_overlay = pygame.Surface((640, 480))

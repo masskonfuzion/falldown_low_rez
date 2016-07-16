@@ -16,6 +16,7 @@
 
 import pygame
 import sys
+import sound_and_music
 
 class GameApplication(object):
     ''' Application class that stores all the data and stuff
@@ -32,6 +33,7 @@ class GameApplication(object):
         #self.surface_bg = pygame.display.set_mode(self.screen_size)
         self.surface_bg = pygame.display.set_mode(self.screen_size, pygame.DOUBLEBUF, 32)
         self.game_viewport = pygame.Surface((640, 640))
+        self.mixer = sound_and_music.SoundNMusicMixer()
 
         self.bg_col = 255,255,255
         self.isRunning = True
