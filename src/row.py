@@ -79,7 +79,7 @@ class Row(GameObj):
         self._position[1] -= 1
 
         # Upon movement, recompute render and collision geometry
-        # TODO: Fix - you're creating a totally new collision geom on every update.. That's wasteful. Instead, create the collision geom at the same time as the row is created
+        # TODO: Fix - you're creating a totally new collision geom on every update.. That's wasteful. Instead, create the collision geom at the same time as the row is created, and simply move it on update
         self._computeRenderGeometry(cell_size)
         self._computeCollisionGeometry(cell_size)
 

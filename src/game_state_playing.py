@@ -140,7 +140,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         # Add music files to mapping
         # NOTE: We could have initialized the playing state music files in the main menu (along with the main menu music), because the mixer object is shared across all gamestates. But, we're initializing them here because they logically belong to this gamestate
-        self.mixer.addMusicFileToMap('level'    , '../asset/audio/ambient_lights-royalty_free.ogg')     # TODO replace this song. It's a placeholder until you get some MKF beats in here
+        self.mixer.addMusicFileToMap('level'    , '../asset/audio/0003-falldown_music.ogg')     # TODO replace this song. It's a placeholder until you get some MKF beats in here
         self.mixer.addMusicFileToMap('gameOver' , '../asset/audio/gameover.ogg')
 
         self.mixer.loadMusicFile('level')
