@@ -31,6 +31,8 @@ import game_state_base
 import game_state_main_menu
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
+import sound_and_music
+
 class GameStateImpl(game_state_base.GameStateBase):
     __instance = None
 
@@ -161,6 +163,11 @@ class GameStateImpl(game_state_base.GameStateBase):
 
                 if action:
                     self.EnqueueUICommandMessage(action)
+
+            elif event.type == sound_and_music.SoundNMusicMixer.SONG_END_EVENT:
+                self.mixer.loadMusicFile('Theme')
+                self.mixer.playMusic()  # No matter what song was playing, load up the theme song next and play it
+                                        # TODO add config options for music on/off; obey those settings.
 
     def ProcessCommands(self, engineRef):
         msg = self._eventQueue.Dequeue()

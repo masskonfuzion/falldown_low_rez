@@ -155,6 +155,8 @@ class GameStateImpl(game_state_base.GameStateBase):
                 if action:
                     self.EnqueueUICommandMessage(action)
 
+            # NOTE: game_state_pause does not handle SONG_END_EVENT because the playing state is already configured to play music on an infinite loop. If we change to manual control of song playback in the game/pause states, then we'll need to handle SONG_END_EVENT here
+
     def ProcessCommands(self, engineRef):
         msg = self._eventQueue.Dequeue()
         while msg:

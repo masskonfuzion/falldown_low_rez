@@ -30,6 +30,8 @@ import game_state_base
 import game_state_main_menu
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
+import sound_and_music
+
 class GameStateImpl(game_state_base.GameStateBase):
     __instance = None
 
@@ -60,7 +62,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 220], self.ui._font, 'Art Design (ha!): Mass KonFuzion'), kbSelectIdx=None )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 280], self.ui._font, 'Game Engine: Mass KonFuzion'), kbSelectIdx=None )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 340], self.ui._font, 'Music: Mass KonFuzion'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 400], self.ui._font, 'Music: Mass KonFuzion'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 400], self.ui._font, 'Sound Effects: Mass KonFuzion'), kbSelectIdx=None )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 500], self.ui._font, 'Return'), kbSelectIdx=0, action="exitUI" )
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
@@ -143,6 +145,11 @@ class GameStateImpl(game_state_base.GameStateBase):
 
                 if action:
                     self.EnqueueUICommandMessage(action)
+
+            elif event.type == sound_and_music.SoundNMusicMixer.SONG_END_EVENT:
+                self.mixer.loadMusicFile('Theme')
+                self.mixer.playMusic()  # No matter what song was playing, load up the theme song next and play it
+                                        # TODO add config options for music on/off; obey those settings.
 
     def ProcessCommands(self, engineRef):
         msg = self._eventQueue.Dequeue()
