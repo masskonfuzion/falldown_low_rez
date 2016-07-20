@@ -90,23 +90,23 @@ class Row(GameObj):
             sPt = [ (self._gap + 1) * self._size[0] * cell_size[0], self._position[1] * cell_size[1] ]
             ePt = [ sPt[0] + 63 * cell_size[0], sPt[1] + self._size[1] * cell_size[1] ]
 
-            self._drawRects[0] = (sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
+            self._drawRects[0] = pygame.Rect(sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
 
         elif self._gap == self._numBlocks - 1:
             # Draw 1 row section
             sPt = [ 0, self._position[1] * cell_size[1] ]
             ePt = [ sPt[0] + self._gap * self._size[0] * cell_size[0], sPt[1] + self._size[1] * cell_size[1] ]
 
-            self._drawRects[0] = (sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
+            self._drawRects[0] = pygame.Rect(sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
         else:
             # Draw 2 row sections
             sPt = [ 0, self._position[1] * cell_size[1] ]
             ePt = [ sPt[0] + self._gap * self._size[0] * cell_size[0], sPt[1] + self._size[1] * cell_size[1] ]
-            self._drawRects[0] = (sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
+            self._drawRects[0] = pygame.Rect(sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
 
             sPt = [ (self._gap + 1) * self._size[0] * cell_size[0], self._position[1] * cell_size[1] ]
             ePt = [ sPt[0] + (64 - (self._gap + 1) * self._size[0]) * cell_size[0], sPt[1] + self._size[1] * cell_size[1] ]
-            self._drawRects[1] = (sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
+            self._drawRects[1] = pygame.Rect(sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
 
 
     def _createCollisionGeometry(self, cell_size):
@@ -163,32 +163,23 @@ class Row(GameObj):
 
 
     def _updateRenderGeometry(self, cell_size):
-        if self._gap == 0:
-            # Draw 1 row section
-            sPt = [ (self._gap + 1) * self._size[0] * cell_size[0], self._position[1] * cell_size[1] ]
-            ePt = [ sPt[0] + 63 * cell_size[0], sPt[1] + self._size[1] * cell_size[1] ]
+        """Update the render geometry
 
-            self._drawRects[0] = (sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
+           NOTE: Pygame doesn't seem to have a way to modify rectangles in-place (i.e. the Rect type is built on tuples, which are immutable..
+           Every time you want to "update" one, you basically make a new one with the updated values)
+        """
+        if self._gap == 0:
+            self._drawRects[0] = self._drawRects[0].move(0, -cell_size[1])
 
         elif self._gap == self._numBlocks - 1:
-            # Draw 1 row section
-            sPt = [ 0, self._position[1] * cell_size[1] ]
-            ePt = [ sPt[0] + self._gap * self._size[0] * cell_size[0], sPt[1] + self._size[1] * cell_size[1] ]
-
-            self._drawRects[0] = (sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
+            self._drawRects[0] = self._drawRects[0].move(0, -cell_size[1])
         else:
-            # Draw 2 row sections
-            sPt = [ 0, self._position[1] * cell_size[1] ]
-            ePt = [ sPt[0] + self._gap * self._size[0] * cell_size[0], sPt[1] + self._size[1] * cell_size[1] ]
-            self._drawRects[0] = (sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
-
-            sPt = [ (self._gap + 1) * self._size[0] * cell_size[0], self._position[1] * cell_size[1] ]
-            ePt = [ sPt[0] + (64 - (self._gap + 1) * self._size[0]) * cell_size[0], sPt[1] + self._size[1] * cell_size[1] ]
-            self._drawRects[1] = (sPt[0], sPt[1], ePt[0] - sPt[0], ePt[1] - sPt[1]) # Rects are defined as (left, top, width, height)
+            self._drawRects[0] = self._drawRects[0].move(0, -cell_size[1])
+            self._drawRects[1] = self._drawRects[1].move(0, -cell_size[1])
 
 
     def _updateCollisionGeometry(self, cell_size):
-        # NOTE: In this game, the AABB geometry is the same as the rendering geometry
+        # NOTE: In this game, the AABB geometry so happens to be is the same shape as the rendering geometry. That won't be the case in every game
 
         # NOTE: We make sure to put the gap in slot 0, so we can test for collisions with the ball against the gap 1st, before the row geoms
 

@@ -449,7 +449,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                                 correctionVector[1] = -penDepth[1] / self.cell_size[1]
 
                             self.ball.setPosition( self.ball._position[0] + correctionVector[0], self.ball._position[1] + correctionVector[1] )
-                            self.ball._computeCollisionGeometry(self.cell_size) # NOTE: the ball should recompute its geometry on a setPosition() call. Perhaps a fn override is needed (right now, setPosition is part of base class)
+                            self.ball._computeCollisionGeometry(self.cell_size) # TODO: the ball should recompute its geometry on a setPosition() call. Perhaps a fn override is needed (right now, setPosition is part of base class)
                             self.ball.resetUpdateDelay()
 
                             # Note: The following draw statements will be invisible unless you also disable screen filling in the draw() fn. But then, the screen won't clear, and you'll have a trail
