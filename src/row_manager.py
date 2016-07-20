@@ -49,11 +49,10 @@ class RowManager(GameObj):
         else:
             prevGap = self._rows[ len(self._rows) - 1]._gap
             gap = self._getNewGapBasedOnDifficulty(prevGap)
-            ## TODO! Make sure to assign the gaps based on previous row's gap
             self._rows.append( Row(numBlocks, yPosition, gap, updateDelay) )
 
-        self._rows[ len(self._rows) - 1 ]._computeRenderGeometry(cellSize)
-        self._rows[ len(self._rows) - 1 ]._computeCollisionGeometry(cellSize)
+        self._rows[ len(self._rows) - 1 ]._createRenderGeometry(cellSize)
+        self._rows[ len(self._rows) - 1 ]._createCollisionGeometry(cellSize)
 
 
     def reInitRow(self):
