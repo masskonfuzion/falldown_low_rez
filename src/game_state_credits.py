@@ -55,10 +55,12 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 200], self.ui._font, 'Game Design: Mass KonFuzion'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 260], self.ui._font, 'Game Programming: Mass KonFuzion'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 320], self.ui._font, 'Art Design (ha!): Mass KonFuzion'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 380], self.ui._font, 'Game Engine: Mass KonFuzion'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 100], self.ui._font, 'Game Design: Mass KonFuzion'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 160], self.ui._font, 'Game Programming: Mass KonFuzion'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 220], self.ui._font, 'Art Design (ha!): Mass KonFuzion'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 280], self.ui._font, 'Game Engine: Mass KonFuzion'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 340], self.ui._font, 'Music: Mass KonFuzion'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 400], self.ui._font, 'Music: Mass KonFuzion'), kbSelectIdx=None )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 500], self.ui._font, 'Return'), kbSelectIdx=0, action="exitUI" )
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
