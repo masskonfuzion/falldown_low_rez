@@ -109,7 +109,7 @@ class RowManager(GameObj):
                 if row._position[1] + row._size[1] / 2 == 0:
                     prevGap = self._rows[ (i - 1) % len(self._rows) ]._gap
                     newGap = self._getNewGapBasedOnDifficulty(prevGap)
-                    row.reInit(self._rowReinitPos - row._size[1] / 2, newGap, game_stats_obj)
+                    row.reInit(cell_size, self._rowReinitPos - row._size[1] / 2, newGap, game_stats_obj)
 
                     # NOTE render geom and collision geom are not recomputed until the next update(). But it's ok; at this point in time, the row is off the screen
 
