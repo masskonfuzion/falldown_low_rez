@@ -60,6 +60,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
         self._eventQueue.Initialize(64)
+        self._eventQueue.RegisterListener('engine', engineRef, 'Application') # Register the game engine to listen to messages with topic, "Application"
 
         self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)   # TODO maybe load one font obj at a higher-level scope than any menu or game state; then pass it in, instead of constructing one at each state change
@@ -106,11 +107,21 @@ class GameStateImpl(game_state_base.GameStateBase):
     def Resume(self):
         pass
 
+    def EnqueueApplicationQuitMessage(self):
+        """Enqueue a message for the application to shut itself down
+        """
+        self._eventQueue.Enqueue( { 'topic': 'Application',
+                                    'payload': { 'action': 'call_function'
+                                               , 'function_name': 'setRunningFlagToFalse'
+                                               , 'params' : ''
+                                               }
+                                  } )
+
     def ProcessEvents(self, engineRef):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                # TODO Create a quit request message, and add it to the Messaging Handler. Oh yeah, also make a Messaging Handler
-                sys.exit()
+                # Create a quit request message to the application, to shut itself down. This allows the program to do any necessary cleanup before exiting
+                self.EnqueueApplicationQuitMessage()
 
             if event.type == pygame.KEYDOWN:
                 action = self.ui.processKeyboardEvent(event, engineRef)
@@ -126,7 +137,8 @@ class GameStateImpl(game_state_base.GameStateBase):
                 elif action == 'gotoCredits':
                     engineRef.changeState(game_state_credits.GameStateImpl.Instance())
                 elif action == 'exitUI':
-                    engineRef.isRunning = False
+                    # Create a quit request message to the application, to shut itself down. This allows the program to do any necessary cleanup before exiting
+                    self.EnqueueApplicationQuitMessage()
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 action = self.ui.processMouseEvent(event, engineRef)
@@ -149,8 +161,27 @@ class GameStateImpl(game_state_base.GameStateBase):
                                         # TODO add config options for music on/off; obey those settings.
 
     def ProcessCommands(self, engineRef):
-        # No command processing needed here because this is a super-simple menu state
-        pass
+        msg = self._eventQueue.Dequeue()
+        while msg:
+            #print "DEBUG Dequeued message: {}".format(msg)
+            topic = msg['topic']
+            for listener_obj_dict in self._eventQueue.RegisteredListeners(topic):
+                #print "DEBUG Registered Listener {} processing message {}".format(listener_obj_dict['name'], msg['payload'])
+
+                # Evaluate the 'action' key to know what to do. The action dictates what other information is required to be in the message
+                if msg['payload']['action'] == 'call_function':
+                    # The registered listener had better have the function call available heh... otherwise, kaboom
+                    objRef = listener_obj_dict['ref']
+                    fn_ptr = getattr(objRef, msg['payload']['function_name'])
+                    argsDict = eval("dict({})".format(msg['payload']['params']))
+
+                    if objRef is engineRef:
+                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference. TODO make this logic standard across all game states?
+                        # NOTE: Slight cheat here: because this menu is its own event listener, and it's the only one, we pass in engineRef (the application object reference), instead of passing self (as we do in other game states). fn_ptr already points to self.DoUICommand. Admittedly, this is probably over-complicated, but it works..
+                    else:
+                        fn_ptr(engineRef, argsDict)
+
+            msg = self._eventQueue.Dequeue()
 
 
     def Update(self, engineRef, dt_s, cell_size):

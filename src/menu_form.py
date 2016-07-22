@@ -19,6 +19,9 @@
 ## Also with a location on the screen (eventually should be specifiable by percentages or something, to accommodate many screen resolutions)
 # Form has a bound config file (or just a bound data object)
 
+# NOTE: A "better" import structure would be to have menu_form import its menu item classes, so that any UIForm object could immediately have access to them,
+# and modules that import menu_form would not need to import the menu item classes
+
 import json
 import pygame
 import dot_access_dict

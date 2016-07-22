@@ -42,6 +42,14 @@ class GameApplication(object):
     def cleanup(self):
         pass
 
+    def setRunningFlagToFalse(self, argsDict = None):
+        """Set the application's isRunning flag to alse
+
+           Note: argsDict is in the function header to accommodate EventQueue/Messaging system design. Those systems procedurally generate a function call that expects an arguments dict.
+        """
+        print "Thank you for playing Falldown :-)" # TODO decide whether to take this greeting out or leave it in :-D
+        self.isRunning = False
+
     def changeState(self, toState, takeWith=None):
         """Change State to toState
 
@@ -89,7 +97,6 @@ class GameApplication(object):
 
     def preRenderScene(self):
         """Call PreRender on state at top of stack"""
-        # TODO Also pre-render all states?
         self.getState().PreRenderScene(self)
 
     def renderScene(self):

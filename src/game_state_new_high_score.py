@@ -88,6 +88,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         # Register Event Listeners
         self._eventQueue.RegisterListener('self', self, 'UIControl')    # Register "myself" as an event listener
+        self._eventQueue.RegisterListener('engine', engineRef, 'Application') # Register the game engine to listen to messages with topic, "Application"
 
 
         self._highScoresFilePath = '../data/scores/highscores.json'
@@ -121,6 +122,16 @@ class GameStateImpl(game_state_base.GameStateBase):
     # TODO Consider changing "resume" to "PopState" or something; doesn't HAVE to be 'resume'
     def Resume(self):
         pass
+
+    def EnqueueApplicationQuitMessage(self):
+        """Enqueue a message for the application to shut itself down
+        """
+        self._eventQueue.Enqueue( { 'topic': 'Application',
+                                    'payload': { 'action': 'call_function'
+                                               , 'function_name': 'setRunningFlagToFalse'
+                                               , 'params' : ''
+                                               }
+                                  } )
 
     def EnqueueUICommandMessage(self, action):
         """Enqueue a UI command message for handling
@@ -158,8 +169,8 @@ class GameStateImpl(game_state_base.GameStateBase):
     def ProcessEvents(self, engineRef):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                # TODO Create a quit request message, and add it to the Messaging Handler. Oh yeah, also make a Messaging Handler
-                sys.exit()
+                # Create a quit request message to the application, to shut itself down. This allows the program to do any necessary cleanup before exiting
+                self.EnqueueApplicationQuitMessage()
 
             if event.type == pygame.KEYDOWN:
                 #print "game_state_new_high_score: KEYDOWN event: {}".format(event)
@@ -192,11 +203,14 @@ class GameStateImpl(game_state_base.GameStateBase):
                     # The registered listener had better have the function call available heh... otherwise, kaboom
                     objRef = listener_obj_dict['ref']
                     fn_ptr = getattr(objRef, msg['payload']['function_name'])
-
                     argsDict = eval("dict({})".format(msg['payload']['params']))
 
                     # NOTE: Slight cheat here: because this menu is its own event listener, and it's the only one, we pass in engineRef (the application object reference), instead of passing self (as we do in other game states). fn_ptr already points to self.DoUICommand. Admittedly, this is probably over-complicated, but it works..
-                    fn_ptr(engineRef, argsDict)
+                    if objRef is engineRef:
+                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference. TODO make this logic standard across all game states?
+                        # NOTE: Slight cheat here: because this menu is its own event listener, and it's the only one, we pass in engineRef (the application object reference), instead of passing self (as we do in other game states). fn_ptr already points to self.DoUICommand. Admittedly, this is probably over-complicated, but it works..
+                    else:
+                        fn_ptr(engineRef, argsDict)
 
             msg = self._eventQueue.Dequeue()
 

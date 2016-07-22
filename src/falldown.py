@@ -25,11 +25,10 @@ from game_application import GameApplication
 import game_state_intro
 
 def main():
-    # TODO Put pygame.init() into the GameApplication class?
+    # NOTE: Couldn't decide whether to put pygame.init() at this level or in the GameApplication class. It probably belongs in GameApplication (in an Init()) function of sorts..)
     pygame.init()
 
     game = GameApplication()
-
     game.changeState(game_state_intro.GameStateImpl.Instance())
 
     # NOTE timer should be part of application class, too, but this is hack'n'slash.. No time to fix it!!
@@ -59,7 +58,7 @@ def main():
         # ----- post-render (e.g. score/overlays)
         game.postRenderScene()
 
-    # TODO do any engine cleanup here
+    # Do any engine cleanup here
 
 if __name__ == '__main__':
     main()

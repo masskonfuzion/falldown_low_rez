@@ -129,6 +129,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self._eventQueue.RegisterListener('ball', self.ball.controlState, 'PlayerControl')
         self._eventQueue.RegisterListener('rowmgr', self.rm, 'Difficulty')
         self._eventQueue.RegisterListener('mixer', self.mixer, 'PlaySfx')
+        self._eventQueue.RegisterListener('engine', engineRef, 'Application') # Register the game engine to listen to messages with topic, "Application"
 
         # Initialize sound effects
         # TODO make a class or some other smarter way to manage loading the sound effects
@@ -180,11 +181,21 @@ class GameStateImpl(game_state_base.GameStateBase):
         #print "GAMESTATE Playing State resume"
         pass
 
+    def EnqueueApplicationQuitMessage(self):
+        """Enqueue a message for the application to shut itself down
+        """
+        self._eventQueue.Enqueue( { 'topic': 'Application',
+                                    'payload': { 'action': 'call_function'
+                                               , 'function_name': 'setRunningFlagToFalse'
+                                               , 'params' : ''
+                                               }
+                                  } )
+
     def ProcessEvents(self, engineRef):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                # TODO Create a quit request message, and add it to the Messaging Handler. Oh yeah, also make a Messaging Handler
-                sys.exit()
+                # Create a quit request message to the application, to shut itself down. This allows the program to do any necessary cleanup before exiting
+                self.EnqueueApplicationQuitMessage()
 
             # Basic state mgmt style here
             if self.vital_stats._gameState == "Playing":
