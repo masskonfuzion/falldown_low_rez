@@ -136,13 +136,16 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.mixer.addSfxFileToMap('gap'        , '../asset/audio/gap.wav')
         self.mixer.addSfxFileToMap('crushed'    , '../asset/audio/explosion2.wav')
         self.mixer.addSfxFileToMap('levelUp'    , '../asset/audio/powerup2.wav')
-
         self.mixer.loadSfxFiles()
+        self.mixer.setSfxVolume(config['mixer.sfxVol'] / 10.0)  # TODO Design a way to avoid hard-coding the config keys here
+        # A note on dependencies: setSfxVolume has to come after sound effects are loaded. That is because Pygame sets sfx levels per Sound object; the sounds must be loaded to set their volume
+        # Music volume, on the other hand, appears to be configurable at any time
 
         # Add music files to mapping
         # NOTE: We could have initialized the playing state music files in the main menu (along with the main menu music), because the mixer object is shared across all gamestates. But, we're initializing them here because they logically belong to this gamestate
         self.mixer.addMusicFileToMap('level'    , '../asset/audio/gameplay_music_01.ogg')     # TODO replace this song. It's a placeholder until you get some MKF beats in here
         self.mixer.addMusicFileToMap('gameOver' , '../asset/audio/gameover.ogg')
+        self.mixer.setMusicVolume(config['mixer.musicVol'] / 10.0)  # TODO Design a way to avoid hard-coding the config keys here
 
         self.mixer.loadMusicFile('level')
         self.mixer.playMusic(repeatMode=sound_and_music.SoundNMusicMixer.REPEAT_TRACK)   # TODO revisit music playback. Maybe make a few songs to randomly shuffle?

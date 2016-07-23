@@ -74,10 +74,14 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'difficulty.initialRowSpacing', [50,220], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=1 )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,280], self.ui._font, 'Initial Row Grid Travel Time (seconds)') )
         self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'difficulty.initialRowScreenClearTime', [50,320], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=2 )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,450], self.ui._font, 'Return'), kbSelectIdx=3, action="exitUI" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,380], self.ui._font, 'Music Volume') )
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'mixer.musicVol', [50,420], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=3, action='setMusicVol' )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,480], self.ui._font, 'SFX Volume') )
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'mixer.sfxVol', [50,520], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=4, action='setSfxVol' )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,600], self.ui._font, 'Return'), kbSelectIdx=5, action="exitUI" )
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
-        self.ui._maxKbSelection = 3 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
+        self.ui._maxKbSelection = 5 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
 
         # TODO possibly make the menu require the user to navigate to items, and then press "enter" or something to activate the selected item for editing?
 
@@ -149,6 +153,10 @@ class GameStateImpl(game_state_base.GameStateBase):
             if argsDict['uiCommand'] == 'exitUI':
                 self.ui.saveConfigToFile()
                 engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
+            elif argsDict['uiCommand'] == 'setMusicVol':
+                self.mixer.setMusicVolume(self.ui._boundObj['mixer.musicVol'] / 10.0)
+            elif argsDict['uiCommand'] == 'setSfxVol':
+                self.mixer.setSfxVolume(self.ui._boundObj['mixer.sfxVol'] / 10.0)
         except KeyError as e:
             # if there is no uiCommand defined, don't do anything
             # (could have also tested if argsDict['uiCommand'] exists, without exception handling, but I like the way the code looks here)

@@ -16,6 +16,8 @@
 
 # Spinner = form control with a value, and a left/right (or also TODO up/down?) clickable arrows. Click the arrows to change the value
 
+# TODO - add an increment/decrement amount (e.g. +/- 1, +/- 0.1, whatever), and a min/max value
+
 import menu_item_base
 import pygame
 

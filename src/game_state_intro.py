@@ -24,6 +24,9 @@ from message_queue import MessageQueue
 
 import game_state_base
 import game_state_main_menu
+
+import dot_access_dict
+import json
 # NOTE: Looks like we have to use full import names, because we have circular imports (i.e. intro state imports playing state; but playing state imports intro state. Without using full import names, we run into namespace collisions and weird stuff)
 
 class GameStateImpl(game_state_base.GameStateBase):
@@ -61,6 +64,16 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.mm = DisplayMessageManager()
 
         self.splash_screen_threshold = 5 # num of seconds to keep up a splash screen
+
+        # TODO here, check for the presence of the config file. If it's not there, create a default one.
+        dict_just_for_the_sake_of_getting_mixer_settings = {}
+        with open('../data/config/settings.json', 'r') as fd:
+            dict_just_for_the_sake_of_getting_mixer_settings = json.load(fd)
+
+        config_dict = dot_access_dict.DotAccessDict(dict_just_for_the_sake_of_getting_mixer_settings)
+        self.mixer.setMusicVolume(config_dict['mixer.musicVol'] / 10.0)     # TODO design a more flexible/generic way to apply the settings loaded from file
+        self.mixer.setSfxVolume(config_dict['mixer.sfxVol'] / 10.0)
+
 
     def Cleanup(self):
         # NOTE this class is a port from a C++ class. Because Python is garbage-collected, Cleanup() is probably not necessary here. But it's included for completeness

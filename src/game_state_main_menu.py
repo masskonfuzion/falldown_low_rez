@@ -158,7 +158,6 @@ class GameStateImpl(game_state_base.GameStateBase):
             elif event.type == sound_and_music.SoundNMusicMixer.SONG_END_EVENT:
                 self.mixer.loadMusicFile('Theme')
                 self.mixer.playMusic()  # No matter what song was playing, load up the theme song next and play it
-                                        # TODO add config options for music on/off; obey those settings.
 
     def ProcessCommands(self, engineRef):
         msg = self._eventQueue.Dequeue()
