@@ -69,19 +69,22 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.ui = menu_form.UIForm('../data/config/settings.json', engineRef=engineRef) # I hope the program understands that the engineRef on the left is the function parameter, and the one on the right is the passed-in reference
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,80], self.ui._font, 'Number of Tries'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'numTries', [50,120], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=0 )
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'numTries', [50,120], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right'], range(1, 5+1)), kbSelectIdx=0 )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,180], self.ui._font, 'Initial Row Spacing') )
-        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'difficulty.initialRowSpacing', [50,220], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=1 )
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'difficulty.initialRowSpacing', [50,220], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right'], range(3,6+1)), kbSelectIdx=1 )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,280], self.ui._font, 'Initial Row Grid Travel Time (seconds)') )
-        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'difficulty.initialRowScreenClearTime', [50,320], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=2 )
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'difficulty.initialRowScreenClearTime', [50,320], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right'], range(6, 10+1)), kbSelectIdx=2 )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,380], self.ui._font, 'Music Volume') )
-        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'mixer.musicVol', [50,420], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=3, action='setMusicVol' )
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'mixer.musicVol', [50,420], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right'], range(0, 10+1)), kbSelectIdx=3, action='setMusicVol' )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,480], self.ui._font, 'SFX Volume') )
-        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'mixer.sfxVol', [50,520], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right']), kbSelectIdx=4, action='setSfxVol' )
+        self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'mixer.sfxVol', [50,520], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right'], range(0, 10+1)), kbSelectIdx=4, action='setSfxVol' )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,600], self.ui._font, 'Return'), kbSelectIdx=5, action="exitUI" )
 
         self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
         self.ui._maxKbSelection = 5 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
+
+        self.ui.synchronize(0, 5)
+        # TODO Move the _kbSelection and _maxKbSelection into a function. That function should also call "synchronize" in the menu. "Synchronize" will synchronize objects (I'm thinking spinners) value as loaded from config (if applicable) with the internal data list's location for that value
 
         # TODO possibly make the menu require the user to navigate to items, and then press "enter" or something to activate the selected item for editing?
 

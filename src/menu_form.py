@@ -198,3 +198,29 @@ class UIForm(object):
                 # TODO make this kb selection rectangle surround the item it's highlighting (or make it customizable). I'm allowing jank in because I want to quickly test it.
                 pygame.draw.rect(renderSurface, (192,128,0), (10, uiItem['uiItem']._position[1], 30, 30), 2)
 
+    def synchronize(self, initialKbSelection, maxKbSelection):
+        """Set the index of the object selected by default (the keyboard highlight cursor), and the max kb selection index.
+        
+           Also synchronize any objects with internal data selection ranges (e.g. spinners) to match the object's internal 'pointer' with the location of the data range
+           e.g., if a spinner can select an int between 1 and 5 (inclusive, i.e. range(1, 6)), and the config file is loaded with a value of 3, synchronize the spinner so its "selected" value points at the location of 3 in the list
+        """
+        self._kbSelection = initialKbSelection # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
+        self._maxKbSelection = maxKbSelection # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
+
+        for uiItem in self._uiItems:
+            try:
+                if hasattr(uiItem['uiItem'], '_dataIndex'):    # TODO perhaps put a type identifier in each class, to use that as a lookup, instead of hasattr foolishness
+                    uiItem['uiItem']._dataIndex = uiItem['uiItem']._data.index(uiItem['uiItem']._boundObj[uiItem['uiItem']._boundItemKey])  # Set _dataIndex to the index in the _data list where the bound item is found
+
+            except AttributeError as ae:
+                # uiItem does not have a member called 'dataIndex'. Probably no no biggie
+                #print ae
+                continue
+            except ValueError as ve:
+                # uiItem's _data list does not contain the sought-after value (e.g., the config we're loading somehow has a value that is not in the range of possible selectable values)
+                # TODO do something useful when the 
+                #print ve
+                continue
+                
+
+

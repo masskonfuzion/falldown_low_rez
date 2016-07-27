@@ -16,16 +16,18 @@
 
 # Spinner = form control with a value, and a left/right (or also TODO up/down?) clickable arrows. Click the arrows to change the value
 
-# TODO - add an increment/decrement amount (e.g. +/- 1, +/- 0.1, whatever), and a min/max value
+# TODO - add an increment/decrement amount (e.g. +/- 1, +/- 0.1, whatever), and a min/max value. Or maybe better yet, make the data source a list, so the spinner can select text values, too. (e.g. the "list" can be a range of numbers, a list of words hard-coded, or defined in a UI/menu definition file (which you also need to make, heh.. sooo, go with hard-coding for now :-D)
 
 import menu_item_base
 import pygame
 
 
 class MenuItemSpinner(menu_item_base.MenuItemBase):
-    def __init__(self, targetObj, keyPath, posList, fontObj, leftArrowImageSurf, rightArrowImageSurf, locked=False):
+    def __init__(self, targetObj, keyPath, posList, fontObj, leftArrowImageSurf, rightArrowImageSurf, data=[], locked=False):
         super(MenuItemSpinner, self).__init__(pos=posList)
         self._locked = locked   # By default, a spinner is unlocked.
+        self._data = data
+        self._dataIndex = 0     # Index of selected item from data range. We may need to set this index based on config options
 
         self.bindTo(targetObj, keyPath) # bind to the supplied config dict
 
@@ -97,12 +99,18 @@ class MenuItemSpinner(menu_item_base.MenuItemBase):
             subItem.update(dt_s)
 
     def decrementBoundVal(self):
-        self._boundObj[self._boundItemKey] -= 1
+        #self._dataIndex = (self._dataIndex - 1) % len(self._data)  # wrap around
+        self._dataIndex = max(self._dataIndex - 1, 0)               # clamp
+        self._boundObj[self._boundItemKey] = self._data[self._dataIndex]
+
         self._subItems[1].setSurface( menu_item_base.MenuItemBase.createText(str(self._boundObj[self._boundItemKey]), self._subItems[1]._font, (255,255,255)) )
         self.recalculateSubItems()
 
     def incrementBoundVal(self):
-        self._boundObj[self._boundItemKey] += 1
+        #self._dataIndex = (self._dataIndex + 1) % len(self._data)   # wrap around
+        self._dataIndex = min(self._dataIndex + 1, len(self._data) - 1) # clamp
+        self._boundObj[self._boundItemKey] = self._data[self._dataIndex]
+
         self._subItems[1].setSurface( menu_item_base.MenuItemBase.createText(str(self._boundObj[self._boundItemKey]), self._subItems[1]._font, (255,255,255)) )
         self.recalculateSubItems()
 
