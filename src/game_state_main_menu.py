@@ -152,6 +152,8 @@ class GameStateImpl(game_state_base.GameStateBase):
                     engineRef.changeState(game_state_settings.GameStateImpl.Instance())
                 elif action == 'gotoHighScores':
                     engineRef.changeState(game_state_high_scores.GameStateImpl.Instance())
+                elif action == 'gotoInstructions':
+                    engineRef.changeState(game_state_instructions.GameStateImpl.Instance())
                 elif action == 'gotoCredits':
                     engineRef.changeState(game_state_credits.GameStateImpl.Instance())
                 elif action == 'exitUI':
