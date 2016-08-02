@@ -31,6 +31,7 @@ import game_state_base
 import game_state_playing
 import game_state_intro
 import game_state_settings
+import game_state_instructions
 import game_state_high_scores
 import game_state_credits
 
@@ -64,14 +65,13 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)   # TODO maybe load one font obj at a higher-level scope than any menu or game state; then pass it in, instead of constructing one at each state change
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 300], self.ui._font, 'Fall Down'), kbSelectIdx=0, action="startFalldown" )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 350], self.ui._font, 'Settings'), kbSelectIdx=1, action="gotoSettings" )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 400], self.ui._font, 'High Scores'), kbSelectIdx=2, action="gotoHighScores" )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 450], self.ui._font, 'Credits'), kbSelectIdx=3, action="gotoCredits" )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Exit'), kbSelectIdx=4, action="exitUI" )
-
-        self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
-        self.ui._maxKbSelection = 4 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 250], self.ui._font, 'Fall Down'), kbSelectIdx=0, action="startFalldown" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 300], self.ui._font, 'Settings'), kbSelectIdx=1, action="gotoSettings" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 350], self.ui._font, 'Instructions'), kbSelectIdx=2, action="gotoInstructions" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 400], self.ui._font, 'High Scores'), kbSelectIdx=3, action="gotoHighScores" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 450], self.ui._font, 'Credits'), kbSelectIdx=4, action="gotoCredits" )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Exit'), kbSelectIdx=5, action="exitUI" )
+        self.ui.synchronize(0,5)
 
 
         #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
@@ -132,6 +132,8 @@ class GameStateImpl(game_state_base.GameStateBase):
                     engineRef.changeState(game_state_playing.GameStateImpl.Instance())
                 elif action == 'gotoSettings':
                     engineRef.changeState(game_state_settings.GameStateImpl.Instance())
+                elif action == 'gotoInstructions':
+                    engineRef.changeState(game_state_instructions.GameStateImpl.Instance())
                 elif action == 'gotoHighScores':
                     engineRef.changeState(game_state_high_scores.GameStateImpl.Instance())
                 elif action == 'gotoCredits':

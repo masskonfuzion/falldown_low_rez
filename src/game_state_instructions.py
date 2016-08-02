@@ -24,7 +24,6 @@ from message_queue import MessageQueue
 
 import menu_form
 import menu_item_label  
-#import menu_item_spinner
 
 import game_state_base
 import game_state_main_menu
@@ -57,31 +56,15 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 100], self.ui._font, 'Game Design: Mass KonFuzion'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 150], self.ui._font, 'Game Programming: Mass KonFuzion'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 200], self.ui._font, 'Art Design (ha!): Mass KonFuzion'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 250], self.ui._font, 'Game Engine: Mass KonFuzion'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 300], self.ui._font, 'Music: Mass KonFuzion'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 350], self.ui._font, 'Sound Effects: Mass KonFuzion'), kbSelectIdx=None )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 450], self.ui._font, 'Page 2 ->'), kbSelectIdx=0, action="nextPage" )
-        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 500], self.ui._font, 'Return'), kbSelectIdx=1, action="exitUI" )
-        self.ui.synchronize(0, 1)
-
-
-        # Is this the "best" way to create a second page in the credits menu? No, it's not. But it works :-D
-        self.ui2 = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
-        self.ui2._font = self.ui._font
-        self.ui2.addMenuItem( menu_item_label.MenuItemLabel([200, 100], self.ui2._font, 'Game engine made with:'), kbSelectIdx=None )
-        self.ui2.addMenuItem( menu_item_label.MenuItemLabel([240, 140], self.ui2._font, 'Pygame'), kbSelectIdx=None )
-        self.ui2.addMenuItem( menu_item_label.MenuItemLabel([240, 180], self.ui2._font, 'Python 2.7'), kbSelectIdx=None )
-        self.ui2.addMenuItem( menu_item_label.MenuItemLabel([200, 250], self.ui2._font, 'Other Tools Used:'), kbSelectIdx=None )
-        self.ui2.addMenuItem( menu_item_label.MenuItemLabel([240, 290], self.ui2._font, 'Bfxr (sound effects)'), kbSelectIdx=None )
-        self.ui2.addMenuItem( menu_item_label.MenuItemLabel([240, 330], self.ui2._font, 'LMMS (music)'), kbSelectIdx=None )
-        self.ui2.addMenuItem( menu_item_label.MenuItemLabel([240, 370], self.ui2._font, 'Fonts from 1001freefonts.com'), kbSelectIdx=None )
-        self.ui2.addMenuItem( menu_item_label.MenuItemLabel([200, 450], self.ui2._font, '<- Page 1'), kbSelectIdx=0, action="prevPage" )
-        self.ui2.synchronize(0, 0)
-
-        self.ui_ref = self.ui
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 100], self.ui._font, 'Objectives:'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([240, 150], self.ui._font, '"Roll" through gaps'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([240, 200], self.ui._font, 'Don\'t get crushed'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 260], self.ui._font, 'Gameplay:'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([240, 310], self.ui._font, 'Move Left: j or left arrow'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([240, 360], self.ui._font, 'Move Right: l or right arrow'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([240, 410], self.ui._font, 'Pause: p'), kbSelectIdx=None )
+        self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 500], self.ui._font, 'Return'), kbSelectIdx=0, action="exitUI" )
+        self.ui.synchronize(0, 0)
 
 
         #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
@@ -149,10 +132,6 @@ class GameStateImpl(game_state_base.GameStateBase):
         try:
             if argsDict['uiCommand'] == 'exitUI':
                 engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
-            elif argsDict['uiCommand'] == 'nextPage':
-                self.ui_ref = self.ui2      # NOTE: to implement multiple pages, you can create a list of UI references, and keep a index variable
-            elif argsDict['uiCommand'] == 'prevPage':
-                self.ui_ref = self.ui       # NOTE: to implement multiple pages, you can create a list of UI references, and keep a index variable
         except KeyError as e:
             # if there is no uiCommand defined, don't do anything
             # (could have also tested if argsDict['uiCommand'] exists, without exception handling, but I like the way the code looks here)
@@ -165,13 +144,13 @@ class GameStateImpl(game_state_base.GameStateBase):
                 self.EnqueueApplicationQuitMessage()
 
             if event.type == pygame.KEYDOWN:
-                action = self.ui_ref.processKeyboardEvent(event, engineRef)
+                action = self.ui.processKeyboardEvent(event, engineRef)
 
                 if action:
                     self.EnqueueUICommandMessage(action)
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                action = self.ui_ref.processMouseEvent(event, engineRef)
+                action = self.ui.processMouseEvent(event, engineRef)
 
                 if action:
                     self.EnqueueUICommandMessage(action)
@@ -206,7 +185,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
 
     def Update(self, engineRef, dt_s, cell_size):
-        self.ui_ref.update(dt_s)
+        self.ui.update(dt_s)
 
     def PreRenderScene(self, engineRef):
         pass
@@ -214,7 +193,7 @@ class GameStateImpl(game_state_base.GameStateBase):
     def RenderScene(self, engineRef):
         self.surface_bg.fill((0,0,0))
 
-        self.ui_ref.render(self.surface_bg)
+        self.ui.render(self.surface_bg)
 
         textSurf = self.titleMsg.getTextSurface(self.title_mm._font)
         self.surface_bg.blit(textSurf, (self.titleMsg._position[0] * self.cell_size[0], self.titleMsg._position[1] * self.cell_size[1]))
