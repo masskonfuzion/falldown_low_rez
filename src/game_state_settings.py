@@ -79,12 +79,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,480], self.ui._font, 'SFX Volume') )
         self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'mixer.sfxVol', [50,520], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right'], range(0, 10+1)), kbSelectIdx=4, action='setSfxVol' )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,600], self.ui._font, 'Return'), kbSelectIdx=5, action="exitUI" )
-
-        self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
-        self.ui._maxKbSelection = 5 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
-
         self.ui.synchronize(0, 5)
-        # TODO Move the _kbSelection and _maxKbSelection into a function. That function should also call "synchronize" in the menu. "Synchronize" will synchronize objects (I'm thinking spinners) value as loaded from config (if applicable) with the internal data list's location for that value
 
         # TODO possibly make the menu require the user to navigate to items, and then press "enter" or something to activate the selected item for editing?
 
@@ -151,7 +146,6 @@ class GameStateImpl(game_state_base.GameStateBase):
         """
            NOTE: This function assumes argsDict has one key only: uiCommand. The value of that key dictates what to do
         """
-        # TODO process the args and figure out what to do
         try:
             if argsDict['uiCommand'] == 'exitUI':
                 self.ui.saveConfigToFile()
@@ -191,7 +185,6 @@ class GameStateImpl(game_state_base.GameStateBase):
                 self.mixer.addMusicFileToMap('Theme', '../asset/audio/falldown_theme.ogg')
                 self.mixer.loadMusicFile('Theme')
                 self.mixer.playMusic()  # Play loaded music file
-                                        # TODO add better management of loaded music files; as usual, we're hack'n'slashing
 
     def ProcessCommands(self, engineRef):
         msg = self._eventQueue.Dequeue()
@@ -209,7 +202,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                     argsDict = eval("dict({})".format(msg['payload']['params']))
 
                     if objRef is engineRef:
-                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference. TODO make this logic standard across all game states?
+                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference.
                         # NOTE: Slight cheat here: because this menu is its own event listener, and it's the only one, we pass in engineRef (the application object reference), instead of passing self (as we do in other game states). fn_ptr already points to self.DoUICommand. Admittedly, this is probably over-complicated, but it works..
                     else:
                         fn_ptr(engineRef, argsDict)

@@ -58,13 +58,9 @@ class GameStateImpl(game_state_base.GameStateBase):
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
         self._eventQueue.Initialize(16)
 
-        # TODO Pick up from here: Model this UI after the settings state
         self.ui = menu_form.UIForm('../data/scores/highscores.json', engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
-        # TODO -- figure out why the "Loaded high scores" message popeed up twice. It seems as though the changeState() function call is being done twice?
         #print "Loaded high scores:\n{}".format(self.ui._boundObj)
         self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
-
-        # TODO The high scores display should either use labels (which are read-only, and which means you need to bind the label text value to a config item); or, you can lock the form so that the read/write textboxes are temporarily read-only when _viewing_ the high scores, but _read/write_ when the player achieves a high score.
 
         # NOTE: The high scores file has strings with numeric values, because Python (or maybe the json module, or maybe the dot access dict) tripped over loading int values of 0 from the file. I don't know..
         for i in range(0,10):
@@ -76,9 +72,7 @@ class GameStateImpl(game_state_base.GameStateBase):
             self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox(self.ui._boundObj, '{}.score'.format(str(i)), [600,80 + 40*i], self.ui._font, locked=True), kbSelectIdx=None )
 
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 500], self.ui._font, 'Return'), kbSelectIdx=0, action="exitUI" )
-
-        self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
-        self.ui._maxKbSelection = 0 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
+        self.ui.synchronize(0,0)
 
         #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
         self.title_mm = DisplayMessageManager()
@@ -143,7 +137,6 @@ class GameStateImpl(game_state_base.GameStateBase):
         """
            NOTE: This function assumes argsDict has one key only: uiCommand. The value of that key dictates what to do
         """
-        # TODO process the args and figure out what to do
         try:
             if argsDict['uiCommand'] == 'exitUI':
                 engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
@@ -160,7 +153,6 @@ class GameStateImpl(game_state_base.GameStateBase):
                 self.EnqueueApplicationQuitMessage()
 
             if event.type == pygame.KEYDOWN:
-                # TODO add some logic here to determine what key the user hit. If the user has an active textbox, then alphanumeric keypresses should register as editing the textbox contents; enter confirms; shift + arrows/home/end highlights text (fancy), or otherwise some key (maybe ctrl + something) clear the textbox; etc.
                 #print "game_state_high_scores: User pressed key. Event = {}".format(event)
                 action = self.ui.processKeyboardEvent(event, engineRef)
 
@@ -178,7 +170,6 @@ class GameStateImpl(game_state_base.GameStateBase):
             elif event.type == sound_and_music.SoundNMusicMixer.SONG_END_EVENT:
                 self.mixer.loadMusicFile('Theme')
                 self.mixer.playMusic()  # No matter what song was playing, load up the theme song next and play it
-                                        # TODO add config options for music on/off; obey those settings.
 
     def ProcessCommands(self, engineRef):
         msg = self._eventQueue.Dequeue()
@@ -197,7 +188,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                     argsDict = eval("dict({})".format(msg['payload']['params']))
 
                     if objRef is engineRef:
-                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference. TODO make this logic standard across all game states?
+                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference.
                         # NOTE: Slight cheat here: because this menu is its own event listener, and it's the only one, we pass in engineRef (the application object reference), instead of passing self (as we do in other game states). fn_ptr already points to self.DoUICommand. Admittedly, this is probably over-complicated, but it works..
                     else:
                         fn_ptr(engineRef, argsDict)

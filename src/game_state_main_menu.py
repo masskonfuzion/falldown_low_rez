@@ -179,7 +179,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                     argsDict = eval("dict({})".format(msg['payload']['params']))
 
                     if objRef is engineRef:
-                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference. TODO make this logic standard across all game states?
+                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference.
                         # NOTE: Slight cheat here: because this menu is its own event listener, and it's the only one, we pass in engineRef (the application object reference), instead of passing self (as we do in other game states). fn_ptr already points to self.DoUICommand. Admittedly, this is probably over-complicated, but it works..
                     else:
                         fn_ptr(engineRef, argsDict)

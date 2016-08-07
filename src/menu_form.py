@@ -27,12 +27,9 @@ import pygame
 import dot_access_dict
 import menu_item_base
 
-## TODO also, possibly make menu_form a base class, and then extend it for game-specific stuff.
 import game_state_base
 import game_state_main_menu
 
-
-# TODO: Make it possible for the form to start off with an item unlocked, and then lock it (e.g. high scores entry: unlock 1 textbox (name entry), until user presses enter
 
 class UIForm(object):
     @staticmethod
@@ -52,9 +49,13 @@ class UIForm(object):
         self._activeSubItem = None  # The active menu item's active sub-item (e.g. a spinner's left arrow)
         self._font = None           # Font object for the form TODO - use a list? Possibly move into a FormManager class? (e.g. a FontManager could contain many forms, for multi-screen menus; and also, could manage all the font objects and what not)
         self._fontColor = None
-        self._engineRef = engineRef # TODO delete this if we end up not using it; may be obviated by pass-through actions (pass the action instruction back to the calling scope instead of executing it here in this scope)
+        self._engineRef = engineRef 
         self._kbSelection = None    # The index # of the item selected by keyboard input
         self._maxKbSelection = None
+        # NOTE: this._engineRef is currently not used and is a candidate for deprecation. 
+        # - Instead of using engineRef to call functions belonging to the engine, pass-through actions (pass the action instruction back to the calling scope instead of executing it here in this scope)
+        # allow calls to propagate through this class (e.g., mouse-click handler) to trigger an action on the form (e.g. flash a light when a button is clicked), but then also allow the caller to take its own action,
+        # (e.g., change gamestate when the button is clicked). Admittedly, this design is probably over-engineered.. But eh, it's what I thought of..
 
         if boundFile:
             self._boundFile = boundFile     # The file name -- use this when reading and writing the file
@@ -71,7 +72,6 @@ class UIForm(object):
             # NOTE: Right now, the menuDefFile is entirely unsed. And the menu items are defined outside the scope of this class
             pass
 
-    # TODO probably change loadObjectFromFile() to take in the filename, and remove the bound config file from the constructor. Or otherwise, keep the ctor as-is, and add an optional arg to the load function, to allow developer to choose
     def loadObjectFromFile(self):
         """Load config from the file specified in the constructor of this object"""
         with open(self._boundFile, 'r+') as fd:
@@ -218,7 +218,7 @@ class UIForm(object):
                 continue
             except ValueError as ve:
                 # uiItem's _data list does not contain the sought-after value (e.g., the config we're loading somehow has a value that is not in the range of possible selectable values)
-                # TODO do something useful when the 
+                # TODO do something useful if we reach this condition (but we really shouldn't reach this condition)
                 #print ve
                 continue
                 

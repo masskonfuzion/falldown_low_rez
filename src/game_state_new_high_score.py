@@ -63,7 +63,6 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.bg_col = engineRef.bg_col
         self.shared_ref = takeWith                      # TODO Maybe name this better. This is the object passed in by the last state that transitioned to this state
         self.mixer = engineRef.mixer
-        #print "TODO remove this: passed into new high score state: takeWith = {}. shared_ref = {}".format(takeWith, self.shared_ref)
 
         self.surface_overlay = pygame.Surface((640, 480))
 
@@ -82,9 +81,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox( self.shared_ref, 'name', [200, 250], self.ui._font, locked=False), kbSelectIdx=0 )
         self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox( self.shared_ref, 'score', [200, 300], self.ui._font, locked=True), kbSelectIdx=None, action=None )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 350], self.ui._font, 'View High Scores'), kbSelectIdx=1, action="exitUI" )
-
-        self.ui._kbSelection = 0 # It is necessary to set the selected item (the keyboard selection) manually. Otherwise, the UI has no way of knowing which item to interact with
-        self.ui._maxKbSelection = 1 # Janky hack to know how many kb-interactive items are on the form # TODO is there a better way to specify maximum? Or maybe write an algo that figures this out?
+        self.ui.synchronize(0, 1)
 
         # Register Event Listeners
         self._eventQueue.RegisterListener('self', self, 'UIControl')    # Register "myself" as an event listener
@@ -149,7 +146,6 @@ class GameStateImpl(game_state_base.GameStateBase):
         """
            NOTE: This function assumes argsDict has one key only: uiCommand. The value of that key dictates what to do
         """
-        # TODO process the args and figure out what to do
         try:
             if argsDict['uiCommand'] == 'exitUI':
                 # TODO put highscores file rewrite into a function
@@ -188,7 +184,6 @@ class GameStateImpl(game_state_base.GameStateBase):
             elif event.type == sound_and_music.SoundNMusicMixer.SONG_END_EVENT:
                 self.mixer.loadMusicFile('Theme')
                 self.mixer.playMusic()  # No matter what song was playing, load up the theme song next and play it
-                                        # TODO add config options for music on/off; obey those settings.
 
     def ProcessCommands(self, engineRef):
         msg = self._eventQueue.Dequeue()
@@ -207,7 +202,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
                     # NOTE: Slight cheat here: because this menu is its own event listener, and it's the only one, we pass in engineRef (the application object reference), instead of passing self (as we do in other game states). fn_ptr already points to self.DoUICommand. Admittedly, this is probably over-complicated, but it works..
                     if objRef is engineRef:
-                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference. TODO make this logic standard across all game states?
+                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference.
                         # NOTE: Slight cheat here: because this menu is its own event listener, and it's the only one, we pass in engineRef (the application object reference), instead of passing self (as we do in other game states). fn_ptr already points to self.DoUICommand. Admittedly, this is probably over-complicated, but it works..
                     else:
                         fn_ptr(engineRef, argsDict)

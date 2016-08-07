@@ -158,7 +158,6 @@ class GameStateImpl(game_state_base.GameStateBase):
             elif event.type == sound_and_music.SoundNMusicMixer.SONG_END_EVENT:
                 self.mixer.loadMusicFile('Theme')
                 self.mixer.playMusic()  # No matter what song was playing, load up the theme song next and play it
-                                        # TODO add config options for music on/off; obey those settings.
 
     def ProcessCommands(self, engineRef):
         msg = self._eventQueue.Dequeue()
@@ -176,7 +175,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                     argsDict = eval("dict({})".format(msg['payload']['params']))
 
                     if objRef is engineRef:
-                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference. TODO make this logic standard across all game states?
+                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference.
                         # NOTE: Slight cheat here: because this menu is its own event listener, and it's the only one, we pass in engineRef (the application object reference), instead of passing self (as we do in other game states). fn_ptr already points to self.DoUICommand. Admittedly, this is probably over-complicated, but it works..
                     else:
                         fn_ptr(engineRef, argsDict)

@@ -32,20 +32,11 @@ class MenuItemTextbox(menu_item_base.MenuItemBase):
         self._editMode = 0      # Bool - if textbox is in edit mode, its text can be edited.
         self._locked = locked
 
-        # TODO Make it possible to edit the bound value (i.e. implement the textbox functionality)
         self.setSurface( menu_item_base.MenuItemBase.createText(str(self._boundObj[self._boundItemKey]), self._font, (60,190,30)) ) # TODO: Font color should be customizable
 
         self._onClickFunc = self.doTopLevelClick
         self._onKeyFunc = self.processKeyboardInput
 
-
-        # TODO The textbox should have:
-        # - value/text
-        # - cursor position (so we can render the cursor)
-        # - cursor state (blink on / blink off)
-        # - active state (editing or not editing) - note: the textbox may be selected (i.e. the active UI item on a form), but not in active edit mode
-        # - render style (e.g. highlight selected text)
-        # - mouse-enabled text selection (e.g. highlight the text, delete all of it; insert before other characters, etc)
 
     def render(self, renderSurface):
         renderSurface.blit(self._surface, (self._position[0], self._position[1]))

@@ -143,7 +143,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         # Add music files to mapping
         # NOTE: We could have initialized the playing state music files in the main menu (along with the main menu music), because the mixer object is shared across all gamestates. But, we're initializing them here because they logically belong to this gamestate
-        self.mixer.addMusicFileToMap('level'    , '../asset/audio/gameplay_music_01.ogg')     # TODO replace this song. It's a placeholder until you get some MKF beats in here
+        self.mixer.addMusicFileToMap('level'    , '../asset/audio/gameplay_music_01.ogg')
         self.mixer.addMusicFileToMap('gameOver' , '../asset/audio/gameover.ogg')
         self.mixer.setMusicVolume(config['mixer.musicVol'] / 10.0)  # TODO Design a way to avoid hard-coding the config keys here
 
@@ -213,7 +213,6 @@ class GameStateImpl(game_state_base.GameStateBase):
                                                                , 'params' : ''
                                                                }
                                                   } ) # here, the call keyword says that the message payload is an instruction to call a function
-                        # TODO Maybe make the params a comma-separated string of key=value pairs. Split first on "," to get the pairs, then split on '=' to get the key/value pairs.
                     # Right arrow key
                     elif (event.key == pygame.K_RIGHT or event.key == pygame.K_l):
                     #self.ball.controlState.setRightKeyPressedTrue()
@@ -258,7 +257,6 @@ class GameStateImpl(game_state_base.GameStateBase):
                                 if self.vital_stats.score > self.vital_stats.highScores[rank]['score']:
                                     self.vital_stats.achievedHighScore = True
                                     self.vital_stats._newHighScore = { 'rank': rank, 'score': self.vital_stats.score, 'name':'AAA' }  # create the new high score obj as part of vital_stats, so it belongs to a scope outside this function (to make doubly sure it still exists when this function exits (though it shouldn't matter, because all Python objs are created on the heap, no?))
-                                    #print "TODO remove: newHighScore = {}".format(self.vital_stats._newHighScore)
                                     break
 
                             # NOTE: Here, we are not enqueuing the play music function call as a message because the Pygame music mixer is already asynchronous. We can simply call playMusic(), and Pygame handles the rest
@@ -423,7 +421,6 @@ class GameStateImpl(game_state_base.GameStateBase):
             for geom in row._collGeoms:
                 if geom:
                     # NOTE: We need to test for collision with a gap first, then check for the row, because the ball can possibly be in contact with both the row and gap at the same time. That way, the test will indicate when the ball is in contact with the gap but not the row at the same time.
-                    # TODO remove cell_size from the isColliding call
                     if geom.isColliding(self.ball._collGeoms[0], self.cell_size):
                         if geom._type == Row.COLLISION_TYPE_GAP:
                             #print "\t\tDEBUG gap collision! ball geom={} row geom={}".format(row._collGeoms[0], geom)
@@ -437,7 +434,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                                 self._eventQueue.Enqueue( { 'topic': 'PlaySfx'
                                                           , 'payload': { 'action': 'call_function'
                                                                        , 'function_name': 'playSfx'
-                                                                       , 'params': 'nameId="gap"'     # TODO make a different sound effect. We don't want gap here...
+                                                                       , 'params': 'nameId="gap"'
                                                                        }
                                                           }
                                                         )

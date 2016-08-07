@@ -137,7 +137,6 @@ class GameStateImpl(game_state_base.GameStateBase):
                 # Create a quit request message to the application, to shut itself down. This allows the program to do any necessary cleanup before exiting
                 self.EnqueueApplicationQuitMessage()
 
-            # TODO Create a request message to change states, and add it to the Messaging Handler.
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):
                     # Music # TODO along with the request to change states, make a request to start the music. This redundant, bifurcated logic is crap
@@ -145,6 +144,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                     self.mixer.loadMusicFile('Theme')
                     self.mixer.playMusic()  # Play loaded music file
                                             # TODO add better management of loaded music files; as usual, we're hack'n'slashing
+                                            # TODO fail elegantly if pygame.mixer does not initialize (or, don't fail at all? Maybe just proceed with no sound/music)
                     engineRef.changeState(game_state_main_menu.GameStateImpl.Instance())
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -177,7 +177,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                     argsDict = eval("dict({})".format(msg['payload']['params']))
 
                     if objRef is engineRef:
-                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference. TODO make this logic standard across all game states?
+                        fn_ptr(argsDict)    # If the object is the engine, we don't need to pass the engineRef to it. i.e., the obj will already have its own self reference.
                         # NOTE: Slight cheat here: because this menu is its own event listener, and it's the only one, we pass in engineRef (the application object reference), instead of passing self (as we do in other game states). fn_ptr already points to self.DoUICommand. Admittedly, this is probably over-complicated, but it works..
                     else:
                         fn_ptr(engineRef, argsDict)
@@ -194,7 +194,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
     def RenderScene(self, engineRef):
         self.surface_bg.fill((255,255,255))
-        # TODO add in timer thresholds; cycle through splash screens on keypress, or if no keypress, then after time threshold expires
+        # TODO add in timer thresholds; cycle through splash screens on keypress, or if no keypress, then cycle splash screens after time threshold expires
         posX = int(self.surface_bg.get_width() / 2) - int(self.img_surfs[0].get_width() / 2)
         posY = int(self.surface_bg.get_height() / 2) - int(self.img_surfs[0].get_height() / 2)
 

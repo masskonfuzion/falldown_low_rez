@@ -47,7 +47,7 @@ class GameApplication(object):
 
            Note: argsDict is in the function header to accommodate EventQueue/Messaging system design. Those systems procedurally generate a function call that expects an arguments dict.
         """
-        print "Thank you for playing Falldown :-)" # TODO decide whether to take this greeting out or leave it in :-D
+        print "Thank you for playing Falldown :-)"
         self.isRunning = False
 
     def changeState(self, toState, takeWith=None):
