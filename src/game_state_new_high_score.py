@@ -17,6 +17,7 @@
 # Import game objects (perhaps this can go into a "game manager" of some sort?)
 import pygame
 import sys
+import os
 
 from display_msg import DisplayMessage
 from display_msg_manager import DisplayMessageManager
@@ -76,7 +77,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         # TODO Allow customization of text colors in the UI
         self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
-        self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)   # TODO maybe load one font obj at a higher-level scope than any menu or game state; then pass it in, instead of constructing one at each state change
+        self.ui._font = menu_form.UIForm.createFontObject( os.path.normpath(engineRef.exepath + '/../asset/font/ARCADE.TTF'), 32 )   # TODO maybe load one font obj at a higher-level scope than any menu or game state; then pass it in, instead of constructing one at each state change
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 200], self.ui._font, 'New High Score!'), kbSelectIdx=None )
         self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox( self.shared_ref, 'name', [200, 250], self.ui._font, locked=False), kbSelectIdx=0 )
         self.ui.addMenuItem( menu_item_textbox.MenuItemTextbox( self.shared_ref, 'score', [200, 300], self.ui._font, locked=True), kbSelectIdx=None, action=None )
@@ -88,7 +89,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self._eventQueue.RegisterListener('engine', engineRef, 'Application') # Register the game engine to listen to messages with topic, "Application"
 
 
-        self._highScoresFilePath = '../data/scores/highscores.json'
+        self._highScoresFilePath = os.path.normpath(engineRef.exepath + '/../data/scores/highscores.json')
         # TODO move high score loading into a function
         with open(self._highScoresFilePath, 'r') as fd:
             self._highScores = json.load(fd)

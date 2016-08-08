@@ -16,6 +16,7 @@
 
 import pygame
 import sys
+import os
 import sound_and_music
 
 class GameApplication(object):
@@ -34,6 +35,7 @@ class GameApplication(object):
         self.surface_bg = pygame.display.set_mode(self.screen_size, pygame.DOUBLEBUF, 32)
         self.game_viewport = pygame.Surface((640, 640))
         self.mixer = sound_and_music.SoundNMusicMixer()
+        self.exepath = os.path.dirname(sys.argv[0])     # Get the path where the script is. This allows us to properly compute relative paths to assets, e.g. images, sounds, etc.
 
         self.bg_col = 255,255,255
         self.isRunning = True

@@ -17,6 +17,7 @@
 # Import game objects (perhaps this can go into a "game manager" of some sort?)
 import pygame
 import sys
+import os
 
 from display_msg import DisplayMessage
 from display_msg_manager import DisplayMessageManager
@@ -58,9 +59,9 @@ class GameStateImpl(game_state_base.GameStateBase):
         self._eventQueue = MessageQueue() # Event queue, e.g. user key/button presses, system events
         self._eventQueue.Initialize(16)
 
-        self.ui = menu_form.UIForm('../data/scores/highscores.json', engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
+        self.ui = menu_form.UIForm( os.path.normpath(engineRef.exepath + '/../data/scores/highscores.json'), engineRef=engineRef ) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
         #print "Loaded high scores:\n{}".format(self.ui._boundObj)
-        self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
+        self.ui._font = menu_form.UIForm.createFontObject( os.path.normpath(engineRef.exepath + '/../asset/font/ARCADE.TTF'), 32 )
 
         # NOTE: The high scores file has strings with numeric values, because Python (or maybe the json module, or maybe the dot access dict) tripped over loading int values of 0 from the file. I don't know..
         for i in range(0,10):
@@ -76,7 +77,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
         self.title_mm = DisplayMessageManager()
-        self.title_mm._font = pygame.font.Font('../asset/font/ARCADE.TTF', 64)
+        self.title_mm._font = pygame.font.Font( os.path.normpath(engineRef.exepath + '/../asset/font/ARCADE.TTF'), 64 )
 
         self.titleMsg = DisplayMessage()
         self.titleMsg.create(txtStr='High Scores', position=[1,1], color=(192,192,192))

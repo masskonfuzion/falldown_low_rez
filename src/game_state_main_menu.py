@@ -17,6 +17,7 @@
 # Import game objects (perhaps this can go into a "game manager" of some sort?)
 import pygame
 import sys
+import os
 
 from display_msg import DisplayMessage
 from display_msg_manager import DisplayMessageManager
@@ -64,7 +65,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self._eventQueue.RegisterListener('engine', engineRef, 'Application') # Register the game engine to listen to messages with topic, "Application"
 
         self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
-        self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)   # TODO maybe load one font obj at a higher-level scope than any menu or game state; then pass it in, instead of constructing one at each state change
+        self.ui._font = menu_form.UIForm.createFontObject( os.path.normpath(engineRef.exepath + '/../asset/font/ARCADE.TTF'), 32 )   # TODO maybe load one font obj at a higher-level scope than any menu or game state; then pass it in, instead of constructing one at each state change
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 250], self.ui._font, 'Fall Down'), kbSelectIdx=0, action="startFalldown" )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 300], self.ui._font, 'Settings'), kbSelectIdx=1, action="gotoSettings" )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([300, 350], self.ui._font, 'Instructions'), kbSelectIdx=2, action="gotoInstructions" )
@@ -76,7 +77,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
         self.title_mm = DisplayMessageManager()
-        self.title_mm._font = pygame.font.Font('../asset/font/ARCADE.TTF', 64)
+        self.title_mm._font = pygame.font.Font( os.path.normpath(engineRef.exepath + '/../asset/font/ARCADE.TTF'), 64 )
 
         self.titleMsg = DisplayMessage()
         self.titleMsg.create(txtStr='Falldown x64', position=[1,1], color=(192,192,192))

@@ -17,11 +17,13 @@
 import pygame
 from display_msg import DisplayMessage
 from gameobj import GameObj
+import os
+import sys
 
 class DisplayMessageManager(GameObj):
     def __init__(self):
         super(DisplayMessageManager, self).__init__()
-        self._font = pygame.font.Font('../asset/font/ARCADE.TTF', 32)   # TODO make it possible to pass in a font object
+        self._font = pygame.font.Font( os.path.normpath(os.path.dirname(sys.argv[0]) + '/../asset/font/ARCADE.TTF'), 32 )   # TODO make it possible to pass in a font object
         self._messages = [] # Start with an empty list
         self._maxMessages = 64  # Preallocate this many message slots; cycle through them
         self._defaultTTL = 3.0 # message time to live, in seconds

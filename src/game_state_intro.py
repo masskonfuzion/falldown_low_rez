@@ -50,7 +50,7 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.bg_col = engineRef.bg_col
         self.mixer = engineRef.mixer
 
-        image_paths = [ "../asset/image/home-made_engine.png" ]
+        image_paths = [ os.path.normpath(engineRef.exepath + "/../asset/image/home-made_engine.png") ]
         self.img_surfs = []
 
         for path in image_paths:
@@ -67,21 +67,21 @@ class GameStateImpl(game_state_base.GameStateBase):
         self.splash_screen_threshold = 5 # num of seconds to keep up a splash screen
 
         # Check for the presence of the config file. If it's not there, create a default one. (NOTE: Of course, you could've put this into a function..)
-        if not os.path.exists('../data/config/settings.json'):
+        if not os.path.exists( os.path.normpath(engineRef.exepath + '/../data/config/settings.json') ):
             #print "Didn't find a settings file. Creating a new one from default"
             default_settings = {"difficulty": {"initialRowUpdateDelay": 0.140625, "initialRowSpacing": 4, "initialRowScreenClearTime": 9}, "mixer": {"musicVol": 10, "sfxVol": 10}, "numTries": 3}
-            with open('../data/config/settings.json', 'w') as fd:
+            with open( os.path.normpath(engineRef.exepath + '/../data/config/settings.json'), 'w' ) as fd:
                 json.dump(default_settings, fd)
 
-        if not os.path.exists('../data/scores/highscores.json'):
+        if not os.path.exists( os.path.normpath(engineRef.exepath + '/../data/scores/highscores.json') ):
             #print "Didn't find a highscores file. Creating a new one from default"
             default_highscores = {"1": {"score": 0, "name": "Nobody"}, "0": {"score": 0, "name": "Nobody"}, "3": {"score": 0, "name": "Nobody"}, "2": {"score": 0, "name": "Nobody"}, "5": {"score": 0, "name": "Nobody"}, "4": {"score": 0, "name": "Nobody"}, "7": {"score": 0, "name": "Nobody"}, "6": {"score": 0, "name": "Nobody"}, "9": {"score": 0, "name": "Nobody"}, "8": {"score": 0, "name": "Nobody"}}
-            with open('../data/scores/highscores.json', 'w') as fd:
+            with open( os.path.normpath(engineRef.exepath + '/../data/scores/highscores.json'), 'w' ) as fd:
                 json.dump(default_highscores, fd)
 
         # Aaand now, load the settings file
         dict_just_for_the_sake_of_getting_mixer_settings = {}
-        with open('../data/config/settings.json', 'r') as fd:
+        with open( os.path.normpath(engineRef.exepath + '/../data/config/settings.json'), 'r' ) as fd:
             dict_just_for_the_sake_of_getting_mixer_settings = json.load(fd)
 
         config_dict = dot_access_dict.DotAccessDict(dict_just_for_the_sake_of_getting_mixer_settings)
@@ -140,7 +140,7 @@ class GameStateImpl(game_state_base.GameStateBase):
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_SPACE or event.key == pygame.K_RETURN):
                     # Music # TODO along with the request to change states, make a request to start the music. This redundant, bifurcated logic is crap
-                    self.mixer.addMusicFileToMap('Theme', '../asset/audio/falldown_theme.ogg')
+                    self.mixer.addMusicFileToMap('Theme', os.path.normpath(engineRef.exepath + '/../asset/audio/falldown_theme.ogg'))
                     self.mixer.loadMusicFile('Theme')
                     self.mixer.playMusic()  # Play loaded music file
                                             # TODO add better management of loaded music files; as usual, we're hack'n'slashing
@@ -150,7 +150,7 @@ class GameStateImpl(game_state_base.GameStateBase):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed()[0]:   # Left mouse click
                     # Music # TODO along with the request to change states, make a request to start the music. This redundant, bifurcated logic is crap
-                    self.mixer.addMusicFileToMap('Theme', '../asset/audio/falldown_theme.ogg')
+                    self.mixer.addMusicFileToMap('Theme', os.path.normpath(engineRef.exepath + '/../asset/audio/falldown_theme.ogg'))
                     self.mixer.loadMusicFile('Theme')
                     self.mixer.playMusic()  # Play loaded music file
                                             # TODO add better management of loaded music files; as usual, we're hack'n'slashing

@@ -17,6 +17,7 @@
 # Import game objects (perhaps this can go into a "game manager" of some sort?)
 import pygame
 import sys
+import os
 
 from display_msg import DisplayMessage
 from display_msg_manager import DisplayMessageManager
@@ -69,7 +70,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         # TODO Allow customization of text colors in the UI
         self.ui = menu_form.UIForm(engineRef=engineRef) # the LHS engineRef is the function param; the RHS engineRef is the object we're passing in
-        self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)   # TODO maybe load one font obj at a higher-level scope than any menu or game state; then pass it in, instead of constructing one at each state change
+        self.ui._font = menu_form.UIForm.createFontObject( os.path.normpath(engineRef.exepath + '/../asset/font/ARCADE.TTF'), 32 )   # TODO maybe load one font obj at a higher-level scope than any menu or game state; then pass it in, instead of constructing one at each state change
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 200], self.ui._font, 'Paused'), kbSelectIdx=None )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 250], self.ui._font, 'Resume Game'), kbSelectIdx=0, action="resumeGame" )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([200, 300], self.ui._font, 'Back to Main Menu'), kbSelectIdx=1, action="exitUI" )
@@ -137,7 +138,7 @@ class GameStateImpl(game_state_base.GameStateBase):
                 engineRef.popState() # NOTE: PopState() returns the state to the program; however, we don't assign it, because we don't care, because we're not going to use it for anything
             elif argsDict['uiCommand'] == 'exitUI':
                 # Music # TODO along with the request to change states, make a request to start the music. This redundant, bifurcated logic is crap
-                self.mixer.addMusicFileToMap('Theme', '../asset/audio/falldown_theme.ogg')
+                self.mixer.addMusicFileToMap('Theme', os.path.normpath(engineRef.exepath + '/../asset/audio/falldown_theme.ogg'))
                 self.mixer.loadMusicFile('Theme')
                 self.mixer.playMusic()  # Play loaded music file
                                         # TODO add better management of loaded music files; as usual, we're hack'n'slashing

@@ -17,6 +17,7 @@
 # Import game objects (perhaps this can go into a "game manager" of some sort?)
 import pygame
 import sys
+import os
 
 from display_msg import DisplayMessage
 from display_msg_manager import DisplayMessageManager
@@ -61,13 +62,13 @@ class GameStateImpl(game_state_base.GameStateBase):
         self._eventQueue.Initialize(16)
 
         # NOTE could optimize images by loading UI graphics at a higher level than this, e.g. to make available to all menus: main menu, settings, in-game pause, etc.
-        self.uiImgCache = { 'spinner':{ 'left': menu_item_base.MenuItemBase.createImage("../asset/image/back.png")
-                                      , 'right': menu_item_base.MenuItemBase.createImage("../asset/image/forward.png")
+        self.uiImgCache = { 'spinner':{ 'left' : menu_item_base.MenuItemBase.createImage(os.path.normpath(engineRef.exepath + "/../asset/image/back.png"))
+                                      , 'right': menu_item_base.MenuItemBase.createImage(os.path.normpath(engineRef.exepath + "/../asset/image/forward.png"))
                                       }
                           }
 
-        self.ui = menu_form.UIForm('../data/config/settings.json', engineRef=engineRef) # I hope the program understands that the engineRef on the left is the function parameter, and the one on the right is the passed-in reference
-        self.ui._font = menu_form.UIForm.createFontObject('../asset/font/ARCADE.TTF', 32)
+        self.ui = menu_form.UIForm( os.path.normpath(engineRef.exepath + '/../data/config/settings.json'), engineRef=engineRef ) # I hope the program understands that the engineRef on the left is the function parameter, and the one on the right is the passed-in reference
+        self.ui._font = menu_form.UIForm.createFontObject( os.path.normpath(engineRef.exepath + '/../asset/font/ARCADE.TTF'), 32 )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,80], self.ui._font, 'Number of Tries'), kbSelectIdx=None )
         self.ui.addMenuItem( menu_item_spinner.MenuItemSpinner(self.ui._boundObj, 'numTries', [50,120], self.ui._font, self.uiImgCache['spinner']['left'], self.uiImgCache['spinner']['right'], range(1, 5+1)), kbSelectIdx=0 )
         self.ui.addMenuItem( menu_item_label.MenuItemLabel([50,180], self.ui._font, 'Row Spacing') )
@@ -85,7 +86,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         #Adding another DisplayMessageManager for the Title text. This is a bit hacky..
         self.title_mm = DisplayMessageManager()
-        self.title_mm._font = pygame.font.Font('../asset/font/ARCADE.TTF', 64)
+        self.title_mm._font = pygame.font.Font( os.path.normpath(engineRef.exepath + '/../asset/font/ARCADE.TTF'), 64 )
 
         self.titleMsg = DisplayMessage()
         self.titleMsg.create(txtStr='Settings', position=[1,1], color=(192,192,192))
@@ -182,7 +183,7 @@ class GameStateImpl(game_state_base.GameStateBase):
 
             elif event.type == sound_and_music.SoundNMusicMixer.SONG_END_EVENT:
                 # Music # TODO along with the request to change states, make a request to start the music. This redundant, bifurcated logic is crap
-                self.mixer.addMusicFileToMap('Theme', '../asset/audio/falldown_theme.ogg')
+                self.mixer.addMusicFileToMap('Theme', os.path.normpath(engineRef.exepath + '/../asset/audio/falldown_theme.ogg'))
                 self.mixer.loadMusicFile('Theme')
                 self.mixer.playMusic()  # Play loaded music file
 

@@ -17,6 +17,7 @@
 # Import game objects (perhaps this can go into a "game manager" of some sort?)
 import pygame
 import sys
+import os
 
 from ball import Ball
 from row import Row
@@ -84,11 +85,11 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         # TODO perhaps move the loading of this config to the main game engine. Then, simply pass a reference to the config object into this function, rather than doing the loading here
         # Load config file
-        with open('../data/config/settings.json', 'r+') as fd:
+        with open(os.path.normpath(engineRef.exepath + '/../data/config/settings.json'), 'r+') as fd:
             cfgFromFile = json.load(fd)
         config = dot_access_dict.DotAccessDict(cfgFromFile)
 
-        with open('../data/scores/highscores.json', 'r') as fd:
+        with open(os.path.normpath(engineRef.exepath + '/../data/scores/highscores.json'), 'r') as fd:
             highScores = json.load(fd)
 
         self.vital_stats = GameplayStats(config, highScores)
@@ -133,9 +134,9 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         # Initialize sound effects
         # TODO make a class or some other smarter way to manage loading the sound effects
-        self.mixer.addSfxFileToMap('gap'        , '../asset/audio/gap.wav')
-        self.mixer.addSfxFileToMap('crushed'    , '../asset/audio/explosion2.wav')
-        self.mixer.addSfxFileToMap('levelUp'    , '../asset/audio/powerup2.wav')
+        self.mixer.addSfxFileToMap('gap'        , os.path.normpath(engineRef.exepath + '/../asset/audio/gap.wav'))
+        self.mixer.addSfxFileToMap('crushed'    , os.path.normpath(engineRef.exepath + '/../asset/audio/explosion2.wav'))
+        self.mixer.addSfxFileToMap('levelUp'    , os.path.normpath(engineRef.exepath + '/../asset/audio/powerup2.wav'))
         self.mixer.loadSfxFiles()
         self.mixer.setSfxVolume(config['mixer.sfxVol'] / 10.0)  # TODO Design a way to avoid hard-coding the config keys here
         # A note on dependencies: setSfxVolume has to come after sound effects are loaded. That is because Pygame sets sfx levels per Sound object; the sounds must be loaded to set their volume
@@ -143,8 +144,8 @@ class GameStateImpl(game_state_base.GameStateBase):
 
         # Add music files to mapping
         # NOTE: We could have initialized the playing state music files in the main menu (along with the main menu music), because the mixer object is shared across all gamestates. But, we're initializing them here because they logically belong to this gamestate
-        self.mixer.addMusicFileToMap('level'    , '../asset/audio/gameplay_music_01.ogg')
-        self.mixer.addMusicFileToMap('gameOver' , '../asset/audio/gameover.ogg')
+        self.mixer.addMusicFileToMap('level'    , os.path.normpath(engineRef.exepath + '/../asset/audio/gameplay_music_01.ogg'))
+        self.mixer.addMusicFileToMap('gameOver' , os.path.normpath(engineRef.exepath + '/../asset/audio/gameover.ogg'))
         self.mixer.setMusicVolume(config['mixer.musicVol'] / 10.0)  # TODO Design a way to avoid hard-coding the config keys here
 
         self.mixer.loadMusicFile('level')
